@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:RealEstateApp.Models"
+             x:Class="RealEstateApp.Views.TenantsView"
+             x:DataType="models:Tenant">
+
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="*,*" Margin="6">
+
+    <!-- Form -->
+    <Border Grid.ColumnSpan="2" Padding="12" CornerRadius="12">
+      <StackPanel Spacing="8">
+        <TextBlock Text="المستأجرين" FontSize="18" HorizontalAlignment="Right"/>
+
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+              ColumnSpacing="10" RowSpacing="8">
+
+          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+          <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+
+          <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+          <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+
+          <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+          <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+
+          <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+          <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+
+          <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="تحديث" Click="Refresh_Click"/>
+            <Button Content="إضافة" Click="Add_Click"/>
+          </StackPanel>
+
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- Table -->
+    <Border Grid.Row="1"
+            Grid.ColumnSpan="2"
+            CornerRadius="12"
+            Padding="12"
+            Margin="0,10,0,0">
+
+      <Grid RowDefinitions="Auto,*">
+
+        <!-- Title -->
+        <TextBlock Text="قائمة المستأجرين"
+                   Grid.Row="0"
+                   HorizontalAlignment="Right"/>
+
+        <!-- DataGrid -->
+        <DataGrid x:Name="TenantsGrid"
+                  Grid.Row="1"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  x:DataType="models:Tenant"
+                  FlowDirection="RightToLeft"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+
+          <DataGrid.Columns>
+
+            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="80"/>
+            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
+            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="200"/>
+            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="200"/>
+            <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+
+            <!-- Last column: button -->
+            <DataGridTemplateColumn Header="">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                  <Button Content="فتح"
+                          Tag="{Binding}"
+                          Click="OpenInfoWindow_Click"/>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+          </DataGrid.Columns>
+        </DataGrid>
+
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>
