@@ -2071,19 +2071,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\weedo\\.nuget\\packages\\": {}
+    "/Users/wedadalmehmadi/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\weedo\\RealEstateApp\\RealEstateApp.csproj",
+      "projectUniqueName": "/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealEstateApp.csproj",
       "projectName": "RealEstateApp",
-      "projectPath": "C:\\Users\\weedo\\RealEstateApp\\RealEstateApp.csproj",
-      "packagesPath": "C:\\Users\\weedo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\weedo\\RealEstateApp\\obj\\",
+      "projectPath": "/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealEstateApp.csproj",
+      "packagesPath": "/Users/wedadalmehmadi/.nuget/packages/",
+      "outputPath": "/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\weedo\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/wedadalmehmadi/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -2107,7 +2107,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
@@ -2166,7 +2166,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

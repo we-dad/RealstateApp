@@ -17,53 +17,59 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = RealEstateApp
-build_property.ProjectDir = C:\Users\weedo\RealEstateApp\
+build_property.ProjectDir = /Users/wedadalmehmadi/Documents/GitHub/RealstateApp/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/weedo/RealEstateApp/App.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/MainWindow.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/MainMenuView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ContractsView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ContractsWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ContractsView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/DashboardView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ContractsWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ExpensesView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/DashboardView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ExpensesWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ExpensesView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/OwnersView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ExpensesWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/OwnersWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/OwnersView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ReceiptsView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/OwnersWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/ReceiptsWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/RealStateMainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/TenantsView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ReceiptsView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/TenantsWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ReceiptsWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/UnitsView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/TenantsView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/weedo/RealEstateApp/Views/UnitsWindowView.axaml]
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/TenantsWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/UnitsView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/UnitsWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

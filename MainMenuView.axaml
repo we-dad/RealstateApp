@@ -1,0 +1,41 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="RealEstateApp.Views.MainMenuView">
+
+    <Grid>
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="200">
+
+            <TextBlock
+                Text="المسار الذهبي"
+                FontSize="28"
+                FontWeight="Bold"
+                HorizontalAlignment="Center"/>
+
+         <StackPanel
+    Orientation="Horizontal"
+    HorizontalAlignment="Center"
+    Spacing="30">
+
+    <Button Width="220"
+            Height="220"
+            Content="إدارة التقسيط"
+            FontSize="28"
+            Click="InstallmentButton_Click"
+            HorizontalContentAlignment="Center"
+            VerticalContentAlignment="Center"/>
+
+    <Button Width="220"
+            Height="220"
+            Content="إدارة العقارات"
+            FontSize="28"
+            Click="RealEstateButton_Click"
+            HorizontalContentAlignment="Center"
+            VerticalContentAlignment="Center"/>
+</StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

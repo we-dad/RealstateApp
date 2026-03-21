@@ -4,10 +4,14 @@
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
-    <Application.Styles>
-  <FluentTheme />
+   <Application.Styles>
+    <FluentTheme />
 
-  <!-- DataGrid theme -->
-  <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+    <!-- Apply Arabic-supporting font everywhere -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="Arial"/>
+    </Style>
 </Application.Styles>
 </Application>
