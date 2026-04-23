@@ -1,0 +1,61 @@
+<Window x:Class="RealEstateApp.Views.OwnersWindowViewInstallment"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="معلومات المالك"
+        Width="700"
+        Height="450">
+
+    <Grid RowDefinitions="Auto,*" Margin="16">
+        <!-- owner information -->
+        <Border Grid.ColumnSpan="2" Padding="12" CornerRadius="12">
+            <StackPanel Spacing="8">
+                <TextBlock Text="المالك" FontSize="18" HorizontalAlignment="Right"/>
+
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10" RowSpacing="8">
+
+                    <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+
+                    <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+
+                    <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                        <Button Content="حذف البيانات" Click="Delete_Click"/>
+                        <Button Content="تحديث البيانات" Click="Update_Click"/>
+                    </StackPanel>
+
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="12" Padding="12" Margin="0,10,0,0">
+            <StackPanel Spacing="8">
+                <TextBlock Text="بيانات المالك" HorizontalAlignment="Right"/>
+
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10" RowSpacing="8">
+
+                    <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
