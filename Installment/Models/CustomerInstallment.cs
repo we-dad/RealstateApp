@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace RealEstateApp.Models;
+namespace RealEstateInstallmentsManager.Models;
 
 public class CustomerInstallment : INotifyPropertyChanged
 {

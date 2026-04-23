@@ -4,9 +4,9 @@ using System.IO;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using RealEstateApp.Models;
+using RealEstateInstallmentsManager.Models;
 
-namespace RealEstateApp.Services;
+namespace RealEstateInstallmentsManager.Services;
 
 public class PdfServiceInstallment
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia;
-using RealEstateApp.Services;
+using RealEstateInstallmentsManager.Services;
 
-namespace RealEstateApp;
+namespace RealEstateInstallmentsManager;
 
 internal sealed class Program
 {
@@ -20,7 +20,7 @@ internal sealed class Program
         
         try
         {
-            var db = new DbService();
+            var db = new DbServiceRealEstate();
             db.Initialize();
         }
         catch (Exception ex)

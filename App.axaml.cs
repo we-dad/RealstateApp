@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace RealEstateApp;
+namespace RealEstateInstallmentsManager;
 
 public partial class App : Application
 {

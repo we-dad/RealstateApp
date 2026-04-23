@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:models="clr-namespace:RealEstateApp.Models"
-             x:Class="RealEstateApp.Views.ProductViewInstallment"
+             xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
+             x:Class="RealEstateInstallmentsManager.Views.ProductViewInstallment"
              x:DataType="models:ProductInstallment">
 
   <Grid RowDefinitions="Auto,*" Margin="6">

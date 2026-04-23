@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
 
-namespace RealEstateApp.Models;
+namespace RealEstateInstallmentsManager.Models;
 
 public class ContractInstallment : INotifyPropertyChanged
 {

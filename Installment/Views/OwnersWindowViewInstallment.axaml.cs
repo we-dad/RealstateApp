@@ -2,16 +2,16 @@ using Avalonia.Controls;
 using System;
 using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
-using RealEstateApp.Models;
-using RealEstateApp.Services;
 using Avalonia;
+using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Services;
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class OwnersWindowViewInstallment : Window
 {
     private readonly OwnerInstallment _owner;
-    private readonly InstallmentDbService _db = new InstallmentDbService();
+    private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly OwnerInstallmentService _ownersDB;
 
 

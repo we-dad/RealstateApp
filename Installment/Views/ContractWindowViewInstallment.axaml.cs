@@ -1,20 +1,20 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using RealEstateApp.Models;
-using RealEstateApp.Services;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Services;
 
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class ContractWindowViewInstallment : Window
 {
-    private readonly InstallmentDbService _db = new InstallmentDbService();
+    private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ContractServiceInstallment _contractsDB;
     private readonly CustomerServiceInstallment _customersDB;
     private readonly ProductServiceInstallment _productDB;

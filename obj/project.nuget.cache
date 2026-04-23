@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "WKxnRHaIHbs=",
+  "dgSpecHash": "Tkk5+nEuwjI=",
   "success": true,
-  "projectFilePath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateApp.csproj",
+  "projectFilePath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateInstallmentsManager.csproj",
   "expectedPackageFiles": [
     "/Users/wedad/.nuget/packages/avalonia/11.3.11/avalonia.11.3.11.nupkg.sha512",
     "/Users/wedad/.nuget/packages/avalonia.angle.windows.natives/2.1.25547.20250602/avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",
@@ -42,8 +42,6 @@
     "/Users/wedad/.nuget/packages/sqlitepclraw.core/2.1.11/sqlitepclraw.core.2.1.11.nupkg.sha512",
     "/Users/wedad/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.11/sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
     "/Users/wedad/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.11/sqlitepclraw.provider.e_sqlite3.2.1.11.nupkg.sha512",
-    "/Users/wedad/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
-    "/Users/wedad/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512",
     "/Users/wedad/.nuget/packages/tmds.dbus.protocol/0.21.2/tmds.dbus.protocol.0.21.2.nupkg.sha512"
   ],
   "logs": [
@@ -51,9 +49,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Tmds.DBus.Protocol' 0.21.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-xrw6-gwf8-vvr9",
-      "projectPath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateApp.csproj",
+      "projectPath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateInstallmentsManager.csproj",
       "warningLevel": 1,
-      "filePath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateApp.csproj",
+      "filePath": "/Users/wedad/RiderProjects/RealstateApp/RealEstateInstallmentsManager.csproj",
       "libraryId": "Tmds.DBus.Protocol",
       "targetGraphs": [
         "net10.0"

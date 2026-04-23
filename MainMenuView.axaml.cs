@@ -2,7 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class MainMenuView : UserControl
 {

@@ -1,15 +1,15 @@
 using Microsoft.Data.Sqlite;
-using RealEstateApp.Models;
 using System;
 using System.Collections.Generic;
+using RealEstateInstallmentsManager.Models;
 
-namespace RealEstateApp.Services;
+namespace RealEstateInstallmentsManager.Services;
 
 public class ExpensesServiceInstallment
 {
-    private readonly InstallmentDbService _db;
+    private readonly DbServiceInstallment _db;
 
-    public ExpensesServiceInstallment(InstallmentDbService db)
+    public ExpensesServiceInstallment(DbServiceInstallment db)
     {
         _db = db;
     }
@@ -116,7 +116,7 @@ public class ExpensesServiceInstallment
         return list;
     }
 
-    public Expenses? GetById(long id)
+    public ExpensesRealEstate? GetById(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
@@ -144,7 +144,7 @@ public class ExpensesServiceInstallment
         if (!reader.Read())
             return null;
 
-        return new Expenses
+        return new ExpensesRealEstate
         {
             Id = reader.GetInt64(0),
             ExpensesNumber = reader.GetString(1),

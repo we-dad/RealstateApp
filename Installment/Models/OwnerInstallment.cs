@@ -1,4 +1,4 @@
-namespace RealEstateApp.Models;
+namespace RealEstateInstallmentsManager.Models;
 
 public class OwnerInstallment
 {

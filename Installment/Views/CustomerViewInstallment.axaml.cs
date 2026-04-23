@@ -1,14 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using RealEstateApp.Models;
-using RealEstateApp.Services;
 using System;
+using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Services;
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class CustomerViewInstallment : UserControl
 {
-    private readonly InstallmentDbService _db = new InstallmentDbService();
+    private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly CustomerServiceInstallment _cutomerService;
     private CustomerInstallment _customer = new CustomerInstallment();
 

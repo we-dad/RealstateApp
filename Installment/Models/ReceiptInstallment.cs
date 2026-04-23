@@ -1,6 +1,6 @@
 using System;
 
-namespace RealEstateApp.Models;
+namespace RealEstateInstallmentsManager.Models;
 
 public class ReceiptInstallment
 {

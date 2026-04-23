@@ -2,19 +2,19 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
-using RealEstateApp.Models;
-using RealEstateApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Services;
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class ReceiptViewInstallment : UserControl
 {
-    private readonly InstallmentDbService _db = new InstallmentDbService();
+    private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ReceiptServiceInstallment _receiptsDB;
     private readonly ContractServiceInstallment _contractsDB;
     private PdfServiceInstallment _pdfService;

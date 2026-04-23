@@ -1,7 +1,7 @@
 using Avalonia.Controls;
-using RealEstateApp.Views;
+using RealEstateInstallmentsManager.Views;
 
-namespace RealEstateApp;
+namespace RealEstateInstallmentsManager;
 
 public partial class MainWindow : Window
 {
@@ -18,12 +18,12 @@ public partial class MainWindow : Window
 
     public void ShowRealEstatePage()
     {
-        MainContent.Content = new RealStateMainWindow(this);
+        MainContent.Content = new MainWindowRealEstate(this);
     }
 
     public void ShowInstallmentPage()
     {
-        MainContent.Content = new InstallmentMainWindow(this);
+        MainContent.Content = new MainWindowInstallment(this);
     }
    
 }

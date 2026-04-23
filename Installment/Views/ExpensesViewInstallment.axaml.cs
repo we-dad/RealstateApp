@@ -2,19 +2,19 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
-using RealEstateApp.Models;
-using RealEstateApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Services;
 
-namespace RealEstateApp.Views;
+namespace RealEstateInstallmentsManager.Views;
 
 public partial class ExpensesViewInstallment : UserControl
 {
-    private readonly InstallmentDbService _db = new InstallmentDbService();
+    private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ExpensesServiceInstallment _ExpensesDB;
     private readonly ProductServiceInstallment _productsDB;
     private PdfServiceInstallment _pdfService;
@@ -70,7 +70,7 @@ public partial class ExpensesViewInstallment : UserControl
             var ExpensesNum = ExpensesNumBox.Text?.Trim() ?? "";
             var ExpensesDate = DateTime.Today;
 
-            if (ProductBox.SelectedItem is not Unit unit)
+            if (ProductBox.SelectedItem is not UnitRealEstate unit)
                 return;
 
             var ExpensesService = ExpensesServiceBox.SelectedItem as string ?? "أخرى";
@@ -111,8 +111,8 @@ public partial class ExpensesViewInstallment : UserControl
     }
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is Expenses expenses)
-            new ExpensesWindowView(expenses.Id).Show();
+        if (sender is Button btn && btn.Tag is ExpensesRealEstate expenses)
+            new ExpensesWindowViewRealEstate(expenses.Id).Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string contractNumber)
@@ -139,9 +139,9 @@ public partial class ExpensesViewInstallment : UserControl
     }
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not Expenses expenses) return;
+        if (sender is not Button btn || btn.Tag is not ExpensesRealEstate expenses) return;
 
-        Expenses? _expenses = _ExpensesDB.GetById(expenses.Id);
+        ExpensesRealEstate? _expenses = _ExpensesDB.GetById(expenses.Id);
         if (_expenses is null) return;
 
         var path = await PickSavePdfPathAsync(_expenses.ExpensesNumber);

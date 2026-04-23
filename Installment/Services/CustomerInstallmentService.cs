@@ -1,15 +1,15 @@
 using Microsoft.Data.Sqlite;
-using RealEstateApp.Models;
 using System;
 using System.Collections.Generic;
+using RealEstateInstallmentsManager.Models;
 
-namespace RealEstateApp.Services;
+namespace RealEstateInstallmentsManager.Services;
 
 public class CustomerServiceInstallment
 {
-    private readonly InstallmentDbService _db;
+    private readonly DbServiceInstallment _db;
 
-    public CustomerServiceInstallment(InstallmentDbService db)
+    public CustomerServiceInstallment(DbServiceInstallment db)
     {
         _db = db;
     }
