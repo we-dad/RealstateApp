@@ -17,59 +17,98 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = RealEstateApp
-build_property.ProjectDir = /Users/wedadalmehmadi/Documents/GitHub/RealstateApp/
+build_property.ProjectDir = /Users/wedad/RiderProjects/RealstateApp/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/App.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/MainMenuView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ContractViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/MainWindow.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ContractWindowViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ContractsView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/CustomerViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ContractsWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/CustomerWindowViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/DashboardView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ExpensesViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ExpensesView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/InstallmentDashboardView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ExpensesWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/InstallmentMainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/OwnersView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/OwnersViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/OwnersWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/OwnersWindowViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/RealStateMainWindow.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ProductViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ReceiptsView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ProductWindowViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/ReceiptsWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ReceiptViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/TenantsView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/Installment/Views/ReceiptWindowViewInstallment.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/TenantsWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/MainMenuView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/UnitsView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[/Users/wedadalmehmadi/Documents/GitHub/RealstateApp/RealState/Views/UnitsWindowView.axaml]
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ContractsView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ContractsWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/DashboardView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ExpensesView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ExpensesWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/OwnersView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/OwnersWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/RealStateMainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ReceiptsView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/ReceiptsWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/TenantsView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/TenantsWindowView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/UnitsView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/wedad/RiderProjects/RealstateApp/RealState/Views/UnitsWindowView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:RealEstateApp.Models"
+             x:Class="RealEstateApp.Views.CustomerViewInstallment"
+             x:DataType="models:CustomerInstallment">
+
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="*,*" Margin="6">
+
+    <!-- Form -->
+    <Border Grid.ColumnSpan="2" Padding="12" CornerRadius="12">
+      <StackPanel Spacing="8">
+        <TextBlock Text="العملاء" FontSize="18" HorizontalAlignment="Right"/>
+
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+              ColumnSpacing="10" RowSpacing="8">
+
+          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+          <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+
+          <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+          <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+
+          <TextBlock Text="رقم الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+          <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+
+          <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+          <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+          
+          <TextBlock Text="الوظيفة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+          <TextBox x:Name="JobBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
+          
+          <CheckBox Grid.Row="5"
+                    Grid.Column="0"
+                    Content="يوجد كفيل"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    IsChecked="{Binding BoolSponser, Mode=TwoWay}" />
+          
+          <TextBlock Text="اسم الكفيل" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          <TextBox x:Name="SponserNameBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+          <TextBlock Text="رقم هوية الكفيل" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          <TextBox x:Name="SponserIdentityNumberBox" Grid.Row="7" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+          <TextBlock Text="رقم جوال الكفيل" Grid.Row="8" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          <TextBox x:Name="SponserPhoneBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+          <TextBlock Text="عنوان الكفيل" Grid.Row="8" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          <TextBox x:Name="SponserAddressBox" Grid.Row="9" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          
+          <TextBlock Text="وظيفة الكفيل" Grid.Row="10" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+          <TextBox x:Name="SponserJobBox" Grid.Row="11" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+          <StackPanel Grid.Row="12" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="تحديث" Click="Refresh_Click"/>
+            <Button Content="إضافة" Click="Add_Click"/>
+          </StackPanel>
+
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- Table -->
+    <Border Grid.Row="1"
+            Grid.ColumnSpan="2"
+            CornerRadius="12"
+            Padding="12"
+            Margin="0,10,0,0">
+
+      <Grid RowDefinitions="Auto,*">
+
+        <!-- Title -->
+        <TextBlock Text="قائمة العملاء"
+                   Grid.Row="0"
+                   HorizontalAlignment="Right"/>
+
+        <!-- DataGrid -->
+        <DataGrid x:Name="CustomerGrid"
+                  Grid.Row="1"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  x:DataType="models:CustomerInstallment"
+                  FlowDirection="RightToLeft"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+
+          <DataGrid.Columns>
+
+            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="80"/>
+            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
+            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="200"/>
+            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="200"/>
+            <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+
+            <!-- Last column: button -->
+            <DataGridTemplateColumn Header="">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                  <Button Content="فتح"
+                          Tag="{Binding}"
+                          Click="OpenInfoWindow_Click"/>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+          </DataGrid.Columns>
+        </DataGrid>
+
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

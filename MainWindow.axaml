@@ -5,8 +5,5 @@
         WindowState="Maximized"
         Title="إدارة العقارات">
 
- <Grid>
-         <ContentControl x:Name="MainContent"/>
-
-    </Grid>
+    <ContentControl x:Name="MainContent"/>
 </Window>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia;
 using RealEstateApp.Services;
 
@@ -9,6 +10,14 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        var culture = new CultureInfo("en-US");
+        culture.DateTimeFormat.Calendar = new GregorianCalendar();
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+        
         try
         {
             var db = new DbService();

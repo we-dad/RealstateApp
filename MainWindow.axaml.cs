@@ -13,17 +13,17 @@ public partial class MainWindow : Window
 
     public void ShowMainMenu()
     {
-        MainContent.Content = new MainMenuView();
+        MainContent.Content = new MainMenuView(this);
     }
 
     public void ShowRealEstatePage()
     {
-        MainContent.Content = new RealStateMainWindow();
+        MainContent.Content = new RealStateMainWindow(this);
     }
 
     public void ShowInstallmentPage()
     {
-        MainContent.Content = new OwnersView();
+        MainContent.Content = new InstallmentMainWindow(this);
     }
    
 }

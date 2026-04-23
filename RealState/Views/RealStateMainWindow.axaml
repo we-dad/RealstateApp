@@ -30,7 +30,7 @@
                             FontSize="16">
                         🏠
                     </Button>
-          <Button Content="الرئيسية" Click="Nav_Dashboard"/>
+          <Button Content="الإحصائيات" Click="Nav_Dashboard"/>
           <Button Content="الملاك" Click="Nav_Owners"/>
           <Button Content="المستأجرين" Click="Nav_Tenants"/>
           <Button Content="الوحدات" Click="Nav_Units"/>

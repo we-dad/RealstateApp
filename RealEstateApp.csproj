@@ -22,4 +22,26 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
     <PackageReference Include="QuestPDF" Version="2025.12.3" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Installment\Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="RealState\Views\ContractsView.axaml.cs">
+      <DependentUpon>InstallmentContractsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="RealState\Views\OwnersView.axaml.cs">
+      <DependentUpon>InstallmentOwnersView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="RealState\Views\DashboardView.axaml.cs">
+      <DependentUpon>InstallmentDashboardView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="RealState\Views\OwnersWindowView.axaml.cs">
+      <DependentUpon>InstallmentOwnersWindowView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Installment\Views\ReceiptWindowViewInstallment.axaml.cs">
+      <DependentUpon>ReceiptWindowViewInstallment.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -5,21 +5,20 @@ namespace RealEstateApp;
 
 public partial class RealStateMainWindow : UserControl
 {
-        private readonly MainWindow? _mainWindow;
+    private readonly MainWindow _mainWindow;
 
-    public RealStateMainWindow()
+    public RealStateMainWindow(MainWindow mainWindow)
     {
         InitializeComponent();
 
+        _mainWindow = mainWindow;
         // صفحة البداية
         ContentHost.Content = new DashboardView();
     }
 
  private void Nav_Home(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (_mainWindow is null) return;
-        ContentHost.Content = new MainMenuView();
-
+        _mainWindow.ShowMainMenu();
     }
 
     private void Nav_Dashboard(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

@@ -6,21 +6,21 @@ namespace RealEstateApp.Views;
 
 public partial class MainMenuView : UserControl
 {
+    private readonly MainWindow _mainWindow;
 
-public event Action? OpenRealEstate;
-public event Action? OpenInstallments;
-    public MainMenuView()
+    public MainMenuView(MainWindow mainWindow)
     {
         InitializeComponent();
+        _mainWindow = mainWindow;
     }
 
-  private void RealEstateButton_Click(object? sender, RoutedEventArgs e)
-{
-    OpenRealEstate?.Invoke();
-}
+    private void InstallmentButton_Click(object? sender, RoutedEventArgs e)
+    {
+        _mainWindow.ShowInstallmentPage();
+    }
 
-private void InstallmentButton_Click(object? sender, RoutedEventArgs e)
-{
-    OpenInstallments?.Invoke();
-}
+    private void RealEstateButton_Click(object? sender, RoutedEventArgs e)
+    {
+        _mainWindow.ShowRealEstatePage();
+    }
 }
