@@ -8,6 +8,9 @@ namespace RealEstateInstallmentsManager.Models;
 public class ProductInstallment : INotifyPropertyChanged
 {
     public long Id { get; set; }
+    public long CloudId { get; set; }
+    public long OwnerCloudId { get; set; }
+    public string SyncAction { get; set; } = "";
     public long OwnerId { get; set; }
     public string OwnerIdentityNumber { get; set; } = "";
     public string OwnerName { get; set; } = "";

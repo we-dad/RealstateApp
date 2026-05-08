@@ -1,9 +1,11 @@
-using Avalonia.Controls;
-using System;
-using Avalonia.Diagnostics;
-using Avalonia.Interactivity;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using System;
+using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -13,20 +15,25 @@ public partial class OwnersWindowViewInstallment : Window
     private readonly OwnerInstallment _owner;
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly OwnerInstallmentService _ownersDB;
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
 
-
-    public OwnersWindowViewInstallment(OwnerInstallment owner)
+    public OwnersWindowViewInstallment(OwnerInstallment owner, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
         _ownersDB = new OwnerInstallmentService(_db);
 
         _owner = owner;
+        
+    _sync = new InstallmentSyncService(_db, _supabaseService);
+    _ = _sync.PushAllDirtyAsync();
 
         Refresh();
-
     }
+
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -42,6 +49,9 @@ public partial class OwnersWindowViewInstallment : Window
             _ownersDB.Update(_owner.Id, name, identityNumber, phone, address);
 
             Refresh();
+
+
+    _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
@@ -51,36 +61,43 @@ public partial class OwnersWindowViewInstallment : Window
 
     private void Refresh()
     {
-        var Refresh_owner = _ownersDB.GetById(_owner.Id);
-        if (Refresh_owner is null) return;
+        var refreshedOwner = _ownersDB.GetById(_owner.Id);
 
-        NameBox.Text = Refresh_owner.Name;
-        PhoneBox.Text = Refresh_owner.Phone;
-        IdentityNumberBox.Text = Refresh_owner.IdentityNumber;
-        AddressBox.Text = Refresh_owner.Address;
+        if (refreshedOwner is null)
+            return;
 
-        ResultNameBox.Text = Refresh_owner.Name;
-        ResultPhoneBox.Text = Refresh_owner.Phone;
-        ResultIdentityNumberBox.Text = Refresh_owner.IdentityNumber;
-        ResultAddressBox.Text = Refresh_owner.Address;
+        NameBox.Text = refreshedOwner.Name;
+        PhoneBox.Text = refreshedOwner.Phone;
+        IdentityNumberBox.Text = refreshedOwner.IdentityNumber;
+        AddressBox.Text = refreshedOwner.Address;
+
+        ResultNameBox.Text = refreshedOwner.Name;
+        ResultPhoneBox.Text = refreshedOwner.Phone;
+        ResultIdentityNumberBox.Text = refreshedOwner.IdentityNumber;
+        ResultAddressBox.Text = refreshedOwner.Address;
     }
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
             _ownersDB.Delete(_owner.Id);
+            
+    _ = _sync.PushAllDirtyAsync();
+
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -90,7 +107,11 @@ public partial class OwnersWindowViewInstallment : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -99,15 +120,15 @@ public partial class OwnersWindowViewInstallment : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);

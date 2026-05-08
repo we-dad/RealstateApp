@@ -84,13 +84,13 @@ public partial class DashboardViewRealEstate : UserControl
             // KPIs
             var totalReceipts = await ScalarDecimalAsync(con, """
                 SELECT IFNULL(SUM(r.Amount), 0)
-                FROM Receipts r
+                FROM ReceiptsRealEstate r
                 WHERE strftime('%Y', r.ReceiptDate) = @year;
             """, year);
 
             var totalExpenses = await ScalarDecimalAsync(con, """
                 SELECT IFNULL(SUM(e.ExpensesAmount), 0)
-                FROM Expenses e
+                FROM ExpensesRealEstate e
                 WHERE strftime('%Y', e.ExpensesDate) = @year;
             """, year);
 
@@ -105,7 +105,7 @@ public partial class DashboardViewRealEstate : UserControl
             // Monthly (قبض + صرف)
             var receiptsMonthly = await MonthTotalsAsync(con, year, """
                 SELECT strftime('%Y-%m', r.ReceiptDate) AS Month, IFNULL(SUM(r.Amount),0) AS Total
-                FROM Receipts r
+                FROM ReceiptsRealEstate r
                 WHERE strftime('%Y', r.ReceiptDate) = @year
                 GROUP BY Month
                 ORDER BY Month;
@@ -113,7 +113,7 @@ public partial class DashboardViewRealEstate : UserControl
 
             var expensesMonthly = await MonthTotalsAsync(con, year, """
                 SELECT strftime('%Y-%m', e.ExpensesDate) AS Month, IFNULL(SUM(e.ExpensesAmount),0) AS Total
-                FROM Expenses e
+                FROM ExpensesRealEstate e
                 WHERE strftime('%Y', e.ExpensesDate) = @year
                 GROUP BY Month
                 ORDER BY Month;
@@ -206,7 +206,7 @@ public partial class DashboardViewRealEstate : UserControl
         SELECT
           SUM(CASE WHEN UnitState = 'مؤجرة' THEN 1 ELSE 0 END) AS RentedCount,
           SUM(CASE WHEN UnitState = 'شاغرة' THEN 1 ELSE 0 END) AS VacantCount
-        FROM Units;
+        FROM UnitsRealEstate;
     """;
 
         await using var r = await cmd.ExecuteReaderAsync();
@@ -240,11 +240,11 @@ public partial class DashboardViewRealEstate : UserControl
               u.UnitName,
               COUNT(DISTINCT c.Id) AS ContractsStartedThisYear,
               IFNULL(SUM(r.Amount), 0) AS ReceiptsTotalThisYear
-            FROM Units u
-            LEFT JOIN Contracts c 
+            FROM UnitsRealEstate u
+            LEFT JOIN ContractsRealEstate c 
               ON c.UnitId = u.Id
               AND strftime('%Y', c.ContractStartDate) = @year
-            LEFT JOIN Receipts r
+            LEFT JOIN ReceiptsRealEstate r
               ON r.ContractId = c.Id
               AND strftime('%Y', r.ReceiptDate) = @year
             GROUP BY u.Id, u.UnitName

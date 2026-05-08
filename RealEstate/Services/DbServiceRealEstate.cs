@@ -8,11 +8,11 @@ public class DbServiceRealEstate
 {
     private readonly string _dbPath;
 
-    public DbServiceRealEstate(string dbFileName = "realestate.db")
+    public DbServiceRealEstate(string dbFileName = "realEstateInstallments.db")
     {
         var folder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "RealEstateApp"
+            "RealEstateInstallmentsManager"
         );
 
         Directory.CreateDirectory(folder);
@@ -35,12 +35,15 @@ public class DbServiceRealEstate
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-CREATE TABLE IF NOT EXISTS Owners (
+CREATE TABLE IF NOT EXISTS OwnersRealEstate (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CloudId INTEGER NOT NULL DEFAULT 0,
     Name TEXT NOT NULL,
     IdentityNumber TEXT NOT NULL,
     Phone INTEGER NOT NULL,
-    Address TEXT NOT NULL DEFAULT ''
+    Address TEXT NOT NULL DEFAULT '',
+    IsDirty INTEGER NOT NULL DEFAULT 0,
+SyncAction TEXT NOT NULL DEFAULT ''
 );
 """;
 
@@ -51,17 +54,20 @@ CREATE TABLE IF NOT EXISTS Owners (
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-    CREATE TABLE IF NOT EXISTS Units (
+    CREATE TABLE IF NOT EXISTS UnitsRealEstate (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         OwnerId INTEGER NOT NULL,
         UnitName TEXT NOT NULL DEFAULT '',
         City TEXT NOT NULL DEFAULT '',
         District TEXT NOT NULL DEFAULT '',
         UnitType TEXT NOT NULL DEFAULT 'سكني',
-        UnitState TEXT NOT NULL DEFAULT 'شاغر',
+        UnitState TEXT NOT NULL DEFAULT 'شاغرة',
         UnitsCount INTEGER NOT NULL DEFAULT 1,
         UnitNum INTEGER NOT NULL DEFAULT 1,
-        FOREIGN KEY (OwnerId) REFERENCES Owners(Id)
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (OwnerId) REFERENCES OwnersRealEstate(Id)
     );
     """;
             cmd.ExecuteNonQuery();
@@ -71,12 +77,15 @@ CREATE TABLE IF NOT EXISTS Owners (
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-    CREATE TABLE IF NOT EXISTS Tenants (
+    CREATE TABLE IF NOT EXISTS TenantsRealEstate (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         Name TEXT NOT NULL,
         IdentityNumber TEXT NOT NULL,
         Phone TEXT NOT NULL,
-        Address TEXT NOT NULL DEFAULT ''
+        Address TEXT NOT NULL DEFAULT '',
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT ''
     );
     """;
             cmd.ExecuteNonQuery();
@@ -85,8 +94,9 @@ CREATE TABLE IF NOT EXISTS Owners (
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-    CREATE TABLE IF NOT EXISTS Contracts (
+    CREATE TABLE IF NOT EXISTS ContractsRealEstate (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         ContractNumber TEXT UNIQUE NOT NULL,
         ContractStartDate DATETIME NOT NULL,
         ContractEndDate DATETIME NOT NULL,
@@ -99,8 +109,10 @@ CREATE TABLE IF NOT EXISTS Owners (
         ContractOpligation TEXT NOT NULL DEFAULT 'يتحمل المؤجر مسؤولية الصيانة كاملة, يتحمل المؤجر فواتير الكهرباء والماء',
         UnitId INTEGER NOT NULL,
         TenantId INTEGER NOT NULL,
-        FOREIGN KEY (UnitId) REFERENCES Units(Id),
-        FOREIGN KEY (TenantId) REFERENCES Tenants(Id)
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (UnitId) REFERENCES UnitsRealEstate(Id),
+        FOREIGN KEY (TenantId) REFERENCES TenantsRealEstate(Id)
     );
     """;
             cmd.ExecuteNonQuery();
@@ -109,14 +121,17 @@ CREATE TABLE IF NOT EXISTS Owners (
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-    CREATE TABLE IF NOT EXISTS Receipts (
+    CREATE TABLE IF NOT EXISTS ReceiptsRealEstate (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         ReceiptNumber TEXT UNIQUE NOT NULL,
         ReceiptDate DATETIME NOT NULL,
         ContractId INTEGER NOT NULL,
         PaymentMethod TEXT NOT NULL,
         Amount REAL NOT NULL,
-        FOREIGN KEY (ContractId) REFERENCES Contracts(Id)
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (ContractId) REFERENCES ContractsRealEstate(Id)
     );
     """;
             cmd.ExecuteNonQuery();
@@ -125,15 +140,18 @@ CREATE TABLE IF NOT EXISTS Owners (
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = """
-    CREATE TABLE IF NOT EXISTS Expenses (
+    CREATE TABLE IF NOT EXISTS ExpensesRealEstate (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         ExpensesNumber TEXT UNIQUE NOT NULL,
         ExpensesDate DATETIME NOT NULL,
         ExpensesService TEXT NOT NULL,
         ExpensesAmount REAL NOT NULL,
         ExpensesNote TEXT NOT NULL,
         UnitId INTEGER NOT NULL,
-        FOREIGN KEY (UnitId) REFERENCES Units(Id)
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (UnitId) REFERENCES UnitsRealEstate(Id)
     );
     """;
             cmd.ExecuteNonQuery();

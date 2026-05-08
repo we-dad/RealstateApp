@@ -4,6 +4,13 @@
     x:Class="RealEstateInstallmentsManager.Views.MainMenuView">
 
     <Grid>
+        <TextBlock
+            Text="{ReflectionBinding AppVersion}"
+            FontSize="16"
+            Margin="10"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"/>
+  
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"

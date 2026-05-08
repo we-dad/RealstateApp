@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -16,40 +17,49 @@ public partial class ContractsViewRealEstate : UserControl
 {
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
     private readonly ContractServiceRealEstate _contractsDB;
-    private readonly TenantServiceRealEstate _TenantsDB;
+    private readonly TenantServiceRealEstate _tenantsDB;
     private readonly UnitServiceRealEstate _unitsDB;
-    private PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly SupabaseService _supabaseService;
+    private readonly RealEstateSyncService _sync;
 
     private TenantRealEstate? _selectedTenant;
     private TextBox? _tenantIdSearchBox;
     private string? ContractNumber;
 
-    public ContractsViewRealEstate()
+    public ContractsViewRealEstate(SupabaseService supabaseService)
     {
         InitializeComponent();
+
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
         _contractsDB = new ContractServiceRealEstate(_db);
-        _TenantsDB = new TenantServiceRealEstate(_db);
+        _tenantsDB = new TenantServiceRealEstate(_db);
         _unitsDB = new UnitServiceRealEstate(_db);
         _pdfServiceRealEstate = new PdfServiceRealEstate();
+        _sync = new RealEstateSyncService(_db, _supabaseService);
 
         Refresh();
 
-        _tenantIdSearchBox = this.FindControl<TextBox>("TenantIdSearchBox"); //this line becasue avalonia can't found TenantIdSearchBox it's returen null maybe because the warning message
+        _tenantIdSearchBox = this.FindControl<TextBox>("TenantIdSearchBox");
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncContractsFromCloudAsync();
 
     }
 
     private void LoadUnits()
     {
-        var Units = _unitsDB.GetAvailableUnits();
+        var units = _unitsDB.GetAvailableUnits();
 
-        UnitsBox.ItemsSource = Units;
+        UnitsBox.ItemsSource = units;
 
-        if (Units.Count > 0)
+        if (units.Count > 0)
             UnitsBox.SelectedIndex = 0;
     }
+
     private void LoadContractPayMethod()
     {
         ContractPayMethodBox.ItemsSource = new List<string>
@@ -63,6 +73,7 @@ public partial class ContractsViewRealEstate : UserControl
 
         ContractPayMethodBox.SelectedIndex = 0;
     }
+
     private void LoadContractUnitRoomsType()
     {
         ContractApartmentTypeBox.ItemsSource = new List<string>
@@ -73,6 +84,7 @@ public partial class ContractsViewRealEstate : UserControl
 
         ContractApartmentTypeBox.SelectedIndex = 0;
     }
+
     private void LoadContractObligations()
     {
         ContractObligationsBox.ItemsSource = new List<string>
@@ -86,23 +98,35 @@ public partial class ContractsViewRealEstate : UserControl
 
     private void LoadContract()
     {
-        _contractsDB.UpdateContractStates();
-        _unitsDB.UpdateUnitStates();
+        try
+        {
+            _contractsDB.UpdateContractStates();
+            _unitsDB.UpdateUnitStates();
 
-        var data = _contractsDB.GetAll();
+            var data = _contractsDB.GetAll();
 
-        ContractGrid.ItemsSource = null;
-        ContractGrid.ItemsSource = data;
+            ContractGrid.ItemsSource = null;
+            ContractGrid.ItemsSource = data;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
     }
+    
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
-            var _contractNumber = ContractNumber?.Trim() ?? "";
-            var ContractDateStart = ContractDateStartPicker.SelectedDate?.LocalDateTime
-                     ?? DateTime.Today;
-            var ContractDateEnd = ContractDateEndPicker.SelectedDate?.LocalDateTime
-                     ?? DateTime.Today.AddYears(1);
+            var contractNumber = ContractNumber?.Trim() ?? "";
+
+            var contractDateStart =
+                ContractDateStartPicker.SelectedDate?.LocalDateTime
+                ?? DateTime.Today;
+
+            var contractDateEnd =
+                ContractDateEndPicker.SelectedDate?.LocalDateTime
+                ?? DateTime.Today.AddYears(1);
 
             if (UnitsBox.SelectedItem is not UnitRealEstate unit)
                 return;
@@ -110,26 +134,99 @@ public partial class ContractsViewRealEstate : UserControl
             if (_selectedTenant == null)
             {
                 TenantInfoText.Text = "يرجى اختيار مستأجر أولاً";
+                TenantInfoText.Foreground = Brushes.Red;
                 return;
             }
-            var tenantId = _selectedTenant.Id;
 
-            var RentAmount = double.Parse(
-                RentAmountBox.Text?.Trim() ?? "",
+            var tenant = _selectedTenant;
+
+            var rentAmount = double.Parse(
+                RentAmountBox.Text?.Trim() ?? "0",
                 CultureInfo.InvariantCulture
             );
 
-            var ContractPayMethod = ContractPayMethodBox.SelectedItem as string ?? "شهري";
-            var ContractApartmentType = ContractApartmentTypeBox.SelectedItem as string ?? "غرفة مفروشة";
-            var ContractObligations = ContractObligationsBox.SelectedItem as string ?? "غرفة مفروشة";
+            var contractPayMethod =
+                ContractPayMethodBox.SelectedItem as string ?? "شهري";
 
-            var ContractUnitRoomsNum = int.Parse(ContractUnitRoomsNumBox.Text?.Trim() ?? "", CultureInfo.InvariantCulture);
-            var ContractUnitFloorNum = int.Parse(ContractUnitFloorNumBox.Text?.Trim() ?? "", CultureInfo.InvariantCulture);
+            var contractApartmentType =
+                ContractApartmentTypeBox.SelectedItem as string ?? "غرفة مفروشة";
 
+            var contractObligations =
+                ContractObligationsBox.SelectedItem as string ?? "";
 
-            _contractsDB.Add(_contractNumber, ContractDateStart, ContractDateEnd, unit.Id, tenantId, RentAmount, ContractPayMethod, ContractApartmentType, ContractUnitRoomsNum, ContractUnitFloorNum, ContractObligations);
+            var contractUnitRoomsNum = int.Parse(
+                ContractUnitRoomsNumBox.Text?.Trim() ?? "0",
+                CultureInfo.InvariantCulture
+            );
+
+            var contractUnitFloorNum = int.Parse(
+                ContractUnitFloorNumBox.Text?.Trim() ?? "0",
+                CultureInfo.InvariantCulture
+            );
+
+            _contractsDB.Add(
+                contractNumber,
+                contractDateStart,
+                contractDateEnd,
+                unit.Id,
+                tenant.Id,
+                rentAmount,
+                contractPayMethod,
+                contractApartmentType,
+                contractUnitRoomsNum,
+                contractUnitFloorNum,
+                contractObligations
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private async Task SyncContractsFromCloudAsync()
+    {
+        try
+        {
+            var cloudContracts = new CloudContractsRealEstateService(_supabaseService);
+            var cloudRows = await cloudContracts.GetContractsAsync();
+
+            foreach (var row in cloudRows)
+            {
+                var unitLocalId = _unitsDB.GetLocalIdByCloudId(row.UnitId);
+                var tenantLocalId = _tenantsDB.GetLocalIdByCloudId(row.TenantId);
+
+                if (unitLocalId == 0 || tenantLocalId == 0)
+                    continue;
+
+                _contractsDB.UpsertFromCloud(
+                    row.Id,
+                    row.ContractNumber,
+                    row.ContractStartDate,
+                    row.ContractEndDate,
+                    unitLocalId,
+                    tenantLocalId,
+                    row.RentAmount,
+                    row.ContractState,
+                    row.ContractPayMethod,
+                    row.ContractApartmentType,
+                    row.ContractUnitRoomsNum,
+                    row.ContractUnitFloorNum,
+                    row.ContractOpligation
+                );
+            }
+
+            LoadContract();
+            LoadUnits();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping contracts cloud sync.");
         }
         catch (Exception ex)
         {
@@ -140,10 +237,11 @@ public partial class ContractsViewRealEstate : UserControl
     private void SearchTenant_Click(object? sender, RoutedEventArgs e)
     {
         var id = _tenantIdSearchBox?.Text?.Trim() ?? "";
+
         if (string.IsNullOrWhiteSpace(id))
             return;
 
-        var tenant = _TenantsDB.FindByIdentity(id);
+        var tenant = _tenantsDB.FindByIdentity(id);
 
         if (tenant is null)
         {
@@ -154,15 +252,22 @@ public partial class ContractsViewRealEstate : UserControl
         }
 
         _selectedTenant = tenant;
-        var _tenantInfo = $"اسم المستأجر : {tenant.Name} | ";
-        var _tanentID = $"رقم الهوية/الإقامة : {tenant.IdentityNumber}";
-        TenantInfoText.Text = _tenantInfo + _tanentID;
+
+        var tenantInfo = $"اسم المستأجر : {tenant.Name} | ";
+        var tenantId = $"رقم الهوية/الإقامة : {tenant.IdentityNumber}";
+
+        TenantInfoText.Text = tenantInfo + tenantId;
         TenantInfoText.Foreground = Brushes.Green;
     }
+
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         Refresh();
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncContractsFromCloudAsync();
     }
+
     private void Refresh()
     {
         LoadContract();
@@ -174,9 +279,12 @@ public partial class ContractsViewRealEstate : UserControl
         RentAmountBox.Text = "";
         TenantIdSearchBox.Text = "";
         TenantInfoText.Text = "";
+        TenantInfoText.Foreground = Brushes.Black;
+
+        _selectedTenant = null;
 
         ContractNumber = _contractsDB.GenerateContractNumber();
-        ContractNumBox.Text = ContractNumber.ToString();
+        ContractNumBox.Text = ContractNumber;
 
         ContractDateStartPicker.SelectedDate = DateTime.Today;
         ContractDateEndPicker.SelectedDate = DateTime.Today.AddYears(1);
@@ -184,15 +292,17 @@ public partial class ContractsViewRealEstate : UserControl
         ContractUnitRoomsNumBox.Text = "";
         ContractUnitFloorNumBox.Text = "";
     }
+
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ContractRealEstate contract)
-            new ContractsWindowViewRealEstate(contract.Id).Show();
+            new ContractsWindowViewRealEstate(contract.Id, _supabaseService).Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string contractNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -203,27 +313,32 @@ public partial class ContractsViewRealEstate : UserControl
                 SuggestedFileName = $"{contractNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ContractRealEstate contract) return;
+        if (sender is not Button btn || btn.Tag is not ContractRealEstate contract)
+            return;
 
-        ContractRealEstate? _contract = _contractsDB.GetById(contract.Id);
-        if (_contract is null) return;
+        ContractRealEstate? selectedContract = _contractsDB.GetById(contract.Id);
 
-        var path = await PickSavePdfPathAsync(_contract.ContractNumber);
+        if (selectedContract is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(selectedContract.ContractNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        _pdfServiceRealEstate.GenerateContractPdf(_contract, path);
+        _pdfServiceRealEstate.GenerateContractPdf(selectedContract, path);
 
         Process.Start(new ProcessStartInfo
         {

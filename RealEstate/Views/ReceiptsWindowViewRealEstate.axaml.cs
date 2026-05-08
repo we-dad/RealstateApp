@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -18,31 +19,34 @@ public partial class ReceiptsWindowViewRealEstate : Window
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
     private readonly ReceiptServiceRealEstate _receiptsDB;
     private readonly ContractServiceRealEstate _contractsDB;
-    private PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly SupabaseService _supabaseService;
+    private readonly RealEstateSyncService _sync;
 
     private ReceiptRealEstate? _receipt;
-    private long _receiptID;
+    private readonly long _receiptID;
     private TextBox? _contractIdSearchBox;
     private ContractRealEstate? _selectedContract;
 
-
-    public ReceiptsWindowViewRealEstate(long receiptID)
+    public ReceiptsWindowViewRealEstate(long receiptID, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
         _receiptsDB = new ReceiptServiceRealEstate(_db);
         _contractsDB = new ContractServiceRealEstate(_db);
         _pdfServiceRealEstate = new PdfServiceRealEstate();
+        _sync = new RealEstateSyncService(_db, _supabaseService);
 
         _receiptID = receiptID;
 
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox"); //this line becasue avalonia can't found TenantIdSearchBox it's returen null maybe because the warning message
-
+        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
     }
+
     private void LoadPaymentMethod()
     {
         PaymentMethodBox.ItemsSource = new List<string>
@@ -58,27 +62,40 @@ public partial class ReceiptsWindowViewRealEstate : Window
     {
         try
         {
-            var _ReceiptNum = ReceiptNumBox.Text ?? "";
-            var _ReceiptDate = ReceiptDate.SelectedDate?.LocalDateTime
-                     ?? DateTime.Today;
+            if (_receipt is null)
+                return;
+
+            var receiptNum = ReceiptNumBox.Text?.Trim() ?? "";
+            var receiptDate = ReceiptDate.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
             if (_selectedContract == null)
             {
-                ContractInfoText.Text = "يرجى اختيار مستأجر أولاً";
+                ContractInfoText.Text = "يرجى اختيار عقد أولاً";
+                ContractInfoText.Foreground = Brushes.Red;
                 return;
             }
-            var _contractNum = _selectedContract.Id;
 
-            var _paymentMethod = PaymentMethodBox.SelectedItem as string ?? "سكني";
+            var contract = _selectedContract;
+            var paymentMethod = PaymentMethodBox.SelectedItem as string ?? "كاش";
 
-            var Amount = double.Parse(
-                AmountBox.Text?.Trim() ?? "",
+            var amount = double.Parse(
+                AmountBox.Text?.Trim() ?? "0",
                 CultureInfo.InvariantCulture
             );
 
-            _receiptsDB.Update(_receiptID, _ReceiptNum, _ReceiptDate, _contractNum, _paymentMethod, Amount);
+            _receiptsDB.Update(
+                _receiptID,
+                receiptNum,
+                receiptDate,
+                contract.Id,
+                paymentMethod,
+                amount
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
         }
         catch (Exception ex)
         {
@@ -89,6 +106,7 @@ public partial class ReceiptsWindowViewRealEstate : Window
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
     {
         var contractNum = _contractIdSearchBox?.Text?.Trim() ?? "";
+
         if (string.IsNullOrWhiteSpace(contractNum))
             return;
 
@@ -97,70 +115,77 @@ public partial class ReceiptsWindowViewRealEstate : Window
         if (contract is null)
         {
             _selectedContract = null;
-            ContractInfoText.Text = "لم يتم العثور على مستأجر بهذا الرقم";
+            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
             ContractInfoText.Foreground = Brushes.Red;
             return;
         }
 
         _selectedContract = contract;
-        var _tenantInfo = $"اسم المستأجر : {contract.TenantName} | ";
-        var _UnitName = $"اسم الوحدة : {contract.UnitName}";
-        ContractInfoText.Text = _tenantInfo + _UnitName;
+
+        ContractInfoText.Text =
+            $"اسم المستأجر : {contract.TenantName} | اسم الوحدة : {contract.UnitName}";
+
         ContractInfoText.Foreground = Brushes.Green;
     }
+
     private void Refresh()
     {
         _receipt = _receiptsDB.GetById(_receiptID);
-        if (_receipt is null) return;
 
-        var _contract = _contractsDB.GetById(_receipt.ContractId);
-        if (_contract is null) return;
+        if (_receipt is null)
+            return;
+
+        var contract = _contractsDB.GetById(_receipt.ContractId);
+
+        if (contract is null)
+            return;
+
+        _selectedContract = contract;
 
         LoadPaymentMethod();
 
-        //Receipt Field Info
         ReceiptNumBox.Text = _receipt.ReceiptNumber;
         ReceiptDate.SelectedDate = _receipt.ReceiptDate;
-        ContractNumSearchBox.Text = _contract.ContractNumber;
-        ContractInfoText.Text = "";
-        AmountBox.Text = _receipt.Amount.ToString();
+        ContractNumSearchBox.Text = contract.ContractNumber;
+
+        ContractInfoText.Text =
+            $"اسم المستأجر : {contract.TenantName} | اسم الوحدة : {contract.UnitName}";
+        ContractInfoText.Foreground = Brushes.Green;
+
+        AmountBox.Text = _receipt.Amount.ToString(CultureInfo.InvariantCulture);
         PaymentMethodBox.SelectedItem = _receipt.PaymentMethod;
 
-        //Receipt Info
         ResultReceiptNumBox.Text = _receipt.ReceiptNumber;
         ResultReceiptDateBox.Text = _receipt.ReceiptDate.ToString("yyyy-MM-dd");
-        ResultAmountBox.Text = _receipt.Amount.ToString();
+        ResultAmountBox.Text = _receipt.Amount.ToString(CultureInfo.InvariantCulture);
         ResultPaymentMethodBox.Text = _receipt.PaymentMethod;
 
-        //Contract Info
-        ResultContractNumBox.Text = _contract.ContractNumber;
-        ResultContractDateStartBox.Text = _contract.ContractStartDate.ToString("yyyy-MM-dd");
-        ResultContractDateEndBox.Text = _contract.ContractEndDate.ToString("yyyy-MM-dd");
-        ResultRentAmountBox.Text = _contract.RentAmount.ToString();
+        ResultContractNumBox.Text = contract.ContractNumber;
+        ResultContractDateStartBox.Text = contract.ContractStartDate.ToString("yyyy-MM-dd");
+        ResultContractDateEndBox.Text = contract.ContractEndDate.ToString("yyyy-MM-dd");
+        ResultRentAmountBox.Text = contract.RentAmount.ToString(CultureInfo.InvariantCulture);
 
-        //Unit Info
-        ResultUnitNameBox.Text = _contract.UnitName;
-        ResultDistrictBox.Text = _contract.District;
-        ResultCityBox.Text = _contract.City;
-        ResultUnitTypeBox.Text = _contract.UnitType;
-        ResultUnitNumBox.Text = _contract.UnitNum.ToString() + " / " + _contract.UnitsCount.ToString();
+        ResultUnitNameBox.Text = contract.UnitName;
+        ResultDistrictBox.Text = contract.District;
+        ResultCityBox.Text = contract.City;
+        ResultUnitTypeBox.Text = contract.UnitType;
+        ResultUnitNumBox.Text = contract.UnitNum + " / " + contract.UnitsCount;
 
-        //Owner Info
-        ResultOwnerNameBox.Text = _contract.OwnerName;
-        ResultOwnerIdentityNumberBox.Text = _contract.OwnerIdentityNumber;
-        ResultOwnerPhoneBox.Text = _contract.OwnerPhone;
-        ResultOwnerAddressBox.Text = _contract.OwnerAddress;
+        ResultOwnerNameBox.Text = contract.OwnerName;
+        ResultOwnerIdentityNumberBox.Text = contract.OwnerIdentityNumber;
+        ResultOwnerPhoneBox.Text = contract.OwnerPhone;
+        ResultOwnerAddressBox.Text = contract.OwnerAddress;
 
-        //Tenant Info
-        ResultTenantNameBox.Text = _contract.TenantName;
-        ResultTenantIdentityNumberBox.Text = _contract.TenantIdentityNumber;
-        ResultTenantPhoneBox.Text = _contract.TenantPhone;
-        ResultTenantAddressBox.Text = _contract.TenantAddress;
+        ResultTenantNameBox.Text = contract.TenantName;
+        ResultTenantIdentityNumberBox.Text = contract.TenantIdentityNumber;
+        ResultTenantPhoneBox.Text = contract.TenantPhone;
+        ResultTenantAddressBox.Text = contract.TenantAddress;
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -171,20 +196,23 @@ public partial class ReceiptsWindowViewRealEstate : Window
                 SuggestedFileName = $"{receiptNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (_receipt is null) return;
+        if (_receipt is null)
+            return;
 
         var path = await PickSavePdfPathAsync(_receipt.ReceiptNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 
@@ -197,24 +225,30 @@ public partial class ReceiptsWindowViewRealEstate : Window
         });
     }
 
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
-        if (_receipt is null) return;
+        if (_receipt is null)
+            return;
+
         try
         {
             _receiptsDB.Delete(_receipt.Id);
+
+            _ = _sync.PushAllDirtyAsync();
+            
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -224,7 +258,11 @@ public partial class ReceiptsWindowViewRealEstate : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -233,15 +271,15 @@ public partial class ReceiptsWindowViewRealEstate : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);

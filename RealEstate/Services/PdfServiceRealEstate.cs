@@ -93,7 +93,7 @@ public class PdfServiceRealEstate
 
                         Clause("بند 1:", $"يؤجر الطرف الأول للطرف الثاني {c.ContractApartmentType} الواقعة في: ({c.City} - {c.District}) والمكونة من: {c.ContractUnitRoomsNum} غرف، {c.ContractUnitFloorNum} دور .");
                         Clause("بند 2:", $"مدة هذا العقد ({ContractPeriod}) تبدأ من تاريخ: {c.ContractStartDate:dd/MM/yyyy} وتنتهي بتاريخ: {c.ContractEndDate:dd/MM/yyyy} قابلة للتجديد بموافقة الطرفين.");
-                        Clause("بند 3:", $"قيمة الإيجار الشهري: {c.RentAmount} ⃁ ، طريقة الدفع: {c.ContractPayMethod}.");
+                        Clause("بند 3:", $"قيمة الإيجار الشهري: {c.RentAmount} ريال ، طريقة الدفع: {c.ContractPayMethod}.");
                         Clause("بند 4:", $"يلتزم المستأجر بالمحافظة على الشقة وعدم استخدامها في أي نشاط غير مشروع، ولا يحق له التنازل أو التأجير من الباطن إلا بموافقة خطية من المؤجر، {c.ContractOpligation}.");
                         Clause("بند 5:", "في حال رغبة أحد الطرفين إنهاء العقد قبل المدة، يجب إشعار الطرف الآخر قبل (شهر واحد) على الأقل.");
                         Clause("بند 6:", "يعتبر هذا العقد ساري المفعول بين الطرفين فور التوقيع عليه، وتحكمه أنظمة المملكة العربية السعودية.");
@@ -209,14 +209,18 @@ public class PdfServiceRealEstate
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
+                page.Size(PageSizes.A4.Landscape());
                 page.Margin(30);
                 page.DefaultTextStyle(x =>
     x.FontFamily("Arial")
      .FontSize(12)
 );
 
-                page.Content().PaddingTop(250).Column(col =>
+                page.Content()
+                    .AlignCenter()
+                    .AlignMiddle()
+                    .Width(500)
+                    .Column(col =>
                 {
                     col.Spacing(10);
 
@@ -263,12 +267,22 @@ public class PdfServiceRealEstate
                                  row.RelativeItem();
 
                                  row.RelativeItem()
-                                 .Border(1)
-                                 .PaddingVertical(4)
-                                 .PaddingHorizontal(8)
-                                 .AlignCenter()
-                                 .Text($"⃁ {r.Amount:N0}")
-                                 .Bold();
+                                     .Border(1)
+                                     .PaddingVertical(4)
+                                     .PaddingHorizontal(8)
+                                     .AlignCenter()
+                                     .Row(amountRow =>
+                                     {
+                                         amountRow.AutoItem()
+                                             .Text("ريال")
+                                             .Bold();
+
+                                         amountRow.ConstantItem(8);
+
+                                         amountRow.AutoItem()
+                                             .Text(r.Amount.ToString("N0"))
+                                             .Bold();
+                                     });
 
                                  row.RelativeItem()
                                     .AlignRight()
@@ -284,7 +298,7 @@ public class PdfServiceRealEstate
 
                                  row.RelativeItem()
                                      .AlignRight()
-                                    .Text("ايجار شقة");
+                                    .Text("مستحقات مالية");
 
                                  row.RelativeItem()
                                     .AlignRight()
@@ -343,15 +357,19 @@ public class PdfServiceRealEstate
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4);
+                page.Size(PageSizes.A4.Landscape());
                 page.Margin(30);
                 page.DefaultTextStyle(x =>
-    x.FontFamily("Arial")
-     .FontSize(12)
-);
+                    x.FontFamily("Arial")
+                        .FontSize(12)
+                );
 
-                page.Content().PaddingTop(250).Column(col =>
-                {
+                page.Content()
+                    .AlignCenter()
+                    .AlignMiddle()
+                    .Width(500)
+                    .Column(col =>
+                    {
                     col.Spacing(10);
 
                     col.Item().Element(section =>
@@ -384,12 +402,22 @@ public class PdfServiceRealEstate
                                  row.RelativeItem();
 
                                  row.RelativeItem()
-                                 .Border(1)
-                                 .PaddingVertical(4)
-                                 .PaddingHorizontal(8)
-                                 .AlignCenter()
-                                 .Text($"⃁ {e.ExpensesAmount:N0}")
-                                 .Bold();
+                                     .Border(1)
+                                     .PaddingVertical(4)
+                                     .PaddingHorizontal(8)
+                                     .AlignCenter()
+                                     .Row(amountRow =>
+                                     {
+                                         amountRow.AutoItem()
+                                             .Text("ريال")
+                                             .Bold();
+
+                                         amountRow.ConstantItem(8);
+
+                                         amountRow.AutoItem()
+                                             .Text(e.ExpensesAmount.ToString("N0"))
+                                             .Bold();
+                                     });
 
                                  row.RelativeItem()
                                     .AlignRight()

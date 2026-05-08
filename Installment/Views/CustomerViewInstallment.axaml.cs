@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -9,29 +11,37 @@ namespace RealEstateInstallmentsManager.Views;
 public partial class CustomerViewInstallment : UserControl
 {
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
-    private readonly CustomerServiceInstallment _cutomerService;
+    private readonly CustomerServiceInstallment _customerService;
     private CustomerInstallment _customer = new CustomerInstallment();
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
 
-    public CustomerViewInstallment()
+    public CustomerViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
+
         DataContext = _customer;
 
         _db.Initialize();
-        _cutomerService = new CustomerServiceInstallment(_db);
+        _customerService = new CustomerServiceInstallment(_db);
 
-        LoadCutomer();
+        LoadCustomer();
+
+    _sync = new InstallmentSyncService(_db, _supabaseService);
+    _ = _sync.PushAllDirtyAsync();
+    _ = SyncCustomersFromCloudAsync();
+    
     }
 
-    private void LoadCutomer()
+    private void LoadCustomer()
     {
-        var data = _cutomerService.GetAll();
-        
-        // اجبار التحديث
+        var data = _customerService.GetAll();
+
         CustomerGrid.ItemsSource = null;
         CustomerGrid.ItemsSource = data;
     }
-
+    
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -41,7 +51,7 @@ public partial class CustomerViewInstallment : UserControl
             var identityNumber = IdentityNumberBox.Text?.Trim() ?? "";
             var address = AddressBox.Text?.Trim() ?? "";
             var job = JobBox.Text?.Trim() ?? "";
-            
+
             var sponserName = SponserNameBox.Text?.Trim() ?? "";
             var sponserPhone = SponserPhoneBox.Text?.Trim() ?? "";
             var sponserIdentityNumber = SponserIdentityNumberBox.Text?.Trim() ?? "";
@@ -51,7 +61,18 @@ public partial class CustomerViewInstallment : UserControl
             if (string.IsNullOrWhiteSpace(name))
                 return;
 
-            _cutomerService.Add(name, identityNumber, phone, address,job,sponserName,sponserIdentityNumber,sponserPhone,sponserAddress,sponserJob);
+            _customerService.Add(
+                name,
+                identityNumber,
+                phone,
+                address,
+                job,
+                sponserName,
+                sponserIdentityNumber,
+                sponserPhone,
+                sponserAddress,
+                sponserJob
+            );
 
             NameBox.Text = "";
             IdentityNumberBox.Text = "";
@@ -65,7 +86,47 @@ public partial class CustomerViewInstallment : UserControl
             SponserAddressBox.Text = "";
             SponserJobBox.Text = "";
 
-            LoadCutomer();
+            LoadCustomer();
+
+
+    _ = _sync.PushAllDirtyAsync();
+    
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private async Task SyncCustomersFromCloudAsync()
+    {
+        try
+        {
+            var cloudCustomers = new CloudCustomersInstallmentService(_supabaseService);
+            var rows = await cloudCustomers.GetCustomersAsync();
+
+            foreach (var row in rows)
+            {
+                _customerService.UpsertFromCloud(
+                    row.Id,
+                    row.Name,
+                    row.IdentityNumber,
+                    row.Phone,
+                    row.Address,
+                    row.Job,
+                    row.SponserName,
+                    row.SponserIdentityNumber,
+                    row.SponserPhone,
+                    row.SponserAddress,
+                    row.SponserJob
+                );
+            }
+
+            LoadCustomer();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping installment customers cloud sync.");
         }
         catch (Exception ex)
         {
@@ -75,12 +136,16 @@ public partial class CustomerViewInstallment : UserControl
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
-        LoadCutomer();
+        LoadCustomer();
+
+    _ = _sync.PushAllDirtyAsync();
+    _ = SyncCustomersFromCloudAsync();
+    
     }
 
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is CustomerInstallment customer)
-            new CustomerWindowViewInstallment(customer).Show();
+            new CustomerWindowViewInstallment(customer, _supabaseService).Show();
     }
 }

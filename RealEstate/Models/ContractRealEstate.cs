@@ -7,6 +7,10 @@ public class ContractRealEstate
 {
     //Contract
     public long Id { get; set; }
+    public long CloudId { get; set; }
+    public long UnitCloudId { get; set; }
+    public long TenantCloudId { get; set; }
+    public string SyncAction { get; set; } = "";
     public string ContractNumber { get; set; } = "";
     public DateTime ContractStartDate { get; set; }
     public DateTime ContractEndDate { get; set; }

@@ -36,32 +36,30 @@
                                Grid.Row="2"
                                Grid.Column="1"
                                TextAlignment="Right"/>
-
+                    
                     <Grid Grid.Row="3"
                           Grid.Column="1"
                           RowDefinitions="Auto,Auto"
                           ColumnDefinitions="Auto,*"
                           ColumnSpacing="8"
                           RowSpacing="4">
-
-                        <Button Content="بحث"
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Click="SearchContract_Click"/>
-
-                        <TextBox x:Name="ContractNumSearchBox"
-                                 Grid.Row="0"
-                                 Grid.Column="1"
-                                 HorizontalAlignment="Stretch"
-                                 TextAlignment="Right"
-                                 Watermark="اكتب رقم العقد"/>
-
-                        <TextBlock x:Name="ContractInfoText"
-                                   Grid.Row="1"
-                                   Grid.Column="0"
-                                   Grid.ColumnSpan="2"
-                                   TextAlignment="Right"
-                                   Foreground="Green"/>
+                        
+                        <StackPanel Grid.Row="0" Grid.Column="1" 
+                                    Orientation="Horizontal"
+                                    Spacing="6"
+                                    FlowDirection="RightToLeft">
+                            
+                            <TextBox x:Name="ContractNumSearchBox"
+                                     Width="160"
+                                     TextAlignment="Right"
+                                     Watermark="اكتب رقم العقد"/>
+                            
+                            <TextBlock Text="Rc-"
+                                       VerticalAlignment="Center"/>
+                            
+                            <Button Content="بحث"
+                                    Click="SearchContract_Click"/>
+                        </StackPanel>
                     </Grid>
 
                     <TextBlock Text="طريقة الدفع" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
@@ -78,7 +76,11 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-
+                    <TextBlock x:Name="ContractInfoText"
+                               Grid.Row="5"
+                               Grid.Column="0"
+                               TextAlignment="Right"
+                               FontSize="16"/>
 
                 </Grid>
 

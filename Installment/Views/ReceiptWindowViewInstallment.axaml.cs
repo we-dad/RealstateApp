@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -18,17 +19,19 @@ public partial class ReceiptWindowViewInstallment : Window
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ReceiptServiceInstallment _receiptsDB;
     private readonly ContractServiceInstallment _contractsDB;
-    private PdfServiceInstallment _pdfService;
+    private readonly PdfServiceInstallment _pdfService;
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
 
     private ReceiptInstallment? _receipt;
-    private long _receiptID;
+    private readonly long _receiptID;
     private TextBox? _contractIdSearchBox;
     private ContractInstallment? _selectedContract;
 
-
-    public ReceiptWindowViewInstallment(long receiptID)
+    public ReceiptWindowViewInstallment(long receiptID, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
@@ -40,9 +43,12 @@ public partial class ReceiptWindowViewInstallment : Window
 
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox"); //this line becasue avalonia can't found TenantIdSearchBox it's returen null maybe because the warning message
-
+        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
+        
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
     }
+
     private void LoadPaymentMethod()
     {
         PaymentMethodBox.ItemsSource = new List<string>
@@ -54,43 +60,61 @@ public partial class ReceiptWindowViewInstallment : Window
         PaymentMethodBox.SelectedIndex = 0;
     }
 
+    
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
-            var _ReceiptNum = ReceiptNumBox.Text ?? "";
-            var _ReceiptDate = ReceiptDate.SelectedDate?.LocalDateTime
-                     ?? DateTime.Today;
+            var receiptNum = ReceiptNumBox.Text?.Trim() ?? "";
+            var receiptDate = ReceiptDate.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
             if (_selectedContract == null)
             {
                 ContractInfoText.Text = "يرجى اختيار العقد أولاً";
+                ContractInfoText.Foreground = Brushes.Red;
                 return;
             }
-            var _contractNum = _selectedContract.Id;
 
-            var _paymentMethod = PaymentMethodBox.SelectedItem as string ?? "سكني";
+            var contract = _selectedContract;
+            var paymentMethod = PaymentMethodBox.SelectedItem as string ?? "تحويل";
 
-            var Amount = double.Parse(
-                AmountBox.Text?.Trim() ?? "",
+            var amount = double.Parse(
+                AmountBox.Text?.Trim() ?? "0",
                 CultureInfo.InvariantCulture
             );
 
-            _receiptsDB.Update(_receiptID, _ReceiptNum, _ReceiptDate, _contractNum, _paymentMethod, Amount);
+            _receiptsDB.Update(
+                _receiptID,
+                receiptNum,
+                receiptDate,
+                contract.Id,
+                paymentMethod,
+                amount
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            ContractInfoText.Text = ex.Message;
+            ContractInfoText.Foreground = Brushes.Red;
         }
     }
 
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
     {
-        var contractNum = "Ic-"+_contractIdSearchBox?.Text?.Trim() ?? "";
-        if (string.IsNullOrWhiteSpace(contractNum))
+        var raw = _contractIdSearchBox?.Text?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(raw))
             return;
+
+        var contractNum = raw.StartsWith("Ic-", StringComparison.OrdinalIgnoreCase)
+            ? raw
+            : "Ic-" + raw;
 
         var contract = _contractsDB.FindByContractNum(contractNum);
 
@@ -103,80 +127,96 @@ public partial class ReceiptWindowViewInstallment : Window
         }
 
         _selectedContract = contract;
-        var _contracttInfo = $"اسم العميل : {contract.CustomerName} | ";
-        var _productName = $"اسم المنتج : {contract.ProductName} | ";
-        var _mainTotalAmout = $"القسط الأساسي : {contract.MainTotalAmount} | ";
-        var _totalAmout = $"المتبقي : {contract.CurrentTotalAmount} | ";
-        var _monthlyInstallment = $"القسط الشهري : {contract.MonthlyInstallment}";
-        ContractInfoText.Text = _contracttInfo + _productName + _mainTotalAmout + _totalAmout + _monthlyInstallment;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+
         ContractInfoText.Foreground = Brushes.Green;
     }
+
     private void Refresh()
     {
         _receipt = _receiptsDB.GetById(_receiptID);
-        if (_receipt is null) return;
 
-        var _contract = _contractsDB.GetById(_receipt.ContractId);
-        if (_contract is null) return;
+        if (_receipt is null)
+            return;
+
+        var contract = _contractsDB.GetById(_receipt.ContractId);
+
+        if (contract is null)
+            return;
+
+        _selectedContract = contract;
 
         LoadPaymentMethod();
 
-        //Receipt Field Info
         ReceiptNumBox.Text = _receipt.ReceiptNumber;
         ReceiptDate.SelectedDate = _receipt.ReceiptDate;
-        ContractNumSearchBox.Text = _contract.ContractNumber.StartsWith("Ic-")
-            ? _contract.ContractNumber[3..]
-            : _contract.ContractNumber;
-        ContractInfoText.Text = "";
-        AmountBox.Text = _receipt.Amount.ToString();
+
+        ContractNumSearchBox.Text = contract.ContractNumber.StartsWith("Ic-")
+            ? contract.ContractNumber[3..]
+            : contract.ContractNumber;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+        ContractInfoText.Foreground = Brushes.Green;
+
+        AmountBox.Text = _receipt.Amount.ToString(CultureInfo.InvariantCulture);
         PaymentMethodBox.SelectedItem = _receipt.PaymentMethod;
 
-        //Receipt Info
         ResultReceiptNumBox.Text = _receipt.ReceiptNumber;
         ResultReceiptDateBox.Text = _receipt.ReceiptDate.ToString("yyyy-MM-dd");
-        ResultAmountBox.Text = _receipt.Amount.ToString();
+        ResultAmountBox.Text = _receipt.Amount.ToString(CultureInfo.InvariantCulture);
         ResultPaymentMethodBox.Text = _receipt.PaymentMethod;
-        ResultCurrentTotalAmountBox.Text = _receipt.CurrentTotalAmount.ToString();
+        ResultCurrentTotalAmountBox.Text = _receipt.CurrentTotalAmount.ToString(CultureInfo.InvariantCulture);
 
-        ResultContractNumBox.Text = _contract.ContractNumber;
-        ResultContractDateStartBox.Text = _contract.ContractStartDate.ToString("yyyy-MM-dd");
-        ResultContractDateEndBox.Text = _contract.ContractEndDate.ToString("yyyy-MM-dd");
-        ResultProductTotalAmount.Text = _contract.MainTotalAmount.ToString("0.##");
-        ResultInterestPercentBox.Text = _contract.InterestPercent.ToString("0.##");
-        ResultContractPeriodBox.Text = _contract.ContractPeriod.ToString("0.##");
-        ResultDownPaymentBox.Text = _contract.DownPayment.ToString("0.##");
-        ResultManagementFeeBox.Text = _contract.ManagementFee.ToString("0.##");
-        ResultMonthlyInstallmentBox.Text = _contract.MonthlyInstallment.ToString("0.##");
+        ResultContractNumBox.Text = contract.ContractNumber;
+        ResultContractDateStartBox.Text = contract.ContractStartDate.ToString("yyyy-MM-dd");
+        ResultContractDateEndBox.Text = contract.ContractEndDate.ToString("yyyy-MM-dd");
+        ResultProductTotalAmount.Text = contract.MainTotalAmount.ToString("0.##");
+        ResultInterestPercentBox.Text = contract.InterestPercent.ToString("0.##");
+        ResultContractPeriodBox.Text = contract.ContractPeriod.ToString("0.##");
+        ResultDownPaymentBox.Text = contract.DownPayment.ToString("0.##");
+        ResultManagementFeeBox.Text = contract.ManagementFee.ToString("0.##");
+        ResultMonthlyInstallmentBox.Text = contract.MonthlyInstallment.ToString("0.##");
 
-        ResultProductNameBox.Text = _contract.ProductName;
-        ResultProductTypeBox.Text = _contract.ProductType;
-        ResultProductMainPriceBox.Text = _contract.ProductMainPrice.ToString("0.##");
+        ResultProductNameBox.Text = contract.ProductName;
+        ResultProductTypeBox.Text = contract.ProductType;
+        ResultProductMainPriceBox.Text = contract.ProductMainPrice.ToString("0.##");
 
-        ResultOwnerNameBox.Text = _contract.OwnerName;
-        ResultOwnerIdentityNumberBox.Text = _contract.OwnerIdentityNumber;
-        ResultOwnerPhoneBox.Text = _contract.OwnerPhone;
-        ResultOwnerAddressBox.Text = _contract.OwnerAddress;
+        ResultOwnerNameBox.Text = contract.OwnerName;
+        ResultOwnerIdentityNumberBox.Text = contract.OwnerIdentityNumber;
+        ResultOwnerPhoneBox.Text = contract.OwnerPhone;
+        ResultOwnerAddressBox.Text = contract.OwnerAddress;
 
-        ResultNameBox.Text = _contract.CustomerName;
-        ResultIdentityNumberBox.Text = _contract.CustomerIdentityNumber;
-        ResultPhoneBox.Text = _contract.CustomerPhone;
-        ResultAddressBox.Text = _contract.CustomerAddress;
-        ResultJobBox.Text = _contract.CustomerJob;
-        
+        ResultNameBox.Text = contract.CustomerName;
+        ResultIdentityNumberBox.Text = contract.CustomerIdentityNumber;
+        ResultPhoneBox.Text = contract.CustomerPhone;
+        ResultAddressBox.Text = contract.CustomerAddress;
+        ResultJobBox.Text = contract.CustomerJob;
+
         SponsorSection.IsVisible =
-            !string.IsNullOrWhiteSpace(_contract.CustomerSponserName);
-        
-        
-        ResultSponserNameBox.Text = _contract.CustomerSponserName;
-        ResultSponserIdentityNumberBox.Text = _contract.CustomerSponserIdentityNumber;
-        ResultSponserPhoneBox.Text = _contract.CustomerSponserPhone;
-        ResultSponserAddressBox.Text = _contract.CustomerSponserAddress;
-        ResultSponserJobBox.Text = _contract.CustomerSponserJob;
+            !string.IsNullOrWhiteSpace(contract.CustomerSponserName);
+
+        ResultSponserNameBox.Text = contract.CustomerSponserName;
+        ResultSponserIdentityNumberBox.Text = contract.CustomerSponserIdentityNumber;
+        ResultSponserPhoneBox.Text = contract.CustomerSponserPhone;
+        ResultSponserAddressBox.Text = contract.CustomerSponserAddress;
+        ResultSponserJobBox.Text = contract.CustomerSponserJob;
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -187,24 +227,29 @@ public partial class ReceiptWindowViewInstallment : Window
                 SuggestedFileName = $"{receiptNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (_receipt is null) return;
+        var freshReceipt = _receiptsDB.GetById(_receiptID);
 
-        var path = await PickSavePdfPathAsync(_receipt.ReceiptNumber);
+        if (freshReceipt is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(freshReceipt.ReceiptNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        _pdfService.GenerateReceiptPdf(_receipt, path);
+        _pdfService.GenerateReceiptPdf(freshReceipt, path);
 
         Process.Start(new ProcessStartInfo
         {
@@ -213,24 +258,30 @@ public partial class ReceiptWindowViewInstallment : Window
         });
     }
 
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
-        if (_receipt is null) return;
+        if (_receipt is null)
+            return;
+
         try
         {
             _receiptsDB.Delete(_receipt.Id);
+
+            _ = _sync.PushAllDirtyAsync();
+            
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -240,7 +291,11 @@ public partial class ReceiptWindowViewInstallment : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -249,15 +304,15 @@ public partial class ReceiptWindowViewInstallment : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);

@@ -5,7 +5,7 @@
              x:DataType="models:ContractInstallment"
              Title="معلومات العميل"
              Width="700"
-             Height="450">
+             Height="750">
 
 
     <Grid RowDefinitions="Auto,*" Margin="6">
@@ -226,8 +226,8 @@
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                    <Button Content="حذف العقد" Click="Delete_Click"/>
-                    <Button Content="إضافة" Click="Update_Click"/>
+                    <Button Content="حذف البيانات" Click="Delete_Click"/>
+                    <Button Content="تحديث البيانات" Click="Update_Click"/>
                 </StackPanel>
 
             </StackPanel>

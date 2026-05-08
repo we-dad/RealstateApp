@@ -21,10 +21,10 @@ public class ExpensesServiceInstallment
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        SELECT COALESCE(MAX(CAST(SUBSTR(ExpensesNumber, 4) AS INTEGER)), 999) + 1
-        FROM ExpensesInstallment
-        WHERE ExpensesNumber LIKE 'Ie-%';
-    """;
+            SELECT COALESCE(MAX(CAST(SUBSTR(ExpensesNumber, 4) AS INTEGER)), 999) + 1
+            FROM ExpensesInstallment
+            WHERE ExpensesNumber LIKE 'Ie-%';
+        """;
 
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
@@ -32,17 +32,86 @@ public class ExpensesServiceInstallment
         return "Ie-" + next;
     }
 
-    public void Add(string ExpensesNo, DateTime date, long productId, string expensesService, double expensesAmount, string expensesNote)
+    public long Add(
+        string expensesNo,
+        DateTime date,
+        long productId,
+        string expensesService,
+        double expensesAmount,
+        string expensesNote)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        INSERT INTO ExpensesInstallment (ExpensesNumber, ExpensesDate, ProductId, ExpensesService, ExpensesAmount, ExpensesNote)
-        VALUES ($no, $date, $productId, $expensesService, $expensesAmount, $expensesNote);
+            INSERT INTO ExpensesInstallment
+            (
+                ExpensesNumber,
+                ExpensesDate,
+                ProductId,
+                ExpensesService,
+                ExpensesAmount,
+                ExpensesNote,
+                IsDirty,
+                SyncAction
+            )
+            VALUES
+            (
+                $no,
+                $date,
+                $productId,
+                $expensesService,
+                $expensesAmount,
+                $expensesNote,
+                1,
+                'insert'
+            );
+
+            SELECT last_insert_rowid();
         """;
-        cmd.Parameters.AddWithValue("$no", ExpensesNo);
+
+        cmd.Parameters.AddWithValue("$no", expensesNo);
+        cmd.Parameters.AddWithValue("$date", date);
+        cmd.Parameters.AddWithValue("$productId", productId);
+        cmd.Parameters.AddWithValue("$expensesService", expensesService);
+        cmd.Parameters.AddWithValue("$expensesAmount", expensesAmount);
+        cmd.Parameters.AddWithValue("$expensesNote", expensesNote);
+
+        return (long)cmd.ExecuteScalar()!;
+    }
+
+    public void Update(
+        long id,
+        string expensesNo,
+        DateTime date,
+        long productId,
+        string expensesService,
+        double expensesAmount,
+        string expensesNote)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE ExpensesInstallment
+            SET ExpensesNumber  = $no,
+                ExpensesDate    = $date,
+                ProductId       = $productId,
+                ExpensesService = $expensesService,
+                ExpensesAmount  = $expensesAmount,
+                ExpensesNote    = $expensesNote,
+                IsDirty         = 1,
+                SyncAction      = CASE
+                    WHEN SyncAction = 'insert' THEN 'insert'
+                    ELSE 'update'
+                END
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$no", expensesNo);
         cmd.Parameters.AddWithValue("$date", date);
         cmd.Parameters.AddWithValue("$productId", productId);
         cmd.Parameters.AddWithValue("$expensesService", expensesService);
@@ -52,33 +121,6 @@ public class ExpensesServiceInstallment
         cmd.ExecuteNonQuery();
     }
 
-    public void Update(long id, string expensesNo, DateTime date, long unitId, string expensesService, double expensesAmount, string expensesNote)
-    {
-        using var con = new SqliteConnection(_db.ConnectionString);
-        con.Open();
-
-        using var cmd = con.CreateCommand();
-        cmd.CommandText = """
-        UPDATE ExpensesInstallment
-        SET ExpensesNumber  = $no,
-            ExpensesDate    = $date,
-            UnitId          = $unitId,
-            ExpensesService = $expensesService,
-            ExpensesAmount  = $expensesAmount,
-            ExpensesNote    = $expensesNote
-        WHERE Id = $id;
-    """;
-
-        cmd.Parameters.AddWithValue("$id", id);
-        cmd.Parameters.AddWithValue("$no", expensesNo);
-        cmd.Parameters.AddWithValue("$date", date);
-        cmd.Parameters.AddWithValue("$unitId", unitId);
-        cmd.Parameters.AddWithValue("$expensesService", expensesService);
-        cmd.Parameters.AddWithValue("$expensesAmount", expensesAmount);
-        cmd.Parameters.AddWithValue("$expensesNote", expensesNote);
-
-        cmd.ExecuteNonQuery();
-    }
     public List<ExpensesInstallment> GetAll()
     {
         var list = new List<ExpensesInstallment>();
@@ -88,73 +130,289 @@ public class ExpensesServiceInstallment
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        SELECT e.Id, e.ExpensesNumber, e.ExpensesDate, e.ExpensesService, e.ExpensesAmount, e.ExpensesNote,
-               p.ProductName
-        FROM ExpensesInstallment e
-        JOIN ProductsInstallment p ON p.Id = e.ProductId
-        ORDER BY e.Id DESC;
+            SELECT
+                e.Id,
+                e.CloudId,
+                e.ExpensesNumber,
+                e.ExpensesDate,
+                e.ExpensesService,
+                e.ExpensesAmount,
+                e.ExpensesNote,
+                e.ProductId,
+                p.CloudId,
+                p.ProductName
+            FROM ExpensesInstallment e
+            JOIN ProductsInstallment p ON p.Id = e.ProductId
+            WHERE e.SyncAction <> 'delete'
+            ORDER BY e.Id DESC;
         """;
 
         using var reader = cmd.ExecuteReader();
+
         while (reader.Read())
         {
             list.Add(new ExpensesInstallment
             {
                 Id = reader.GetInt64(0),
-                ExpensesNumber = reader.GetString(1),
-                ExpensesDate = reader.GetDateTime(2),
-                ExpensesService = reader.GetString(3),
-                ExpensesAmount = reader.GetDouble(4),
-                ExpensesNote = reader.GetString(5),
-
-                ProductName = reader.GetString(6),
-
-
+                CloudId = reader.GetInt64(1),
+                ExpensesNumber = reader.GetString(2),
+                ExpensesDate = reader.GetDateTime(3),
+                ExpensesService = reader.GetString(4),
+                ExpensesAmount = reader.GetDouble(5),
+                ExpensesNote = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                ProductId = reader.GetInt64(7),
+                ProductCloudId = reader.GetInt64(8),
+                ProductName = reader.GetString(9),
             });
         }
 
         return list;
     }
 
-    public ExpensesRealEstate? GetById(long id)
+    public ExpensesInstallment? GetById(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-    SELECT 
-        e.Id,
-        e.ExpensesNumber,
-        e.ExpensesDate,
-        e.ExpensesService,
-        e.ExpensesAmount,
-        e.ExpensesNote,
-        e.UnitId,
-        u.UnitName
-    FROM ExpensesInstallment e
-    JOIN Units u ON u.Id = e.UnitId
-    WHERE e.Id = $id
-    LIMIT 1;
-    """;
+            SELECT
+                e.Id,
+                e.CloudId,
+                e.ExpensesNumber,
+                e.ExpensesDate,
+                e.ExpensesService,
+                e.ExpensesAmount,
+                e.ExpensesNote,
+                e.ProductId,
+                p.CloudId,
+                p.ProductName
+            FROM ExpensesInstallment e
+            JOIN ProductsInstallment p ON p.Id = e.ProductId
+            WHERE e.Id = $id
+              AND e.SyncAction <> 'delete'
+            LIMIT 1;
+        """;
 
         cmd.Parameters.AddWithValue("$id", id);
 
         using var reader = cmd.ExecuteReader();
+
         if (!reader.Read())
             return null;
 
-        return new ExpensesRealEstate
+        return new ExpensesInstallment
         {
             Id = reader.GetInt64(0),
-            ExpensesNumber = reader.GetString(1),
-            ExpensesDate = reader.GetDateTime(2),
-            ExpensesService = reader.GetString(3),
-            ExpensesAmount = reader.GetDouble(4),
-            ExpensesNote = reader.IsDBNull(5) ? "" : reader.GetString(5),
-            UnitId = reader.GetInt64(6),
-            UnitName = reader.GetString(7),
+            CloudId = reader.GetInt64(1),
+            ExpensesNumber = reader.GetString(2),
+            ExpensesDate = reader.GetDateTime(3),
+            ExpensesService = reader.GetString(4),
+            ExpensesAmount = reader.GetDouble(5),
+            ExpensesNote = reader.IsDBNull(6) ? "" : reader.GetString(6),
+            ProductId = reader.GetInt64(7),
+            ProductCloudId = reader.GetInt64(8),
+            ProductName = reader.GetString(9),
         };
+    }
+
+    public void UpdateCloudId(long id, long cloudId)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE ExpensesInstallment
+            SET CloudId = $cloudId,
+                IsDirty = 0,
+                SyncAction = ''
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudId", cloudId);
+        cmd.Parameters.AddWithValue("$id", id);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void MarkSynced(long id)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE ExpensesInstallment
+            SET IsDirty = 0,
+                SyncAction = ''
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void UpsertFromCloud(
+        long cloudId,
+        string expensesNumber,
+        DateTime expensesDate,
+        long productLocalId,
+        string expensesService,
+        double expensesAmount,
+        string expensesNote)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var check = con.CreateCommand();
+        check.CommandText = """
+            SELECT Id
+            FROM ExpensesInstallment
+            WHERE CloudId = $cloudId;
+        """;
+
+        check.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var existingId = check.ExecuteScalar();
+
+        if (existingId != null)
+        {
+            using var update = con.CreateCommand();
+            update.CommandText = """
+                UPDATE ExpensesInstallment
+                SET ExpensesNumber = $expensesNumber,
+                    ExpensesDate = $expensesDate,
+                    ProductId = $productId,
+                    ExpensesService = $expensesService,
+                    ExpensesAmount = $expensesAmount,
+                    ExpensesNote = $expensesNote
+                WHERE CloudId = $cloudId
+                  AND IsDirty = 0;
+            """;
+
+            update.Parameters.AddWithValue("$cloudId", cloudId);
+            update.Parameters.AddWithValue("$expensesNumber", expensesNumber);
+            update.Parameters.AddWithValue("$expensesDate", expensesDate);
+            update.Parameters.AddWithValue("$productId", productLocalId);
+            update.Parameters.AddWithValue("$expensesService", expensesService);
+            update.Parameters.AddWithValue("$expensesAmount", expensesAmount);
+            update.Parameters.AddWithValue("$expensesNote", expensesNote);
+
+            update.ExecuteNonQuery();
+        }
+        else
+        {
+            using var insert = con.CreateCommand();
+            insert.CommandText = """
+                INSERT INTO ExpensesInstallment
+                (
+                    CloudId,
+                    ExpensesNumber,
+                    ExpensesDate,
+                    ProductId,
+                    ExpensesService,
+                    ExpensesAmount,
+                    ExpensesNote,
+                    IsDirty,
+                    SyncAction
+                )
+                VALUES
+                (
+                    $cloudId,
+                    $expensesNumber,
+                    $expensesDate,
+                    $productId,
+                    $expensesService,
+                    $expensesAmount,
+                    $expensesNote,
+                    0,
+                    ''
+                );
+            """;
+
+            insert.Parameters.AddWithValue("$cloudId", cloudId);
+            insert.Parameters.AddWithValue("$expensesNumber", expensesNumber);
+            insert.Parameters.AddWithValue("$expensesDate", expensesDate);
+            insert.Parameters.AddWithValue("$productId", productLocalId);
+            insert.Parameters.AddWithValue("$expensesService", expensesService);
+            insert.Parameters.AddWithValue("$expensesAmount", expensesAmount);
+            insert.Parameters.AddWithValue("$expensesNote", expensesNote);
+
+            insert.ExecuteNonQuery();
+        }
+    }
+
+    public List<ExpensesInstallment> GetDirtyRows()
+    {
+        var list = new List<ExpensesInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT
+                e.Id,
+                e.CloudId,
+                e.ExpensesNumber,
+                e.ExpensesDate,
+                e.ExpensesService,
+                e.ExpensesAmount,
+                e.ExpensesNote,
+                e.ProductId,
+                p.CloudId,
+                p.ProductName,
+                e.SyncAction
+           FROM ExpensesInstallment e
+        LEFT JOIN ProductsInstallment p ON p.Id = e.ProductId
+            WHERE e.IsDirty = 1
+              AND (
+                    e.SyncAction = 'delete'
+                    OR p.CloudId > 0
+                  );
+        """;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new ExpensesInstallment
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                ExpensesNumber = reader.GetString(2),
+                ExpensesDate = reader.GetDateTime(3),
+                ExpensesService = reader.GetString(4),
+                ExpensesAmount = reader.GetDouble(5),
+                ExpensesNote = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                ProductId = reader.GetInt64(7),
+                ProductCloudId = reader.GetInt64(8),
+                ProductName = reader.GetString(9),
+                SyncAction = reader.GetString(10)
+            });
+        }
+
+        return list;
+    }
+
+    public long GetLocalIdByCloudId(long cloudId)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id
+            FROM ExpensesInstallment
+            WHERE CloudId = $cloudId
+            LIMIT 1;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var result = cmd.ExecuteScalar();
+        return result == null ? 0 : Convert.ToInt64(result);
     }
 
     public void Delete(long id)
@@ -162,19 +420,31 @@ public class ExpensesServiceInstallment
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
-        using (var check = con.CreateCommand())
-        {
-            check.CommandText = "SELECT EXISTS(SELECT 1 FROM Receipts WHERE ContractID = $id);";
-            check.Parameters.AddWithValue("$id", id);
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE ExpensesInstallment
+            SET IsDirty = 1,
+                SyncAction = 'delete'
+            WHERE Id = $id;
+        """;
 
-            var hasUnits = Convert.ToInt32(check.ExecuteScalar()) == 1;
-            if (hasUnits)
-                throw new InvalidOperationException(".لا يمكن حذف العقد لأنه مرتبط بسندات مسجلة");
-        }
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteLocalPermanent(long id)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
         try
         {
             using var cmd = con.CreateCommand();
-            cmd.CommandText = "DELETE FROM ExpensesInstallment WHERE Id = $id;";
+            cmd.CommandText = """
+                DELETE FROM ExpensesInstallment
+                WHERE Id = $id;
+            """;
+
             cmd.Parameters.AddWithValue("$id", id);
             cmd.ExecuteNonQuery();
         }
@@ -183,6 +453,4 @@ public class ExpensesServiceInstallment
             throw new InvalidOperationException(".لا يمكن حذف سند الصرف لأنه مرتبط ببيانات أخرى");
         }
     }
-
-
 }

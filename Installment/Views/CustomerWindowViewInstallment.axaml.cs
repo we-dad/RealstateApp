@@ -1,9 +1,11 @@
-using Avalonia.Controls;
-using System;
-using Avalonia.Diagnostics;
-using Avalonia.Interactivity;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
+using System;
+using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -13,11 +15,14 @@ public partial class CustomerWindowViewInstallment : Window
     private readonly CustomerInstallment _customer;
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly CustomerServiceInstallment _customerDB;
-
-
-    public CustomerWindowViewInstallment(CustomerInstallment customer)
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
+    
+    public CustomerWindowViewInstallment(CustomerInstallment customer, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
+
         DataContext = new CustomerInstallment();
 
         _db.Initialize();
@@ -26,8 +31,12 @@ public partial class CustomerWindowViewInstallment : Window
         _customer = customer;
 
         Refresh();
-
+        
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
     }
+    
+
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -37,7 +46,7 @@ public partial class CustomerWindowViewInstallment : Window
             var identityNumber = IdentityNumberBox.Text?.Trim() ?? "";
             var address = AddressBox.Text?.Trim() ?? "";
             var job = JobBox.Text?.Trim() ?? "";
-            
+
             var sponserName = SponserNameBox.Text?.Trim() ?? "";
             var sponserPhone = SponserPhoneBox.Text?.Trim() ?? "";
             var sponserIdentityNumber = SponserIdentityNumberBox.Text?.Trim() ?? "";
@@ -47,9 +56,23 @@ public partial class CustomerWindowViewInstallment : Window
             if (string.IsNullOrWhiteSpace(name))
                 return;
 
-            _customerDB.Update(_customer.Id,name, identityNumber, phone, address,job,sponserName,sponserIdentityNumber,sponserPhone,sponserAddress,sponserJob);
-            
+            _customerDB.Update(
+                _customer.Id,
+                name,
+                identityNumber,
+                phone,
+                address,
+                job,
+                sponserName,
+                sponserIdentityNumber,
+                sponserPhone,
+                sponserAddress,
+                sponserJob
+            );
+
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
@@ -59,54 +82,62 @@ public partial class CustomerWindowViewInstallment : Window
 
     private void Refresh()
     {
-        var Refresh_Customer = _customerDB.GetById(_customer.Id);
-        if (Refresh_Customer is null) return;
+        var refreshedCustomer = _customerDB.GetById(_customer.Id);
 
-        NameBox.Text = Refresh_Customer.Name;
-        PhoneBox.Text = Refresh_Customer.Phone;
-        IdentityNumberBox.Text = Refresh_Customer.IdentityNumber;
-        AddressBox.Text = Refresh_Customer.Address;
-        JobBox.Text = Refresh_Customer.Job;
-        
-        BoolSponserBox.IsChecked = Refresh_Customer.BoolSponser;
-        
-        SponserNameBox.Text = Refresh_Customer.SponserName;
-        SponserPhoneBox.Text = Refresh_Customer.SponserPhone;
-        SponserIdentityNumberBox.Text = Refresh_Customer.SponserIdentityNumber;
-        SponserAddressBox.Text = Refresh_Customer.SponserAddress;
-        SponserJobBox.Text = Refresh_Customer.SponserJob;
-        
+        if (refreshedCustomer is null)
+            return;
 
-        ResultNameBox.Text = Refresh_Customer.Name;
-        ResultPhoneBox.Text = Refresh_Customer.Phone;
-        ResultIdentityNumberBox.Text = Refresh_Customer.IdentityNumber;
-        ResultAddressBox.Text = Refresh_Customer.Address;
-        ResultJobBox.Text = Refresh_Customer.Job;
-        
-        ResultSponserNameBox.Text = Refresh_Customer.SponserName;
-        ResultSponserPhoneBox.Text = Refresh_Customer.SponserPhone;
-        ResultSponserIdentityNumberBox.Text = Refresh_Customer.SponserIdentityNumber;
-        ResultSponserAddressBox.Text = Refresh_Customer.SponserAddress;
-        ResultSponserJobBox.Text = Refresh_Customer.SponserJob;
+        NameBox.Text = refreshedCustomer.Name;
+        PhoneBox.Text = refreshedCustomer.Phone;
+        IdentityNumberBox.Text = refreshedCustomer.IdentityNumber;
+        AddressBox.Text = refreshedCustomer.Address;
+        JobBox.Text = refreshedCustomer.Job;
+
+        BoolSponserBox.IsChecked = refreshedCustomer.BoolSponser;
+
+        SponserNameBox.Text = refreshedCustomer.SponserName;
+        SponserPhoneBox.Text = refreshedCustomer.SponserPhone;
+        SponserIdentityNumberBox.Text = refreshedCustomer.SponserIdentityNumber;
+        SponserAddressBox.Text = refreshedCustomer.SponserAddress;
+        SponserJobBox.Text = refreshedCustomer.SponserJob;
+
+        ResultNameBox.Text = refreshedCustomer.Name;
+        ResultPhoneBox.Text = refreshedCustomer.Phone;
+        ResultIdentityNumberBox.Text = refreshedCustomer.IdentityNumber;
+        ResultAddressBox.Text = refreshedCustomer.Address;
+        ResultJobBox.Text = refreshedCustomer.Job;
+
+        ResultSponserNameBox.Text = refreshedCustomer.SponserName;
+        ResultSponserPhoneBox.Text = refreshedCustomer.SponserPhone;
+        ResultSponserIdentityNumberBox.Text = refreshedCustomer.SponserIdentityNumber;
+        ResultSponserAddressBox.Text = refreshedCustomer.SponserAddress;
+        ResultSponserJobBox.Text = refreshedCustomer.SponserJob;
     }
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
-        if (_customer is null) return;
+        if (_customer is null)
+            return;
+
         try
         {
             _customerDB.Delete(_customer.Id);
+
+            _ = _sync.PushAllDirtyAsync();
+
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -116,7 +147,11 @@ public partial class CustomerWindowViewInstallment : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -125,15 +160,15 @@ public partial class CustomerWindowViewInstallment : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);

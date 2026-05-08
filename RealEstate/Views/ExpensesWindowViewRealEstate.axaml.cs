@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
-using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -18,22 +18,26 @@ namespace RealEstateInstallmentsManager.Views;
 public partial class ExpensesWindowViewRealEstate : Window
 {
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
-    private readonly ExpensesServiceRealEstate _ExpensesDB;
+    private readonly ExpensesServiceRealEstate _expensesDB;
     private readonly UnitServiceRealEstate _unitsDB;
-    private PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly PdfServiceRealEstate _pdfServiceRealEstate;
+    private readonly SupabaseService _supabaseService;
+    private readonly RealEstateSyncService _sync;
 
     private readonly long _expensesID;
     private ExpensesRealEstate? _expenses;
 
-    public ExpensesWindowViewRealEstate(long expensesID)
+    public ExpensesWindowViewRealEstate(long expensesID, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
-        _ExpensesDB = new ExpensesServiceRealEstate(_db);
+        _expensesDB = new ExpensesServiceRealEstate(_db);
         _unitsDB = new UnitServiceRealEstate(_db);
         _pdfServiceRealEstate = new PdfServiceRealEstate();
+        _sync = new RealEstateSyncService(_db, _supabaseService);
 
         _expensesID = expensesID;
 
@@ -42,12 +46,12 @@ public partial class ExpensesWindowViewRealEstate : Window
 
     private void LoadUnits()
     {
-        var Units = _unitsDB.GetAll();
+        var units = _unitsDB.GetAll();
 
-        UnitsBox.ItemsSource = Units;
-
-        UnitsBox.SelectedItem = Units.FirstOrDefault(u => u.Id == _expenses?.UnitId);
+        UnitsBox.ItemsSource = units;
+        UnitsBox.SelectedItem = units.FirstOrDefault(u => u.Id == _expenses?.UnitId);
     }
+
     private void LoadExpensesService()
     {
         ExpensesServiceBox.ItemsSource = new List<string>
@@ -55,78 +59,92 @@ public partial class ExpensesWindowViewRealEstate : Window
             "تكييف",
             "نظافة",
             "صيانة",
+            "ماء",
+            "كهرباء",
             "أخرى"
         };
 
         ExpensesServiceBox.SelectedIndex = 0;
     }
-
+    
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
-            var ExpensesNum = ExpensesNumBox.Text?.Trim() ?? "";
-            var ExpensesDate = ExpensesDateBox.SelectedDate?.LocalDateTime
-                     ?? DateTime.Today;
+            var expensesNum = ExpensesNumBox.Text?.Trim() ?? "";
+            var expensesDate = ExpensesDateBox.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
             if (UnitsBox.SelectedItem is not UnitRealEstate unit)
                 return;
 
-            var ExpensesService = ExpensesServiceBox.SelectedItem as string ?? "أخرى";
+            var expensesService = ExpensesServiceBox.SelectedItem as string ?? "أخرى";
 
-            var ExpensesAmount = double.Parse(
-                ExpensesAmountBox.Text?.Trim() ?? "",
+            var expensesAmount = double.Parse(
+                ExpensesAmountBox.Text?.Trim() ?? "0",
                 CultureInfo.InvariantCulture
             );
 
-            var ExpensesNote = ExpensesNoteBox.Text?.Trim() ?? "";
+            var expensesNote = ExpensesNoteBox.Text?.Trim() ?? "";
 
-            _ExpensesDB.Update(_expensesID, ExpensesNum, ExpensesDate, unit.Id, ExpensesService, ExpensesAmount, ExpensesNote);
+            _expensesDB.Update(
+                _expensesID,
+                expensesNum,
+                expensesDate,
+                unit.Id,
+                expensesService,
+                expensesAmount,
+                expensesNote
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
         }
     }
+
     private void Refresh()
     {
+        _expenses = _expensesDB.GetById(_expensesID);
 
-        _expenses = _ExpensesDB.GetById(_expensesID);
-        if (_expenses is null) return;
+        if (_expenses is null)
+            return;
 
-        var _unit = _unitsDB.GetById(_expenses.UnitId);
-        if (_unit is null) return;
+        var unit = _unitsDB.GetById(_expenses.UnitId);
+
+        if (unit is null)
+            return;
 
         LoadUnits();
         LoadExpensesService();
 
         ExpensesNumBox.Text = _expenses.ExpensesNumber;
         ExpensesDateBox.SelectedDate = _expenses.ExpensesDate;
-        ExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString();
+        ExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString(CultureInfo.InvariantCulture);
         ExpensesNoteBox.Text = _expenses.ExpensesNote;
         ExpensesServiceBox.SelectedItem = _expenses.ExpensesService;
 
-        //Expenses Info
         ResultExpensesNumBox.Text = _expenses.ExpensesNumber;
         ResultExpensesDateBox.Text = _expenses.ExpensesDate.ToString("yyyy-MM-dd");
         ResultExpensesServiceBox.Text = _expenses.ExpensesService;
-        ResultExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString();
+        ResultExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString(CultureInfo.InvariantCulture);
         ResultExpensesNoteBox.Text = _expenses.ExpensesNote;
 
-        //Unit Info
-        ResultUnitNameBox.Text = _unit.UnitName;
-        ResultDistrictBox.Text = _unit.District;
-        ResultCityBox.Text = _unit.City;
-        ResultUnitTypeBox.Text = _unit.UnitType;
-        ResultUnitNumBox.Text = _unit.UnitNum.ToString() + " / " + _unit.UnitsCount.ToString();
-
+        ResultUnitNameBox.Text = unit.UnitName;
+        ResultDistrictBox.Text = unit.District;
+        ResultCityBox.Text = unit.City;
+        ResultUnitTypeBox.Text = unit.UnitType;
+        ResultUnitNumBox.Text = unit.UnitNum + " / " + unit.UnitsCount;
     }
 
-    private async Task<string?> PickSavePdfPathAsync(string contractNumber)
+    private async Task<string?> PickSavePdfPathAsync(string expensesNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -134,30 +152,35 @@ public partial class ExpensesWindowViewRealEstate : Window
             new FilePickerSaveOptions
             {
                 Title = "حفظ السند  (PDF)",
-                SuggestedFileName = $"{contractNumber}.pdf",
+                SuggestedFileName = $"{expensesNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ExpensesRealEstate expenses) return;
+        if (_expenses is null)
+            return;
 
-        ExpensesRealEstate? _expenses = _ExpensesDB.GetById(expenses.Id);
-        if (_expenses is null) return;
+        var freshExpense = _expensesDB.GetById(_expenses.Id);
 
-        var path = await PickSavePdfPathAsync(_expenses.ExpensesNumber);
+        if (freshExpense is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(freshExpense.ExpensesNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        _pdfServiceRealEstate.GenerateExpensesPdf(expenses, path);
+        _pdfServiceRealEstate.GenerateExpensesPdf(freshExpense, path);
 
         Process.Start(new ProcessStartInfo
         {
@@ -165,23 +188,28 @@ public partial class ExpensesWindowViewRealEstate : Window
             UseShellExecute = true
         });
     }
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
-            _ExpensesDB.Delete(_expensesID);
+            _expensesDB.Delete(_expensesID);
+
+            _ = _sync.PushAllDirtyAsync();
+            
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -191,7 +219,11 @@ public partial class ExpensesWindowViewRealEstate : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -200,18 +232,17 @@ public partial class ExpensesWindowViewRealEstate : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);
     }
-
 }

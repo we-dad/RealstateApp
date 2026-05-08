@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -17,14 +18,17 @@ public partial class ReceiptViewInstallment : UserControl
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ReceiptServiceInstallment _receiptsDB;
     private readonly ContractServiceInstallment _contractsDB;
-    private PdfServiceInstallment _pdfService;
+    private readonly PdfServiceInstallment _pdfService;
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
+
     private TextBox? _contractIdSearchBox;
     private ContractInstallment? _selectedContract;
 
-
-    public ReceiptViewInstallment()
+    public ReceiptViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
@@ -34,9 +38,13 @@ public partial class ReceiptViewInstallment : UserControl
 
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox"); //this line becasue avalonia can't found TenantIdSearchBox it's returen null maybe because the warning message
+        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
 
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncReceiptsFromCloudAsync();
     }
+
     private void LoadPaymentMethod()
     {
         PaymentMethodBox.ItemsSource = new List<string>
@@ -50,48 +58,107 @@ public partial class ReceiptViewInstallment : UserControl
 
     private void LoadReceipt()
     {
-
-        var data = _receiptsDB.GetAll();
-
-        ReceiptsGrid.ItemsSource = null;
-        ReceiptsGrid.ItemsSource = data;
-    }
-    private void Add_Click(object? sender, RoutedEventArgs e)
-    {
         try
         {
-            var _ReceiptNum = ReceiptNumBox.Text ?? "";
-            var _ReceiptDate = DateTime.Today;
+            var data = _receiptsDB.GetAll();
 
-            if (_selectedContract == null)
-            {
-                ContractInfoText.Text = "يرجى اختيار العقد أولاً";
-                return;
-            }
-            var _contractNum = _selectedContract.Id;
-
-            var _paymentMethod = PaymentMethodBox.SelectedItem as string ?? "تحويل";
-
-            var Amount = double.Parse(
-                AmountBox.Text?.Trim() ?? "",
-                CultureInfo.InvariantCulture
-            );
-            
-
-            _receiptsDB.Add(_ReceiptNum, _ReceiptDate, _contractNum, _paymentMethod, Amount);
-
-            Refresh();
+            ReceiptsGrid.ItemsSource = null;
+            ReceiptsGrid.ItemsSource = data;
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
         }
     }
+    
+    private void Add_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var receiptNum = ReceiptNumBox.Text?.Trim() ?? "";
+            var receiptDate = DateTime.Today;
+
+            if (_selectedContract == null)
+            {
+                ContractInfoText.Text = "يرجى اختيار العقد أولاً";
+                ContractInfoText.Foreground = Brushes.Red;
+                return;
+            }
+
+            var contract = _selectedContract;
+            var paymentMethod = PaymentMethodBox.SelectedItem as string ?? "تحويل";
+
+            var amount = double.Parse(
+                AmountBox.Text?.Trim() ?? "0",
+                CultureInfo.InvariantCulture
+            );
+
+            _receiptsDB.Add(
+                receiptNum,
+                receiptDate,
+                contract.Id,
+                paymentMethod,
+                amount
+            );
+
+            Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private async Task SyncReceiptsFromCloudAsync()
+    {
+        try
+        {
+            var cloudReceipts = new CloudReceiptsInstallmentService(_supabaseService);
+            var rows = await cloudReceipts.GetReceiptsAsync();
+
+            foreach (var row in rows)
+            {
+                var contractLocalId = _contractsDB.GetLocalIdByCloudId(row.ContractId);
+
+                if (contractLocalId == 0)
+                    continue;
+
+                _receiptsDB.UpsertFromCloud(
+                    row.Id,
+                    row.ReceiptNumber,
+                    row.ReceiptDate,
+                    contractLocalId,
+                    row.PaymentMethod,
+                    row.Amount,
+                    row.CurrentTotalAmount
+                );
+            }
+
+            LoadReceipt();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping installment receipts cloud sync.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
     {
-        var contractNum = "Ic-"+_contractIdSearchBox?.Text?.Trim() ?? "";
-        if (string.IsNullOrWhiteSpace(contractNum))
+        var raw = _contractIdSearchBox?.Text?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(raw))
             return;
+
+        var contractNum = raw.StartsWith("Ic-", StringComparison.OrdinalIgnoreCase)
+            ? raw
+            : "Ic-" + raw;
 
         var contract = _contractsDB.FindByContractNum(contractNum);
 
@@ -104,40 +171,52 @@ public partial class ReceiptViewInstallment : UserControl
         }
 
         _selectedContract = contract;
-        var _contracttInfo = $"اسم العميل : {contract.CustomerName} | ";
-        var _productName = $"اسم المنتج : {contract.ProductName} | ";
-        var _mainTotalAmout = $"القسط الأساسي : {contract.MainTotalAmount} | ";
-        var _totalAmout = $"المتبقي : {contract.CurrentTotalAmount} | ";
-        var _monthlyInstallment = $"القسط الشهري : {contract.MonthlyInstallment}";
-        ContractInfoText.Text = _contracttInfo + _productName + _mainTotalAmout + _totalAmout + _monthlyInstallment;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+
         ContractInfoText.Foreground = Brushes.Green;
     }
+
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         Refresh();
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncReceiptsFromCloudAsync();
+
     }
+
     private void Refresh()
     {
-
         LoadReceipt();
         LoadPaymentMethod();
 
         ReceiptNumBox.Text = _receiptsDB.GenerateReceiptNumber();
         ReceiptDate.Text = DateTime.Today.ToString("yyyy-MM-dd");
         ContractInfoText.Text = "";
+        ContractInfoText.Foreground = Brushes.Black;
 
+        ContractNumSearchBox.Text = "";
         AmountBox.Text = "";
 
+        _selectedContract = null;
     }
+
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ReceiptInstallment receipt)
-            new ReceiptWindowViewInstallment(receipt.Id).Show();
+            new ReceiptWindowViewInstallment(receipt.Id, _supabaseService).Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -148,20 +227,23 @@ public partial class ReceiptViewInstallment : UserControl
                 SuggestedFileName = $"{receiptNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ReceiptInstallment r) return;
+        if (sender is not Button btn || btn.Tag is not ReceiptInstallment r)
+            return;
 
         var path = await PickSavePdfPathAsync(r.ReceiptNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 

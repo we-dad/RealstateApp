@@ -9,6 +9,10 @@ namespace RealEstateInstallmentsManager.Models;
 public class ContractInstallment : INotifyPropertyChanged
 {
     public long Id { get; set; }
+    public long CloudId { get; set; }
+    public long ProductCloudId { get; set; }
+    public long CustomerCloudId { get; set; }
+    public string SyncAction { get; set; } = "";
     public string ContractNumber { get; set; } = "";
     public DateTime ContractStartDate { get; set; } = DateTime.Now;
     public DateTime ContractEndDate { get; set; } = DateTime.Now;

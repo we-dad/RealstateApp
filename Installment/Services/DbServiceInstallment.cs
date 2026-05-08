@@ -8,11 +8,11 @@ public class DbServiceInstallment
 {
     private readonly string _dbPath;
 
-    public DbServiceInstallment(string dbFileName = "realestate.db")
+    public DbServiceInstallment(string dbFileName = "realEstateInstallments.db")
     {
         var folder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "RealEstateApp"
+            "RealEstateInstallmentsManager"
         );
 
         Directory.CreateDirectory(folder);
@@ -37,10 +37,13 @@ public class DbServiceInstallment
             cmd.CommandText = """
 CREATE TABLE IF NOT EXISTS OwnersInstallment (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CloudId INTEGER NOT NULL DEFAULT 0,
     Name TEXT NOT NULL,
     IdentityNumber TEXT NOT NULL,
     Phone INTEGER NOT NULL,
-    Address TEXT NOT NULL DEFAULT ''
+    Address TEXT NOT NULL DEFAULT '',
+    IsDirty INTEGER NOT NULL DEFAULT 0,
+SyncAction TEXT NOT NULL DEFAULT ''
 );
 """;
 
@@ -52,6 +55,7 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
         cmd.CommandText = """
                           CREATE TABLE IF NOT EXISTS ProductsInstallment (
                               Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                              CloudId INTEGER NOT NULL DEFAULT 0,
                               OwnerId INTEGER NOT NULL,
 
                               ProductName TEXT NOT NULL DEFAULT '',
@@ -65,6 +69,8 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
 
                               MobileStorage TEXT NOT NULL DEFAULT '',
                               MobileColor TEXT NOT NULL DEFAULT '',
+                              IsDirty INTEGER NOT NULL DEFAULT 0,
+                          SyncAction TEXT NOT NULL DEFAULT '',
 
                               FOREIGN KEY (OwnerId) REFERENCES OwnersInstallment(Id)
                           );
@@ -79,6 +85,7 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
             cmd.CommandText = """
     CREATE TABLE IF NOT EXISTS CustomersInstallment (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         Name TEXT NOT NULL,
         IdentityNumber TEXT NOT NULL,
         Phone TEXT NOT NULL,
@@ -88,7 +95,9 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
         SponserIdentityNumber TEXT NOT NULL,
         SponserPhone TEXT NOT NULL,
         SponserAddress TEXT NOT NULL DEFAULT '',
-        SponserJob TEXT NOT NULL
+        SponserJob TEXT NOT NULL,
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT ''
     );
     """;
             cmd.ExecuteNonQuery();
@@ -100,6 +109,7 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
             cmd.CommandText = """
                               CREATE TABLE IF NOT EXISTS ContractsInstallment (
                                   Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                  CloudId INTEGER NOT NULL DEFAULT 0,
                                   ContractNumber TEXT UNIQUE NOT NULL,
                                   ContractStartDate DATETIME NOT NULL,
                                   ContractEndDate DATETIME NOT NULL,
@@ -114,6 +124,8 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
 
                                   ProductId INTEGER NOT NULL,
                                   CustomerId INTEGER NOT NULL,
+                                  IsDirty INTEGER NOT NULL DEFAULT 0,
+                              SyncAction TEXT NOT NULL DEFAULT '',
 
                                   FOREIGN KEY (ProductId) REFERENCES ProductsInstallment(Id),
                                   FOREIGN KEY (CustomerId) REFERENCES CustomersInstallment(Id)
@@ -127,12 +139,15 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
             cmd.CommandText = """
     CREATE TABLE IF NOT EXISTS ReceiptsInstallment (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         ReceiptNumber TEXT UNIQUE NOT NULL,
         ReceiptDate DATETIME NOT NULL,
         ContractId INTEGER NOT NULL,
         PaymentMethod TEXT NOT NULL,
         Amount REAL NOT NULL,
         CurrentTotalAmount REAL NOT NULL,
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
         FOREIGN KEY (ContractId) REFERENCES ContractsInstallment(Id)
     );
     """;
@@ -144,12 +159,15 @@ CREATE TABLE IF NOT EXISTS OwnersInstallment (
             cmd.CommandText = """
     CREATE TABLE IF NOT EXISTS ExpensesInstallment (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CloudId INTEGER NOT NULL DEFAULT 0,
         ExpensesNumber TEXT UNIQUE NOT NULL,
         ExpensesDate DATETIME NOT NULL,
         ExpensesService TEXT NOT NULL,
         ExpensesAmount REAL NOT NULL,
         ExpensesNote TEXT NOT NULL,
         ProductId INTEGER NOT NULL,
+        IsDirty INTEGER NOT NULL DEFAULT 0,
+    SyncAction TEXT NOT NULL DEFAULT '',
         FOREIGN KEY (ProductId) REFERENCES ProductsInstallment(Id)
     );
     """;

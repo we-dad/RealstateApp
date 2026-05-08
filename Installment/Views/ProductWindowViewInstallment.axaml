@@ -69,7 +69,8 @@
         </Grid>
 
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-          <Button Content="تحديث المعلومات" Click="Update_Click"/>
+            <Button Content="حذف البيانات" Click="Delete_Click"/>
+            <Button Content="تحديث البيانات" Click="Update_Click"/>
         </StackPanel>
 
       </StackPanel>

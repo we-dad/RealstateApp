@@ -1,9 +1,11 @@
 using Avalonia.Controls;
 using System;
+using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -13,14 +15,17 @@ public partial class OwnersWindowViewRealEstate : Window
     private readonly OwnerRealEstate _ownerRealEstate;
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
     private readonly OwnerServiceRealEstate _ownersDB;
+    private readonly SupabaseService _supabaseService;
+    private readonly RealEstateSyncService _sync;
 
-
-    public OwnersWindowViewRealEstate(OwnerRealEstate ownerRealEstate)
+    public OwnersWindowViewRealEstate(OwnerRealEstate ownerRealEstate ,SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
         _ownersDB = new OwnerServiceRealEstate(_db);
+        _sync = new RealEstateSyncService(_db, _supabaseService);
 
         _ownerRealEstate = ownerRealEstate;
 
@@ -42,13 +47,15 @@ public partial class OwnersWindowViewRealEstate : Window
             _ownersDB.Update(_ownerRealEstate.Id, name, identityNumber, phone, address);
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
         }
     }
-
+   
     private void Refresh()
     {
         var Refresh_owner = _ownersDB.GetById(_ownerRealEstate.Id);
@@ -64,20 +71,27 @@ public partial class OwnersWindowViewRealEstate : Window
         ResultIdentityNumberBox.Text = Refresh_owner.IdentityNumber;
         ResultAddressBox.Text = Refresh_owner.Address;
     }
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
+            var freshOwner = _ownersDB.GetById(_ownerRealEstate.Id);
+            if (freshOwner is null)
+                return;
+
             _ownersDB.Delete(_ownerRealEstate.Id);
+
+            _ = _sync.PushAllDirtyAsync();
+
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
     private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)

@@ -22,8 +22,12 @@ public class UnitServiceRealEstate
         con.Open();
 
         using var cmd = con.CreateCommand();
-        cmd.CommandText = "SELECT Id, UnitName, City, District, UnitState, UnitType FROM Units ORDER BY Id DESC;";
-
+        cmd.CommandText = """
+            SELECT Id, CloudId, UnitName, City, District, UnitState, UnitType
+            FROM UnitsRealEstate
+            WHERE SyncAction <> 'delete'
+            ORDER BY Id DESC;
+        """;
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -31,28 +35,40 @@ public class UnitServiceRealEstate
             list.Add(new UnitRealEstate
             {
                 Id = reader.GetInt64(0),
-                UnitName = reader.GetString(1),
-                City = reader.GetString(2),
-                District = reader.GetString(3),
-                UnitState = reader.GetString(4),
-                UnitType = reader.GetString(5),
+                CloudId = reader.GetInt64(1),
+                UnitName = reader.GetString(2),
+                City = reader.GetString(3),
+                District = reader.GetString(4),
+                UnitState = reader.GetString(5),
+                UnitType = reader.GetString(6),
             });
         }
 
         return list;
     }
 
-    public long Add(long ownerId, string unitName, string city, string district, string unitType, int unitsCount, int unitNum)
+    public long Add(
+        long ownerId,
+        string unitName,
+        string city,
+        string district,
+        string unitType,
+        int unitsCount,
+        int unitNum)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
         using var cmd = con.CreateCommand();
+
         cmd.CommandText = """
-        INSERT INTO Units (OwnerId, UnitName, City, District, UnitType, UnitState, UnitsCount, UnitNum)
-        VALUES ($ownerId, $unitName, $city, $district, $unitType, 'شاغرة', $unitsCount, $unitNum);
-        SELECT last_insert_rowid();
-    """;
+            INSERT INTO UnitsRealEstate
+            (OwnerId, UnitName, City, District, UnitType, UnitsCount, UnitNum, IsDirty, SyncAction)
+            VALUES
+            ($ownerId, $unitName, $city, $district, $unitType, $unitsCount, $unitNum, 1, 'insert');
+
+            SELECT last_insert_rowid();
+        """;
 
         cmd.Parameters.AddWithValue("$ownerId", ownerId);
         cmd.Parameters.AddWithValue("$unitName", unitName);
@@ -65,23 +81,36 @@ public class UnitServiceRealEstate
         return (long)cmd.ExecuteScalar()!;
     }
 
-    public void Update(long id, long ownerId, string unitName, string city, string district, string unitType, int unitsCount, int unitNum)
+    public void Update(
+        long id,
+        long ownerId,
+        string unitName,
+        string city,
+        string district,
+        string unitType,
+        int unitsCount,
+        int unitNum)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        UPDATE Units
-        SET OwnerId = $ownerId,
-            UnitName = $unitName,
-            City = $city,
-            District = $district,
-            UnitType = $unitType,
-            UnitsCount = $unitsCount,
-            UnitNum = $unitNum
-        WHERE Id = $id;
-    """;
+            UPDATE UnitsRealEstate
+            SET OwnerId = $ownerId,
+                UnitName = $unitName,
+                City = $city,
+                District = $district,
+                UnitType = $unitType,
+                UnitsCount = $unitsCount,
+                UnitNum = $unitNum,
+                IsDirty = 1,
+                SyncAction = CASE
+                    WHEN SyncAction = 'insert' THEN 'insert'
+                    ELSE 'update'
+                END
+            WHERE Id = $id;
+        """;
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.Parameters.AddWithValue("$ownerId", ownerId);
@@ -102,11 +131,27 @@ public class UnitServiceRealEstate
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-    SELECT u.Id, u.OwnerId, o.Name, o.IdentityNumber, o.Phone, o.Address, u.UnitName, u.City, u.District, u.UnitType, u.UnitsCount, u.UnitNum, u.UnitState
-    FROM Units u
-    JOIN Owners o ON o.Id = u.OwnerId
-    WHERE u.Id = $id;
-    """;
+            SELECT 
+                u.Id,
+                u.CloudId,
+                u.OwnerId,
+                o.CloudId,
+                o.Name,
+                o.IdentityNumber,
+                o.Phone,
+                o.Address,
+                u.UnitName,
+                u.City,
+                u.District,
+                u.UnitType,
+                u.UnitsCount,
+                u.UnitNum,
+                u.UnitState
+            FROM UnitsRealEstate u
+            JOIN OwnersRealEstate o ON o.Id = u.OwnerId
+            WHERE u.Id = $id;
+        """;
+
         cmd.Parameters.AddWithValue("$id", id);
 
         using var reader = cmd.ExecuteReader();
@@ -116,20 +161,23 @@ public class UnitServiceRealEstate
         return new UnitRealEstate
         {
             Id = reader.GetInt64(0),
-            OwnerId = reader.GetInt64(1),
-            OwnerName = reader.GetString(2),
-            OwnerIdentityNumber = reader.GetString(3),
-            OwnerPhone = reader.GetString(4),
-            OwnerAddress = reader.GetString(5),
-            UnitName = reader.GetString(6),
-            City = reader.GetString(7),
-            District = reader.GetString(8),
-            UnitType = reader.GetString(9),
-            UnitsCount = reader.GetInt32(10),
-            UnitNum = reader.GetInt32(11),
-            UnitState = reader.GetString(12),
+            CloudId = reader.GetInt64(1),
+            OwnerId = reader.GetInt64(2),
+            OwnerCloudId = reader.GetInt64(3),
+            OwnerName = reader.GetString(4),
+            OwnerIdentityNumber = reader.GetString(5),
+            OwnerPhone = reader.GetString(6),
+            OwnerAddress = reader.GetString(7),
+            UnitName = reader.GetString(8),
+            City = reader.GetString(9),
+            District = reader.GetString(10),
+            UnitType = reader.GetString(11),
+            UnitsCount = reader.GetInt32(12),
+            UnitNum = reader.GetInt32(13),
+            UnitState = reader.GetString(14),
         };
     }
+
     public void UpdateUnitStates()
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -137,25 +185,42 @@ public class UnitServiceRealEstate
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        UPDATE Units
-        SET UnitState = 'شاغرة'
-        WHERE Id NOT IN (
-            SELECT UnitId
-            FROM Contracts
-            WHERE date(ContractEndDate) >= date('now','localtime')
-        );
+                              UPDATE UnitsRealEstate
+                              SET UnitState = 'شاغرة',
+                                  IsDirty = 1,
+                                  SyncAction = CASE
+                                      WHEN SyncAction = 'insert' THEN 'insert'
+                                      ELSE 'update'
+                                  END
+                              WHERE SyncAction <> 'delete'
+                                AND UnitState <> 'شاغرة'
+                                AND Id NOT IN (
+                                  SELECT UnitId
+                                  FROM ContractsRealEstate
+                                  WHERE date(ContractEndDate) >= date('now','localtime')
+                                    AND SyncAction <> 'delete'
+                              );
 
-        UPDATE Units
-        SET UnitState = 'مؤجرة'
-        WHERE Id IN (
-            SELECT UnitId
-            FROM Contracts
-            WHERE date(ContractEndDate) >= date('now','localtime')
-        );
-    """;
+                              UPDATE UnitsRealEstate
+                              SET UnitState = 'مؤجرة',
+                                  IsDirty = 1,
+                                  SyncAction = CASE
+                                      WHEN SyncAction = 'insert' THEN 'insert'
+                                      ELSE 'update'
+                                  END
+                              WHERE SyncAction <> 'delete'
+                                AND UnitState <> 'مؤجرة'
+                                AND Id IN (
+                                  SELECT UnitId
+                                  FROM ContractsRealEstate
+                                  WHERE date(ContractEndDate) >= date('now','localtime')
+                                    AND SyncAction <> 'delete'
+                              );
+                          """;
 
         cmd.ExecuteNonQuery();
     }
+
     public List<UnitRealEstate> GetAvailableUnits()
     {
         var list = new List<UnitRealEstate>();
@@ -165,11 +230,12 @@ public class UnitServiceRealEstate
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-        SELECT Id, UnitName, UnitState
-        FROM Units
-        WHERE UnitState = 'شاغرة'
-        ORDER BY UnitName;
-    """;
+            SELECT Id, CloudId, UnitName, UnitState
+            FROM UnitsRealEstate
+            WHERE UnitState = 'شاغرة'
+              AND SyncAction <> 'delete'
+            ORDER BY UnitName;
+        """;
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -177,13 +243,197 @@ public class UnitServiceRealEstate
             list.Add(new UnitRealEstate
             {
                 Id = reader.GetInt64(0),
-                UnitName = reader.GetString(1),
-                UnitState = reader.GetString(2)
+                CloudId = reader.GetInt64(1),
+                UnitName = reader.GetString(2),
+                UnitState = reader.GetString(3)
             });
         }
 
         return list;
     }
+
+    public void UpdateCloudId(long id, long cloudId)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+            UPDATE UnitsRealEstate
+            SET CloudId = $cloudId,
+                IsDirty = 0,
+                SyncAction = ''
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudId", cloudId);
+        cmd.Parameters.AddWithValue("$id", id);
+
+        cmd.ExecuteNonQuery();
+    }
+
+    public void MarkSynced(long id)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE UnitsRealEstate
+            SET IsDirty = 0,
+                SyncAction = ''
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<UnitRealEstate> GetDirtyRows()
+    {
+        var list = new List<UnitRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT 
+                Id,
+                CloudId,
+                OwnerId,
+                UnitName,
+                City,
+                District,
+                UnitType,
+                UnitState,
+                UnitsCount,
+                UnitNum,
+                SyncAction
+            FROM UnitsRealEstate
+            WHERE IsDirty = 1;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new UnitRealEstate
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                OwnerId = reader.GetInt64(2),
+                UnitName = reader.GetString(3),
+                City = reader.GetString(4),
+                District = reader.GetString(5),
+                UnitType = reader.GetString(6),
+                UnitState = reader.GetString(7),
+                UnitsCount = reader.GetInt32(8),
+                UnitNum = reader.GetInt32(9),
+                SyncAction = reader.GetString(10)
+            });
+        }
+
+        return list;
+    }
+
+    public long GetLocalIdByCloudId(long cloudId)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id
+            FROM UnitsRealEstate
+            WHERE CloudId = $cloudId
+            LIMIT 1;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var result = cmd.ExecuteScalar();
+        return result == null ? 0 : Convert.ToInt64(result);
+    }
+
+    public void UpsertFromCloud(
+        long cloudId,
+        long ownerLocalId,
+        string unitName,
+        string city,
+        string district,
+        string unitType,
+        string unitState,
+        int unitsCount,
+        int unitNum)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var check = con.CreateCommand();
+        check.CommandText = """
+            SELECT Id
+            FROM UnitsRealEstate
+            WHERE CloudId = $cloudId;
+        """;
+        check.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var existingId = check.ExecuteScalar();
+
+        if (existingId != null)
+        {
+            using var update = con.CreateCommand();
+            update.CommandText = """
+                UPDATE UnitsRealEstate
+                SET OwnerId = $ownerId,
+                    UnitName = $unitName,
+                    City = $city,
+                    District = $district,
+                    UnitType = $unitType,
+                    UnitState = $unitState,
+                    UnitsCount = $unitsCount,
+                    UnitNum = $unitNum
+                WHERE CloudId = $cloudId
+                  AND IsDirty = 0;
+            """;
+
+            update.Parameters.AddWithValue("$cloudId", cloudId);
+            update.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            update.Parameters.AddWithValue("$unitName", unitName);
+            update.Parameters.AddWithValue("$city", city);
+            update.Parameters.AddWithValue("$district", district);
+            update.Parameters.AddWithValue("$unitType", unitType);
+            update.Parameters.AddWithValue("$unitState", unitState);
+            update.Parameters.AddWithValue("$unitsCount", unitsCount);
+            update.Parameters.AddWithValue("$unitNum", unitNum);
+
+            update.ExecuteNonQuery();
+        }
+        else
+        {
+            using var insert = con.CreateCommand();
+            insert.CommandText = """
+                INSERT INTO UnitsRealEstate
+                (CloudId, OwnerId, UnitName, City, District, UnitType, UnitState, UnitsCount, UnitNum, IsDirty, SyncAction)
+                VALUES
+                ($cloudId, $ownerId, $unitName, $city, $district, $unitType, $unitState, $unitsCount, $unitNum, 0, '');
+            """;
+
+            insert.Parameters.AddWithValue("$cloudId", cloudId);
+            insert.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            insert.Parameters.AddWithValue("$unitName", unitName);
+            insert.Parameters.AddWithValue("$city", city);
+            insert.Parameters.AddWithValue("$district", district);
+            insert.Parameters.AddWithValue("$unitType", unitType);
+            insert.Parameters.AddWithValue("$unitState", unitState);
+            insert.Parameters.AddWithValue("$unitsCount", unitsCount);
+            insert.Parameters.AddWithValue("$unitNum", unitNum);
+
+            insert.ExecuteNonQuery();
+        }
+    }
+
     public List<UnitRealEstate> GetAvailableUnitsIncluding(long? currentUnitId)
     {
         var list = new List<UnitRealEstate>();
@@ -193,12 +443,12 @@ public class UnitServiceRealEstate
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-    SELECT Id, UnitName, UnitState
-    FROM Units
-    WHERE UnitState = 'شاغرة'
-       OR Id = $currentId
-    ORDER BY UnitName;
-    """;
+            SELECT Id, CloudId, UnitName, UnitState
+            FROM UnitsRealEstate
+            WHERE SyncAction <> 'delete'
+              AND (UnitState = 'شاغرة' OR Id = $currentId)
+            ORDER BY UnitName;
+        """;
 
         cmd.Parameters.AddWithValue("$currentId", currentUnitId ?? -1);
 
@@ -208,8 +458,9 @@ public class UnitServiceRealEstate
             list.Add(new UnitRealEstate
             {
                 Id = reader.GetInt64(0),
-                UnitName = reader.GetString(1),
-                UnitState = reader.GetString(2)
+                CloudId = reader.GetInt64(1),
+                UnitName = reader.GetString(2),
+                UnitState = reader.GetString(3)
             });
         }
 
@@ -223,24 +474,45 @@ public class UnitServiceRealEstate
 
         using (var check = con.CreateCommand())
         {
-            check.CommandText = "SELECT EXISTS(SELECT 1 FROM Contracts WHERE UnitId = $id);";
+            check.CommandText = """
+                SELECT EXISTS(
+                    SELECT 1
+                    FROM ContractsRealEstate
+                    WHERE UnitId = $id
+                      AND SyncAction <> 'delete'
+                );
+            """;
             check.Parameters.AddWithValue("$id", id);
 
-            var hasUnits = Convert.ToInt32(check.ExecuteScalar()) == 1;
-            if (hasUnits)
+            var hasContracts = Convert.ToInt32(check.ExecuteScalar()) == 1;
+            if (hasContracts)
                 throw new InvalidOperationException(".لا يمكن حذف الوحدة لأنه مرتبط بعقود أو سندات صرف مسجلة");
         }
-        try
-        {
-            using var cmd = con.CreateCommand();
-            cmd.CommandText = "DELETE FROM Units WHERE Id = $id;";
-            cmd.Parameters.AddWithValue("$id", id);
-            cmd.ExecuteNonQuery();
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
-        {
-            throw new InvalidOperationException(".لا يمكن حذف الوحدة لأنه مرتبط ببيانات أخرى");
-        }
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            UPDATE UnitsRealEstate
+            SET IsDirty = 1,
+                SyncAction = 'delete'
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
     }
 
+    public void DeleteLocalPermanent(long id)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            DELETE FROM UnitsRealEstate
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
 }

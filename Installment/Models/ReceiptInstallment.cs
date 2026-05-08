@@ -5,6 +5,9 @@ namespace RealEstateInstallmentsManager.Models;
 public class ReceiptInstallment
 {
     public long Id { get; set; }
+    public long CloudId { get; set; }
+    public string SyncAction { get; set; } = "";
+    public long ContractCloudId { get; set; }    
     public string ReceiptNumber { get; set; } = "";
     public DateTime ReceiptDate { get; set; }
     public string PaymentMethod { get; set; } = "تحويل";

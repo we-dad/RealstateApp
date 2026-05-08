@@ -5,7 +5,7 @@
         x:DataType="models:CustomerInstallment"
         Title="معلومات العميل"
         Width="700"
-        Height="450">
+        Height="700">
 
     <Grid RowDefinitions="Auto,*" Margin="16">
 
@@ -65,46 +65,53 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="12" Padding="12" Margin="0,10,0,0">
-            <StackPanel Spacing="8">
-                <TextBlock Text="بيانات العميل" HorizontalAlignment="Right"/>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,10,0,0">
 
-                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-              ColumnSpacing="10" RowSpacing="8">
+            <Border CornerRadius="12" Padding="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="بيانات العميل" HorizontalAlignment="Right"/>
 
-          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
-          <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+            <Grid ColumnDefinitions="*,*" 
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                  ColumnSpacing="10" RowSpacing="8">
 
-          <TextBlock Text="رقم الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
-          <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-          
-          <TextBlock Text="الوظيفة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-          
-          
-          <TextBlock Text="اسم الكفيل" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          <TextBlock x:Name="ResultSponserNameBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
-          <TextBlock Text="رقم هوية الكفيل" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          <TextBlock x:Name="ResultSponserIdentityNumberBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock Text="رقم الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
-          <TextBlock Text="رقم جوال الكفيل" Grid.Row="7" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          <TextBlock x:Name="ResultSponserPhoneBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                
+                <TextBlock Text="الوظيفة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                <TextBlock x:Name="ResultJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                
+                <TextBlock Text="اسم الكفيل" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock x:Name="ResultSponserNameBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
-          <TextBlock Text="عنوان الكفيل" Grid.Row="8" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          <TextBlock x:Name="ResultSponserAddressBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          
-          <TextBlock Text="وظيفة الكفيل" Grid.Row="9" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          <TextBlock x:Name="ResultSponserJobBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-          
-        </Grid>
-            </StackPanel>
-        </Border>
+                <TextBlock Text="رقم هوية الكفيل" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock x:Name="ResultSponserIdentityNumberBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+                <TextBlock Text="رقم جوال الكفيل" Grid.Row="7" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock x:Name="ResultSponserPhoneBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+                <TextBlock Text="عنوان الكفيل" Grid.Row="8" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock x:Name="ResultSponserAddressBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                
+                <TextBlock Text="وظيفة الكفيل" Grid.Row="9" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                <TextBlock x:Name="ResultSponserJobBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+
+            </Grid>
+        </StackPanel>
+    </Border>
+</ScrollViewer>
     </Grid>
 </Window>

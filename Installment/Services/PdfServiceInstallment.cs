@@ -572,5 +572,123 @@ public class PdfServiceInstallment
     })
     .GeneratePdf(filePath);
 }
+   public void GenerateExpensesPdf(ExpensesInstallment e, string filePath)
+    {
+        Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(30);
+                page.DefaultTextStyle(x =>
+                    x.FontFamily("Arial")
+                        .FontSize(12)
+                );
+
+                page.Content()
+                    .AlignCenter()
+                    .AlignMiddle()
+                    .Width(500)
+                    .Column(col =>
+                    {
+                    col.Spacing(10);
+
+                    col.Item().Element(section =>
+                    {
+
+                        section.Border(1).Padding(10).Column(s =>
+                        {
+                            s.Spacing(6);
+
+                            var date = e.ExpensesDate;
+                            var formatted = date.ToString("yyyy/MM/dd");
+
+                            s.Item().ExtendHorizontal().Row(row =>
+                            {
+
+                                row.AutoItem().Text($"تاريخ السند: {date:yyyy/MM/dd}").AlignLeft().Bold();
+
+                                row.RelativeItem();
+
+                                row.AutoItem().Text($"{e.ExpensesNumber} : رقم السند").AlignRight().Bold();
+                            });
+
+
+                            s.Item().Text("سند صرف").FontSize(18).Bold().AlignCenter();
+
+                            s.Item().ExtendHorizontal();
+
+                            s.Item().ExtendHorizontal().Row(row =>
+                             {
+                                 row.RelativeItem();
+
+                                 row.RelativeItem()
+                                     .Border(1)
+                                     .PaddingVertical(4)
+                                     .PaddingHorizontal(8)
+                                     .AlignCenter()
+                                     .Row(amountRow =>
+                                     {
+                                         amountRow.AutoItem()
+                                             .Text("ريال")
+                                             .Bold();
+
+                                         amountRow.ConstantItem(8);
+
+                                         amountRow.AutoItem()
+                                             .Text(e.ExpensesAmount.ToString("N0"))
+                                             .Bold();
+                                     });
+
+                                 row.RelativeItem()
+                                    .AlignRight()
+                                    .Text(": تم صرف مبلغ وقدره")
+                                    .Bold();
+                             });
+                            s.Item().ExtendHorizontal().Row(row =>
+                             {
+                                 row.RelativeItem();
+                                 row.RelativeItem();
+                                 row.RelativeItem();
+                                 row.RelativeItem();
+
+                                 row.RelativeItem()
+                                     .AlignRight()
+                                    .Text(e.ExpensesService);
+
+                                 row.RelativeItem()
+                                    .AlignRight()
+                                    .Text(": وذلك بمقابل خدمة")
+                                    .Bold();
+                             });
+
+                            s.Item().ExtendHorizontal()
+                            .Row(row =>
+                            {
+                                row.AutoItem()
+                            .PaddingLeft(20)
+                            .Column(col =>
+                            {
+                                col.Spacing(6);
+                                col.Item()
+                                .AlignCenter()
+                                .Text(": المستلم")
+                                .Bold();
+                                col.Item()
+                                .AlignCenter()
+                                .Text("فلاح العوفي")
+                                .Bold();
+                                col.Item()
+                                .PaddingTop(10)
+                                .Height(24);
+                            });
+                            });
+                        });
+                    });
+                });
+            });
+        })
+        .GeneratePdf(filePath);
+    }
 
 }

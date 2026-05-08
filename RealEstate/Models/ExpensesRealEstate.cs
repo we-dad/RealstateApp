@@ -5,7 +5,9 @@ namespace RealEstateInstallmentsManager.Models;
 public class ExpensesRealEstate
 {
     public long Id { get; set; }
-    public string ExpensesNumber { get; set; } = "";
+    public long CloudId { get; set; }
+    public string SyncAction { get; set; } = "";
+    public long UnitCloudId { get; set; }    public string ExpensesNumber { get; set; } = "";
     public DateTime ExpensesDate { get; set; }
     public string ExpensesService { get; set; } = "أخرى";
     public double ExpensesAmount { get; set; }

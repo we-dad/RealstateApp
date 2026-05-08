@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
-
 
 namespace RealEstateInstallmentsManager.Views;
 
@@ -17,7 +17,9 @@ public partial class ContractViewInstallment : UserControl
     private readonly ContractServiceInstallment _contractsDB;
     private readonly CustomerServiceInstallment _customersDB;
     private readonly ProductServiceInstallment _productDB;
-    private PdfServiceInstallment _pdfService;
+    private readonly PdfServiceInstallment _pdfService;
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
 
     private ContractInstallment _contract;
     private CustomerInstallment? _selectedCutomer;
@@ -26,10 +28,11 @@ public partial class ContractViewInstallment : UserControl
     private bool _isRefreshing;
     private double realMainPrice;
 
-    public ContractViewInstallment()
+    public ContractViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
-        
+        _supabaseService = supabaseService;
+
         _contract = new ContractInstallment();
         DataContext = _contract;
 
@@ -42,17 +45,20 @@ public partial class ContractViewInstallment : UserControl
 
         Refresh();
 
-        _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox"); //this line becasue avalonia can't found TenantIdSearchBox it's returen null maybe because the warning message
+        _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
+
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncContractsFromCloudAsync();
     }
 
     private void LoadProducts()
     {
+        var products = _productDB.GetAll();
 
-        var Products = _productDB.GetAll();
-        
-        ProductsBox.ItemsSource = Products;
+        ProductsBox.ItemsSource = products;
 
-        if (Products.Count > 0)
+        if (products.Count > 0)
             ProductsBox.SelectedIndex = 0;
     }
 
@@ -72,6 +78,7 @@ public partial class ContractViewInstallment : UserControl
             Console.WriteLine(ex.ToString());
         }
     }
+    
     private void ProductsBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (ProductsBox.SelectedItem is ProductInstallment product)
@@ -79,38 +86,37 @@ public partial class ContractViewInstallment : UserControl
             _contract.ProductId = product.Id;
             _contract.ProductName = product.ProductName;
             _contract.ProductMainPrice = product.ProductMainPrice;
-             realMainPrice = product.ProductMainPrice;
-             
+            realMainPrice = product.ProductMainPrice;
+
             UpdateProductTotalAmount();
         }
     }
+
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
             var contractNumber = ContractNumber?.Trim() ?? "";
-
             var contractDateStart = ContractDateStartPicker.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
-            int period;
-
-            if (!int.TryParse(ContractPeriodBox.Text, out period))
+            if (!int.TryParse(ContractPeriodBox.Text, out var period))
                 period = 0;
 
             _contract.ContractPeriod = period;
             var contractDateEnd = contractDateStart.AddMonths(period);
-            
+
             if (ProductsBox.SelectedItem is not ProductInstallment product)
                 return;
 
             if (_selectedCutomer == null)
             {
                 CustomerInfoText.Text = "يرجى اختيار العميل أولاً";
+                CustomerInfoText.Foreground = Brushes.Red;
                 return;
             }
 
-            var customerId = _selectedCutomer.Id;
-            
+            var customer = _selectedCutomer;
+
             _contractsDB.Add(
                 contractNumber,
                 contractDateStart,
@@ -123,20 +129,25 @@ public partial class ContractViewInstallment : UserControl
                 (float)_contract.ManagementFee,
                 (float)_contract.InterestPercent,
                 product.Id,
-                customerId
+                customer.Id
             );
-            
+
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
             CustomerInfoText.Text = ex.Message;
+            CustomerInfoText.Foreground = Brushes.Red;
         }
     }
+
     private void SearchCustomer_Click(object? sender, RoutedEventArgs e)
     {
         var id = _customerIdSearchBox?.Text?.Trim() ?? "";
+
         if (string.IsNullOrWhiteSpace(id))
             return;
 
@@ -145,21 +156,73 @@ public partial class ContractViewInstallment : UserControl
         if (customer is null)
         {
             _selectedCutomer = null;
-            CustomerInfoText.Text = "لم يتم العثور على مستأجر بهذا الرقم";
+            CustomerInfoText.Text = "لم يتم العثور على عميل بهذا الرقم";
             CustomerInfoText.Foreground = Brushes.Red;
             return;
         }
 
         _selectedCutomer = customer;
-        var _customerInfo = $"اسم المستأجر : {customer.Name} | ";
-        var _customerID = $"رقم الهوية/الإقامة : {customer.IdentityNumber}";
-        CustomerInfoText.Text = _customerInfo + _customerID;
+
+        CustomerInfoText.Text =
+            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
+
         CustomerInfoText.Foreground = Brushes.Green;
     }
+
+    private async Task SyncContractsFromCloudAsync()
+    {
+        try
+        {
+            var cloud = new CloudContractsInstallmentService(_supabaseService);
+            var rows = await cloud.GetContractsAsync();
+
+            foreach (var row in rows)
+            {
+                var productLocalId = _productDB.GetLocalIdByCloudId(row.ProductId);
+                var customerLocalId = _customersDB.GetLocalIdByCloudId(row.CustomerId);
+
+                if (productLocalId == 0 || customerLocalId == 0)
+                    continue;
+
+                _contractsDB.UpsertFromCloud(
+                    row.Id,
+                    row.ContractNumber,
+                    row.ContractStartDate,
+                    row.ContractEndDate,
+                    row.MainTotalAmount,
+                    row.CurrentTotalAmount,
+                    row.ContractPeriod,
+                    row.DownPayment,
+                    row.MonthlyInstallment,
+                    row.ManagementFee,
+                    row.InterestPercent,
+                    row.ContractState,
+                    productLocalId,
+                    customerLocalId
+                );
+            }
+
+            LoadContract();
+            LoadProducts();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping installment contracts cloud sync.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         Refresh();
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncContractsFromCloudAsync();
     }
+
     private void Refresh()
     {
         try
@@ -168,37 +231,44 @@ public partial class ContractViewInstallment : UserControl
 
             LoadContract();
             LoadProducts();
+
             ManagementFeeBox.Text = "0";
             ContractPeriodBox.Text = "1";
             DownPaymentBox.Text = "0";
             CustomerIdSearchBox.Text = "";
             CustomerInfoText.Text = "";
+            CustomerInfoText.Foreground = Brushes.Black;
+
+            _selectedCutomer = null;
 
             ContractNumber = _contractsDB.GenerateContractNumber();
-            ContractNumBox.Text = ContractNumber.ToString();
+            ContractNumBox.Text = ContractNumber;
 
             ContractDateStartPicker.SelectedDate = DateTime.Today;
-        } finally
+        }
+        finally
         {
             _isRefreshing = false;
         }
     }
+
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ContractInstallment contract)
-            new ContractWindowViewInstallment(contract.Id).Show();
+            new ContractWindowViewInstallment(contract.Id, _supabaseService).Show();
     }
+
     private void UpdateProductTotalAmount()
     {
-        
         double total =
             _contract.ProductMainPrice + _contract.ManagementFee +
-            (((_contract.ProductMainPrice * _contract.InterestPercent / 100.0)/12)*(_contract.ContractPeriod));
-        
+            (((_contract.ProductMainPrice * _contract.InterestPercent / 100.0) / 12) * (_contract.ContractPeriod));
+
         _contract.MainTotalAmount = Math.Round(total, 2);
-        
+
         UpdateInstallmentAfterTotalChanged();
     }
+
     private void UpdateInstallmentAfterTotalChanged()
     {
         if (!string.IsNullOrWhiteSpace(ContractPeriodBox.Text) &&
@@ -218,6 +288,7 @@ public partial class ContractViewInstallment : UserControl
             ContractPeriodBox.Text = _contract.ContractPeriod.ToString("0");
         }
     }
+
     private void InterestPercentBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -229,6 +300,7 @@ public partial class ContractViewInstallment : UserControl
             UpdateProductTotalAmount();
         }
     }
+
     private void ManagementFeeBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -253,6 +325,7 @@ public partial class ContractViewInstallment : UserControl
             ManagementFeeErrorText.Text = "قيمة غير صحيحة";
         }
     }
+
     private void ContractPeriodBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -284,7 +357,7 @@ public partial class ContractViewInstallment : UserControl
             ContractPeriodErrorText.Text = "قيمة غير صحيحة";
         }
     }
-    
+
     private void DownPaymentBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -309,11 +382,11 @@ public partial class ContractViewInstallment : UserControl
         {
             DownPaymentErrorText.Text = "";
             _contract.DownPayment = value;
-            _contract.ProductMainPrice = (realMainPrice - _contract.DownPayment);
+            _contract.ProductMainPrice = realMainPrice - _contract.DownPayment;
 
             if (_contract.ProductMainPrice < 0)
                 _contract.ProductMainPrice = 0;
-            
+
             UpdateProductTotalAmount();
         }
         else
@@ -321,9 +394,11 @@ public partial class ContractViewInstallment : UserControl
             DownPaymentErrorText.Text = "قيمة غير صحيحة";
         }
     }
-    private async Task<string?> PickSavePdfPathAsync(string contractNumber,string title,string fileName)
+
+    private async Task<string?> PickSavePdfPathAsync(string contractNumber, string title, string fileName)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -331,7 +406,7 @@ public partial class ContractViewInstallment : UserControl
             new FilePickerSaveOptions
             {
                 Title = title,
-                SuggestedFileName = $"{fileName+contractNumber}.pdf",
+                SuggestedFileName = $"{fileName + contractNumber}.pdf",
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("PDF")
@@ -343,20 +418,23 @@ public partial class ContractViewInstallment : UserControl
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ContractInstallment contract) return;
+        if (sender is not Button btn || btn.Tag is not ContractInstallment contract)
+            return;
 
-        ContractInstallment? _contractPdfData = _contractsDB.GetById(contract.Id);
-        if (_contractPdfData is null) return;
+        ContractInstallment? contractPdfData = _contractsDB.GetById(contract.Id);
 
-        var path = await PickSavePdfPathAsync(_contractPdfData.ContractNumber,"حفظ العقد (PDF)","");
+        if (contractPdfData is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(contractPdfData.ContractNumber, "حفظ العقد (PDF)", "");
+
         if (string.IsNullOrWhiteSpace(path))
             return;
-        
 
-        _pdfService.GenerateContractInstallmentPdf(_contractPdfData, path);
-
+        _pdfService.GenerateContractInstallmentPdf(contractPdfData, path);
 
         Process.Start(new ProcessStartInfo
         {
@@ -367,18 +445,20 @@ public partial class ContractViewInstallment : UserControl
 
     private async void PrintSanadAmr_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ContractInstallment contract) return;
+        if (sender is not Button btn || btn.Tag is not ContractInstallment contract)
+            return;
 
-        ContractInstallment? _contractPdfData = _contractsDB.GetById(contract.Id);
-        if (_contractPdfData is null) return;
+        ContractInstallment? contractPdfData = _contractsDB.GetById(contract.Id);
 
-        var path = await PickSavePdfPathAsync(_contractPdfData.ContractNumber,"حفظ سند لأمر (PDF)", "SanadAmr_");
+        if (contractPdfData is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(contractPdfData.ContractNumber, "حفظ سند لأمر (PDF)", "SanadAmr_");
+
         if (string.IsNullOrWhiteSpace(path))
             return;
-        
 
-        _pdfService.GenerateSanadLeAmrPdf(_contractPdfData, path);
-
+        _pdfService.GenerateSanadLeAmrPdf(contractPdfData, path);
 
         Process.Start(new ProcessStartInfo
         {

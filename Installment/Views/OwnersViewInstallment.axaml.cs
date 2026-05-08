@@ -1,8 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
-using System.Data.Common;
+using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -11,41 +12,45 @@ public partial class OwnersViewInstallment : UserControl
 {
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly OwnerInstallmentService _owners;
-
-    public OwnersViewInstallment()
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
+    
+    public OwnersViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
         _owners = new OwnerInstallmentService(_db);
-
+        
         LoadOwners();
+
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncOwnersFromCloudAsync();
     }
 
     private void LoadOwners()
     {
         var data = _owners.GetAll();
 
-        Console.WriteLine($"Owners count: {data.Count}");
-
-        // اجبار التحديث
         OwnersGrid.ItemsSource = null;
         OwnersGrid.ItemsSource = data;
     }
-
+    
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
             var name = NameBox.Text?.Trim() ?? "";
             var phone = PhoneBox.Text?.Trim() ?? "";
-            var IdentityNumber = IdentityNumberBox.Text?.Trim() ?? "";
+            var identityNumber = IdentityNumberBox.Text?.Trim() ?? "";
             var address = AddressBox.Text?.Trim() ?? "";
 
             if (string.IsNullOrWhiteSpace(name))
                 return;
 
-            _owners.Add(name, IdentityNumber, phone, address);
+            _owners.Add(name, identityNumber, phone, address);
 
             NameBox.Text = "";
             IdentityNumberBox.Text = "";
@@ -53,6 +58,38 @@ public partial class OwnersViewInstallment : UserControl
             AddressBox.Text = "";
 
             LoadOwners();
+
+            _ = _sync.PushAllDirtyAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private async Task SyncOwnersFromCloudAsync()
+    {
+        try
+        {
+            var cloud = new CloudOwnersInstallmentService(_supabaseService);
+            var rows = await cloud.GetOwnersAsync();
+
+            foreach (var row in rows)
+            {
+                _owners.UpsertFromCloud(
+                    row.Id,
+                    row.Name,
+                    row.IdentityNumber,
+                    row.Phone,
+                    row.Address
+                );
+            }
+
+            LoadOwners();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping installment owners cloud sync.");
         }
         catch (Exception ex)
         {
@@ -63,11 +100,14 @@ public partial class OwnersViewInstallment : UserControl
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         LoadOwners();
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncOwnersFromCloudAsync();
     }
 
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is OwnerInstallment owner)
-            new OwnersWindowViewInstallment(owner).Show();
+            new OwnersWindowViewInstallment(owner, _supabaseService).Show();
     }
 }

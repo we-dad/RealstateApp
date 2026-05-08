@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -15,76 +15,97 @@ namespace RealEstateInstallmentsManager.Views;
 public partial class ExpensesViewInstallment : UserControl
 {
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
-    private readonly ExpensesServiceInstallment _ExpensesDB;
+    private readonly ExpensesServiceInstallment _expensesDB;
     private readonly ProductServiceInstallment _productsDB;
-    private PdfServiceInstallment _pdfService;
+    private readonly PdfServiceInstallment _pdfService;
+    private readonly SupabaseService _supabaseService;
+    private readonly InstallmentSyncService _sync;
 
-    public ExpensesViewInstallment()
+    public ExpensesViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
 
-        _ExpensesDB = new ExpensesServiceInstallment(_db);
+        _expensesDB = new ExpensesServiceInstallment(_db);
         _productsDB = new ProductServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
 
         Refresh();
+
+        _sync = new InstallmentSyncService(_db, _supabaseService);
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncExpensesFromCloudAsync();
     }
 
-    private void LoadUnits()
+    private void LoadProducts()
     {
-        var Products = _productsDB.GetAll();
+        var products = _productsDB.GetAll();
 
-        ProductBox.ItemsSource = Products;
+        ProductBox.ItemsSource = products;
 
-        if (Products.Count > 0)
+        if (products.Count > 0)
             ProductBox.SelectedIndex = 0;
     }
+
     private void LoadExpensesService()
     {
         ExpensesServiceBox.ItemsSource = new List<string>
         {
-            "تكييف",
-            "نظافة",
-            "صيانة",
-            "ماء",
-            "كهرباء",
             "أخرى"
         };
 
         ExpensesServiceBox.SelectedIndex = 0;
     }
+
     private void LoadExpenses()
     {
+        try
+        {
+            var data = _expensesDB.GetAll();
 
-        var data = _ExpensesDB.GetAll();
-
-        ExpensesGrid.ItemsSource = null;
-        ExpensesGrid.ItemsSource = data;
+            ExpensesGrid.ItemsSource = null;
+            ExpensesGrid.ItemsSource = data;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
     }
+    
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
-            var ExpensesNum = ExpensesNumBox.Text?.Trim() ?? "";
-            var ExpensesDate = DateTime.Today;
+            var expensesNum = ExpensesNumBox.Text?.Trim() ?? "";
+            var expensesDate = DateTime.Today;
 
-            if (ProductBox.SelectedItem is not UnitRealEstate unit)
+            if (ProductBox.SelectedItem is not ProductInstallment product)
                 return;
 
-            var ExpensesService = ExpensesServiceBox.SelectedItem as string ?? "أخرى";
+            var expensesService = ExpensesServiceBox.SelectedItem as string ?? "أخرى";
 
-            var ExpensesAmount = double.Parse(
-                ExpensesAmountBox.Text?.Trim() ?? "",
+            var expensesAmount = double.Parse(
+                ExpensesAmountBox.Text?.Trim() ?? "0",
                 CultureInfo.InvariantCulture
             );
 
-            var ExpensesNote = ExpensesNoteBox.Text?.Trim() ?? "";
+            var expensesNote = ExpensesNoteBox.Text?.Trim() ?? "";
 
-            _ExpensesDB.Add(ExpensesNum, ExpensesDate, unit.Id, ExpensesService, ExpensesAmount, ExpensesNote);
+            _expensesDB.Add(
+                expensesNum,
+                expensesDate,
+                product.Id,
+                expensesService,
+                expensesAmount,
+                expensesNote
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
         }
         catch (Exception ex)
         {
@@ -92,32 +113,75 @@ public partial class ExpensesViewInstallment : UserControl
         }
     }
 
+    private async Task SyncExpensesFromCloudAsync()
+    {
+        try
+        {
+            var cloudExpenses = new CloudExpensesInstallmentService(_supabaseService);
+            var rows = await cloudExpenses.GetExpensesAsync();
+
+            foreach (var row in rows)
+            {
+                var productLocalId = _productsDB.GetLocalIdByCloudId(row.ProductId);
+
+                if (productLocalId == 0)
+                    continue;
+
+                _expensesDB.UpsertFromCloud(
+                    row.Id,
+                    row.ExpensesNumber,
+                    row.ExpensesDate,
+                    productLocalId,
+                    row.ExpensesService,
+                    row.ExpensesAmount,
+                    row.ExpensesNote
+                );
+            }
+
+            LoadExpenses();
+            LoadProducts();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            Console.WriteLine("Offline: skipping installment expenses cloud sync.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         Refresh();
+
+        _ = _sync.PushAllDirtyAsync();
+        _ = SyncExpensesFromCloudAsync();
+
     }
+
     private void Refresh()
     {
         LoadExpenses();
-        LoadUnits();
+        LoadProducts();
         LoadExpensesService();
 
-        ExpensesNumBox.Text = _ExpensesDB.GenerateExpensesNumber();
+        ExpensesNumBox.Text = _expensesDB.GenerateExpensesNumber();
         ExpensesDateBox.Text = DateTime.Today.ToString("yyyy-MM-dd");
         ExpensesAmountBox.Text = "";
         ExpensesNoteBox.Text = "";
-
     }
+
     private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ExpensesRealEstate expenses)
-            new ExpensesWindowViewRealEstate(expenses.Id).Show();
+        if (sender is Button btn && btn.Tag is ExpensesInstallment expense)
+            new ExpensesWindowViewInstallment(expense.Id, _supabaseService).Show();
     }
 
-    private async Task<string?> PickSavePdfPathAsync(string contractNumber)
+    private async Task<string?> PickSavePdfPathAsync(string expensesNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);
+
         if (topLevel is null)
             return null;
 
@@ -125,30 +189,35 @@ public partial class ExpensesViewInstallment : UserControl
             new FilePickerSaveOptions
             {
                 Title = "حفظ السند  (PDF)",
-                SuggestedFileName = $"{contractNumber}.pdf",
+                SuggestedFileName = $"{expensesNumber}.pdf",
                 FileTypeChoices = new[]
                 {
-                new FilePickerFileType("PDF")
-                {
-                    Patterns = new[] { "*.pdf" }
-                }
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
                 }
             });
 
         return file?.Path.LocalPath;
     }
+
     private async void Print_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not ExpensesRealEstate expenses) return;
+        if (sender is not Button btn || btn.Tag is not ExpensesInstallment expenses)
+            return;
 
-        ExpensesRealEstate? _expenses = _ExpensesDB.GetById(expenses.Id);
-        if (_expenses is null) return;
+        ExpensesInstallment? selectedExpense = _expensesDB.GetById(expenses.Id);
 
-        var path = await PickSavePdfPathAsync(_expenses.ExpensesNumber);
+        if (selectedExpense is null)
+            return;
+
+        var path = await PickSavePdfPathAsync(selectedExpense.ExpensesNumber);
+
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        // _pdfService.GenerateExpensesPdf(expenses, path);
+        _pdfService.GenerateExpensesPdf(selectedExpense, path);
 
         Process.Start(new ProcessStartInfo
         {

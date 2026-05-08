@@ -4,33 +4,36 @@ using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
+using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
 
 public partial class UnitsWindowViewRealEstate : Window
 {
-
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
     private readonly OwnerServiceRealEstate _ownersDB;
     private readonly UnitServiceRealEstate _unitsDB;
     private UnitRealEstate? _unit;
-    private long _unitID;
+    private readonly long _unitID;
+    private readonly SupabaseService _supabaseService;
+    private readonly RealEstateSyncService _sync;
 
-
-    public UnitsWindowViewRealEstate(long unitID)
+    public UnitsWindowViewRealEstate(long unitID, SupabaseService supabaseService)
     {
         InitializeComponent();
+        _supabaseService = supabaseService;
 
         _db.Initialize();
         _ownersDB = new OwnerServiceRealEstate(_db);
         _unitsDB = new UnitServiceRealEstate(_db);
+        _sync = new RealEstateSyncService(_db, _supabaseService);
 
         _unitID = unitID;
 
         Refresh();
-
     }
 
     private void LoadOwners()
@@ -38,7 +41,6 @@ public partial class UnitsWindowViewRealEstate : Window
         var owners = _ownersDB.GetAll();
 
         OwnerBox.ItemsSource = owners;
-
         OwnerBox.SelectedItem = owners.FirstOrDefault(o => o.Id == _unit?.OwnerId);
     }
 
@@ -52,8 +54,7 @@ public partial class UnitsWindowViewRealEstate : Window
 
         UnitTypeBox.SelectedIndex = 0;
     }
-
-
+    
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -69,20 +70,23 @@ public partial class UnitsWindowViewRealEstate : Window
             var unitType = UnitTypeBox.SelectedItem as string ?? "سكني";
             var unitsCount = int.Parse(UnitsCountBox.Text?.Trim() ?? "1");
             var unitNum = int.Parse(UnitNumBox.Text?.Trim() ?? "1");
-
+            var finalUnitName = unitName + "-" + unitNum;
 
             _unitsDB.Update(
-            _unit.Id,
-            owner.Id,
-            unitName + "-" + unitNum,
-            city,
-            district,
-            unitType,
-            unitsCount,
-            unitNum
-        );
+                _unit.Id,
+                owner.Id,
+                finalUnitName,
+                city,
+                district,
+                unitType,
+                unitsCount,
+                unitNum
+            );
 
             Refresh();
+
+            _ = _sync.PushAllDirtyAsync();
+            
         }
         catch (Exception ex)
         {
@@ -92,7 +96,7 @@ public partial class UnitsWindowViewRealEstate : Window
 
     private void Refresh()
     {
-        _unit = _unitsDB.GetById(_unitID) ?? new UnitRealEstate();
+        _unit = _unitsDB.GetById(_unitID);
         if (_unit is null) return;
 
         DataContext = _unit;
@@ -100,19 +104,17 @@ public partial class UnitsWindowViewRealEstate : Window
         LoadOwners();
         LoadUnitTypes();
 
-        //unit name
-        string unitNameWithotNum = _unit.UnitName;
-        if (unitNameWithotNum.Length >= 2)
-        {
-            unitNameWithotNum = unitNameWithotNum.Substring(0, unitNameWithotNum.Length - 2);
-        }
-        UnitNameBox.Text = unitNameWithotNum ?? "";
+        var unitNameWithoutNum = _unit.UnitName;
 
+        if (unitNameWithoutNum.Length >= 2)
+            unitNameWithoutNum = unitNameWithoutNum.Substring(0, unitNameWithoutNum.Length - 2);
+
+        UnitNameBox.Text = unitNameWithoutNum;
         DistrictBox.Text = _unit.District ?? "";
         CityBox.Text = _unit.City ?? "";
         UnitTypeBox.Text = _unit.UnitType ?? "";
-        UnitNumBox.Text = _unit.UnitNum.ToString() ?? "";
-        UnitsCountBox.Text = _unit.UnitsCount.ToString() ?? "";
+        UnitNumBox.Text = _unit.UnitNum.ToString();
+        UnitsCountBox.Text = _unit.UnitsCount.ToString();
 
         ResultNameBox.Text = _unit.OwnerName ?? "";
         ResultIdentityNumberBox.Text = _unit.OwnerIdentityNumber ?? "";
@@ -123,26 +125,32 @@ public partial class UnitsWindowViewRealEstate : Window
         ResultDistrictBox.Text = _unit.District ?? "";
         ResultCityBox.Text = _unit.City ?? "";
         ResultUnitTypeBox.Text = _unit.UnitType ?? "";
-        ResultUnitNumBox.Text = _unit.UnitsCount.ToString() + " / " + _unit.UnitNum.ToString() ?? "";
+        ResultUnitNumBox.Text = _unit.UnitsCount + " / " + _unit.UnitNum;
     }
-    private async void Delete_Click(object? sender, RoutedEventArgs e)
+
+    private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         if (_unit is null) return;
+
         try
         {
             _unitsDB.Delete(_unit.Id);
+
+            _ = _sync.PushAllDirtyAsync();
+            
             Close();
         }
         catch (InvalidOperationException ex)
         {
-            await ShowMessageAsync("تنبيه", ex.Message);
+            _ = ShowMessageAsync("تنبيه", ex.Message);
         }
         catch (Exception ex)
         {
-            await ShowMessageAsync("خطأ", ex.Message);
+            _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {
@@ -152,7 +160,11 @@ public partial class UnitsWindowViewRealEstate : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
 
-        var ok = new Button { Content = "موافق", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var ok = new Button
+        {
+            Content = "موافق",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
 
         ok.Click += (_, __) => dialog.Close();
 
@@ -161,18 +173,17 @@ public partial class UnitsWindowViewRealEstate : Window
             Margin = new Thickness(16),
             Spacing = 12,
             Children =
-        {
-            new TextBlock
             {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center
-            },
-            ok
-        }
+                new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center
+                },
+                ok
+            }
         };
 
         await dialog.ShowDialog(this);
     }
-
 }
