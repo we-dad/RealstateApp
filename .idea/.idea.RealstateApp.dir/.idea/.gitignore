@@ -1,0 +1,63 @@
+# Build folders
+bin/
+obj/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Publish folders
+publish/
+artifacts/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# App packages/installers
+*.msi
+*.exe
+*.dmg
+*.pkg
+*.deb
+*.rpm
+
+# Avalonia generated files
+*.g.cs
+
+# Temporary files
+tmp/
+temp/
+
+# Test results
+TestResults/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Rider cache
+.idea_modules/
+
+# Local environment files
+.env
+.env.local
