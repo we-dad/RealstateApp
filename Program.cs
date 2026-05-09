@@ -143,7 +143,11 @@ internal sealed class Program
 
             await Task.Delay(1500);
 
-            manager.ApplyUpdatesAndRestart(update);
+            ((TextBlock)contentPanel.Children[0]).Text = "تم تثبيت التحديث";
+            ((TextBlock)contentPanel.Children[1]).Text = "يرجى فتح التطبيق مرة أخرى.";
+            await Task.Delay(2500);
+
+            manager.ApplyUpdatesAndExit(update);
         };
 
         laterButton.Click += (_, _) =>
