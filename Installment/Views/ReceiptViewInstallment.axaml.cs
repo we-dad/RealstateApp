@@ -114,6 +114,9 @@ public partial class ReceiptViewInstallment : UserControl
 
     private async Task SyncReceiptsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudReceipts = new CloudReceiptsInstallmentService(_supabaseService);

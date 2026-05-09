@@ -17,6 +17,9 @@ public class RealEstateSyncService
 
     public async Task PushAllDirtyAsync()
     {
+        if (!AppSession.CanWriteOnline)
+            return;
+        
         try
         {
             // Children first, parents last

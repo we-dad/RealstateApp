@@ -171,6 +171,9 @@ public partial class ContractViewInstallment : UserControl
 
     private async Task SyncContractsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloud = new CloudContractsInstallmentService(_supabaseService);

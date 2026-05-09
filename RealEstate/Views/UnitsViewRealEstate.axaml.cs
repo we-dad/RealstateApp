@@ -73,6 +73,9 @@ public partial class UnitsViewRealEstate : UserControl
     
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             if (OwnerBox.SelectedItem is not OwnerRealEstate owner)

@@ -7,6 +7,7 @@ namespace RealEstateInstallmentsManager.Models.Cloud;
 public class UserRoleRow : BaseModel
 {
     [PrimaryKey("user_id", false)]
+    [Column("user_id")]
     public string UserId { get; set; } = "";
 
     [Column("role")]

@@ -79,6 +79,9 @@ public partial class OwnersViewRealEstate : UserControl
     
     private async Task SyncOwnersFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudOwners = new CloudOwnersRealEstateService(_supabaseService);

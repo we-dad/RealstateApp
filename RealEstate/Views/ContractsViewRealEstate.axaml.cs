@@ -191,6 +191,9 @@ public partial class ContractsViewRealEstate : UserControl
 
     private async Task SyncContractsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudContracts = new CloudContractsRealEstateService(_supabaseService);

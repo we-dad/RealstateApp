@@ -13,9 +13,7 @@ public partial class MainWindow : Window
    public MainWindow()
     {
         InitializeComponent();
-        ShowMainMenu();
-        _ = StartupAsync();
-        
+        ShowLogin();
         Opened += async (_, _) =>
         {
             await Task.Delay(3000);
@@ -23,15 +21,11 @@ public partial class MainWindow : Window
         };
 
     }
-    private async Task StartupAsync()
+    public void ShowLogin()
     {
-        await _supabaseService.InitializeAsync();
-
-        var auth = new AuthService(_supabaseService);
-        var ok = await auth.SignInAsync("weedox1997@gmail.com", "WwW121212");
-
-        Console.WriteLine(ok ? "Login success" : "Login failed");
+        MainContent.Content = new LoginView(this, _supabaseService);
     }
+
     public void ShowMainMenu()
     {
         MainContent.Content = new MainMenuView(this);

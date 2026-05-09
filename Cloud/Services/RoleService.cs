@@ -13,17 +13,17 @@ public class RoleService
         _supabaseService = supabaseService;
     }
 
-    public async Task<string?> GetMyRoleAsync()
+    public async Task<string> GetMyRoleAsync()
     {
         var userId = _supabaseService.Client.Auth.CurrentUser?.Id;
         if (string.IsNullOrWhiteSpace(userId))
-            return null;
+            return "tester";
 
         var result = await _supabaseService.Client
             .From<UserRoleRow>()
             .Where(x => x.UserId == userId)
             .Get();
 
-        return result.Models.FirstOrDefault()?.Role;
+        return result.Models.FirstOrDefault()?.Role ?? "tester";
     }
 }

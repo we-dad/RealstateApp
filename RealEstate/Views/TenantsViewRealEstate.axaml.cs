@@ -72,6 +72,9 @@ public partial class TenantsViewRealEstate : UserControl
 
     private async Task SyncTenantsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudTenants = new CloudTenantsRealEstateService(_supabaseService);

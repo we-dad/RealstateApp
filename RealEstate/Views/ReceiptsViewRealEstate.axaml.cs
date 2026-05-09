@@ -143,6 +143,9 @@ public partial class ReceiptsViewRealEstate : UserControl
 
     private async Task SyncReceiptsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudReceipts = new CloudReceiptsRealEstateService(_supabaseService);

@@ -115,6 +115,9 @@ public partial class ExpensesViewInstallment : UserControl
 
     private async Task SyncExpensesFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudExpenses = new CloudExpensesInstallmentService(_supabaseService);

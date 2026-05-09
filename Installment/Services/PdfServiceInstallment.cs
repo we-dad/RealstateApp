@@ -434,16 +434,19 @@ public class PdfServiceInstallment
     {
         container.Page(page =>
         {
-            page.Size(PageSizes.A4.Landscape());   // Landscape
+            page.Size(PageSizes.A4.Landscape());
             page.Margin(30);
-
             page.DefaultTextStyle(x =>
-                x.FontFamily("Arial")   // Better to use an Arabic font like "Noto Naskh Arabic" or "Tahoma"
-                 .FontSize(12)
+                x.FontFamily("Arial")
+                    .FontSize(12)
             );
 
-            page.Content().PaddingTop(80).Column(col =>
-            {
+            page.Content()
+                .AlignCenter()
+                .AlignMiddle()
+                .MaxWidth(650)
+                .Column(col =>
+                {
                 col.Spacing(10);
 
                 col.Item().Element(section =>
@@ -462,12 +465,19 @@ public class PdfServiceInstallment
                         });
 
                         s.Item().Text("سند قبض").FontSize(18).Bold().AlignCenter();
-
-                        s.Item().Row(row =>
+                        
+                        s.Item().ContentFromRightToLeft().Row(row =>
                         {
-                            row.RelativeItem();
-                            row.RelativeItem().AlignCenter().Text(r.CustomerName);
-                            row.RelativeItem().AlignRight().Text("/ استلمنا من السيد").Bold();
+                            row.RelativeItem()
+                                .AlignRight()
+                                .Text("استلمنا من السيد / ")
+                                .Bold();
+
+                            row.RelativeItem()
+                                .AlignRight()
+                                .Text(r.CustomerName);
+
+                            row.RelativeItem(4);
                         });
 
                         s.Item().Row(row =>
@@ -506,7 +516,7 @@ public class PdfServiceInstallment
 
                             row.RelativeItem()
                                 .AlignRight()
-                                .Text("ايجار شقة");
+                                .Text("مستحقات مالية");
 
                             row.RelativeItem()
                                 .AlignRight()

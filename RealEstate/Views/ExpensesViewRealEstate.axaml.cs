@@ -120,6 +120,9 @@ public partial class ExpensesViewRealEstate : UserControl
 
     private async Task SyncExpensesFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudExpenses = new CloudExpensesRealEstateService(_supabaseService);

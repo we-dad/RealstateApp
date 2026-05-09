@@ -119,6 +119,9 @@ public partial class ProductViewInstallment : UserControl
 
     private async Task SyncProductsFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudProducts = new CloudProductsInstallmentService(_supabaseService);

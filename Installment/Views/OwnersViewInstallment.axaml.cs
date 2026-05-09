@@ -69,6 +69,9 @@ public partial class OwnersViewInstallment : UserControl
 
     private async Task SyncOwnersFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloud = new CloudOwnersInstallmentService(_supabaseService);

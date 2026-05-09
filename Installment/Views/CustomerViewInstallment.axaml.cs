@@ -100,6 +100,9 @@ public partial class CustomerViewInstallment : UserControl
 
     private async Task SyncCustomersFromCloudAsync()
     {
+        if (!AppSession.CanReadOnline)
+            return;
+
         try
         {
             var cloudCustomers = new CloudCustomersInstallmentService(_supabaseService);

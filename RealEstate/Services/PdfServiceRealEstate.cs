@@ -219,7 +219,7 @@ public class PdfServiceRealEstate
                 page.Content()
                     .AlignCenter()
                     .AlignMiddle()
-                    .Width(500)
+                    .Width(650)
                     .Column(col =>
                 {
                     col.Spacing(10);
@@ -248,18 +248,19 @@ public class PdfServiceRealEstate
                             s.Item().Text("سند قبض").FontSize(18).Bold().AlignCenter();
 
                             s.Item().ExtendHorizontal();
-                            s.Item().ExtendHorizontal().Row(row =>
+                            
+                            s.Item().ContentFromRightToLeft().Row(row =>
                             {
-                                row.RelativeItem();
+                                row.RelativeItem()
+                                    .AlignRight()
+                                    .Text("استلمنا من السيد / ")
+                                    .Bold();
 
                                 row.RelativeItem()
-                                   .AlignCenter()
-                                   .Text(r.TenantName);
+                                    .AlignRight()
+                                    .Text(r.TenantName);
 
-                                row.RelativeItem()
-                                   .AlignRight()
-                                   .Text("/ استلمنا من السيد")
-                                   .Bold();
+                                row.RelativeItem(4);
                             });
 
                             s.Item().ExtendHorizontal().Row(row =>
