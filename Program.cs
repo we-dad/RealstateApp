@@ -53,7 +53,8 @@ internal sealed class Program
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
-  public static async Task CheckForUpdatesWithUI()
+    
+   public static async Task CheckForUpdatesWithUI()
 {
     try
     {
@@ -78,24 +79,37 @@ internal sealed class Program
         if (mainWindow == null)
             return;
 
+        var laterButton = new Button
+        {
+            Content = "لاحقاً",
+            Width = 120,
+            FontSize = 16,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            HorizontalContentAlignment = HorizontalAlignment.Center
+        };
+
         var updateButton = new Button
         {
             Content = "تحديث الآن",
             Width = 120,
-            HorizontalAlignment = HorizontalAlignment.Center
+            FontSize = 16,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            HorizontalContentAlignment = HorizontalAlignment.Center
         };
 
-        var laterButton = new Button
+        var messageText = new TextBlock
         {
-            Content = "لاحقًا",
-            Width = 120,
-            HorizontalAlignment = HorizontalAlignment.Center
+            Text = "هل تريد تحميل وتثبيت التحديث الآن؟",
+            FontSize = 18,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = Avalonia.Media.TextAlignment.Center
         };
 
         var confirmWindow = new Window
         {
-            Width = 420,
-            Height = 190,
+            Width = 520,
+            Height = 230,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Title = "تحديث",
             CanResize = false,
@@ -103,14 +117,11 @@ internal sealed class Program
             {
                 Margin = new Thickness(20),
                 Spacing = 15,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
                 Children =
                 {
-                    new TextBlock
-                    {
-                        Text = "تم التحقق من وجود تحدث هل تريد التحديث الآن؟",
-                        FontSize = 14,
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    },
+                    messageText,
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -120,7 +131,6 @@ internal sealed class Program
                         {
                             laterButton,
                             updateButton
-                            
                         }
                     }
                 }
@@ -129,25 +139,28 @@ internal sealed class Program
 
         updateButton.Click += async (_, _) =>
         {
-            updateButton.IsEnabled = false;
-            laterButton.IsEnabled = false;
+            try
+            {
+                updateButton.IsEnabled = false;
+                laterButton.IsEnabled = false;
 
-            var contentPanel = (StackPanel)confirmWindow.Content!;
+                messageText.Text = "...جاري تحميل التحديث";
 
-            ((TextBlock)contentPanel.Children[0]).Text = "جاري تحديث التطبيق";
-            ((TextBlock)contentPanel.Children[1]).Text = "جاري تحميل التحديث...";
+                await manager.DownloadUpdatesAsync(update);
 
-            await manager.DownloadUpdatesAsync(update);
+                messageText.Text = "جاري تثبيت التحديث...\nسيتم إغلاق التطبيق بعد قليل.";
 
-            ((TextBlock)contentPanel.Children[1]).Text = "جاري تثبيت التحديث...";
+                await Task.Delay(2000);
 
-            await Task.Delay(1500);
+                manager.ApplyUpdatesAndExit(update);
+            }
+            catch (Exception ex)
+            {
+                messageText.Text = "فشل التحديث\n\n" + ex.Message;
 
-            ((TextBlock)contentPanel.Children[0]).Text = "تم تثبيت التحديث";
-            ((TextBlock)contentPanel.Children[1]).Text = "يرجى فتح التطبيق مرة أخرى.";
-            await Task.Delay(2500);
-
-            manager.ApplyUpdatesAndExit(update);
+                updateButton.IsEnabled = true;
+                laterButton.IsEnabled = true;
+            }
         };
 
         laterButton.Click += (_, _) =>

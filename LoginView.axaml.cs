@@ -9,12 +9,15 @@ public partial class LoginView : UserControl
 {
     private readonly MainWindow _mainWindow;
     private readonly SupabaseService _supabaseService;
+    public string AppVersion => $"Version {AppVersionService.GetVersion()}";
 
     public LoginView(MainWindow mainWindow, SupabaseService supabaseService)
     {
         InitializeComponent();
         _mainWindow = mainWindow;
         _supabaseService = supabaseService;
+        DataContext = this;
+
     }
 
     private async void Login_Click(object? sender, RoutedEventArgs e)
