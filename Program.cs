@@ -31,16 +31,6 @@ internal sealed class Program
 
         try
         {
-            CheckForUpdatesWithUI();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Update check failed:");
-            Console.WriteLine(ex);
-        }
-
-        try
-        {
             var db = new DbServiceRealEstate();
             db.Initialize();
         }
