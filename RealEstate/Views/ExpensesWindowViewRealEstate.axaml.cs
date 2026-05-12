@@ -71,7 +71,6 @@ public partial class ExpensesWindowViewRealEstate : Window
     {
         try
         {
-            var expensesNum = ExpensesNumBox.Text?.Trim() ?? "";
             var expensesDate = ExpensesDateBox.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
             if (UnitsBox.SelectedItem is not UnitRealEstate unit)
@@ -88,7 +87,6 @@ public partial class ExpensesWindowViewRealEstate : Window
 
             _expensesDB.Update(
                 _expensesID,
-                expensesNum,
                 expensesDate,
                 unit.Id,
                 expensesService,

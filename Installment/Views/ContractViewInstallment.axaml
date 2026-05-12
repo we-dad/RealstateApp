@@ -293,6 +293,34 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+                        
+                        <DataGridTemplateColumn Header="ملف العقد" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="models:ContractInstallment">
+                                    <Button Content="📎"
+                                            Tag="{Binding}"
+                                            Click="UploadSignature_Click"
+                                            Width="40"
+                                            Height="32"
+                                            Background="{Binding SignatureButton}"
+                                            ToolTip.Tip="رفع ملف العقد"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <DataGridTemplateColumn Header="فتح الملف" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="models:ContractInstallment">
+                                    <Button Content="👁"
+                                            Tag="{Binding}"
+                                            Click="OpenSignature_Click"
+                                            Width="40"
+                                            Height="32"
+                                            ToolTip.Tip="فتح ملف العقد"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
 
                     </DataGrid.Columns>
                 </DataGrid>

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
@@ -147,6 +148,7 @@ public partial class ContractsWindowViewRealEstate : Window
 
             _contractDB.Update(
                 _contract.Id,
+                
                 contractDateStart,
                 contractDateEnd,
                 unit.Id,
@@ -361,5 +363,104 @@ public partial class ContractsWindowViewRealEstate : Window
         };
 
         await dialog.ShowDialog(this);
+    }
+    
+     private async void UploadSignature_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn)
+            return;
+
+        if (btn.Tag is not ContractRealEstate contract)
+            return;
+
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        if (topLevel == null)
+            return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = "اختر ملف العقد",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("PDF / Images")
+                    {
+                        Patterns = ["*.pdf", "*.jpg", "*.jpeg", "*.png"]
+                    }
+                ]
+            });
+
+        if (files.Count == 0)
+            return;
+
+        var file = files[0];
+
+        var extension = Path.GetExtension(file.Name);
+
+        var fileName = $"real-estate-contract-{contract.Id}{extension}";
+
+        var cloudPath =
+            $"real-estate/contracts/{contract.Id}/{fileName}";
+        
+        if (!string.IsNullOrWhiteSpace(contract.SignatureCloudPath))
+        {
+            await _supabaseService.Client.Storage
+                .From("Rcontract-signatures")
+                .Remove(
+                [
+                    contract.SignatureCloudPath
+                ]);
+        }
+        
+        await _supabaseService.Client.Storage
+            .From("Rcontract-signatures")
+            .Upload(
+                file.Path!.LocalPath,
+                cloudPath,
+                new Supabase.Storage.FileOptions
+                {
+                    Upsert = true,
+                    CacheControl = "3600"
+                });
+
+        _contractDB.UpdateSignatureCloudInfo(
+            contract.Id,
+            cloudPath,
+            file.Name,
+            extension);
+    }
+    
+    private async void OpenSignature_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is not Button btn)
+                return;
+
+            if (btn.Tag is not ContractRealEstate contract)
+                return;
+
+            var currentContract = _contractDB.GetById(contract.Id);
+            var cloudPath = currentContract?.SignatureCloudPath ?? "";
+
+            if (string.IsNullOrWhiteSpace(cloudPath))
+                return;
+
+            var signedUrl = await _supabaseService.Client.Storage
+                .From("Rcontract-signatures")
+                .CreateSignedUrl(cloudPath, 60);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = signedUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Supabase.Storage.Exceptions.SupabaseStorageException)
+        {
+            Console.WriteLine("File not found in Supabase Storage.");
+        }
     }
 }

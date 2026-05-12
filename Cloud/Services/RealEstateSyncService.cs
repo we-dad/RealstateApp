@@ -172,7 +172,11 @@ public class RealEstateSyncService
                     ContractUnitFloorNum = contract.ContractUnitFloorNum,
                     ContractOpligation = contract.ContractOpligation,
                     UnitId = contract.UnitCloudId,
-                    TenantId = contract.TenantCloudId
+                    TenantId = contract.TenantCloudId,
+
+                    SignatureCloudPath = contract.SignatureCloudPath,
+                    SignatureFileName = contract.SignatureFileName,
+                    SignatureFileType = contract.SignatureFileType
                 });
 
                 contractsDB.UpdateCloudId(contract.Id, cloudId);
@@ -195,9 +199,13 @@ public class RealEstateSyncService
                     ContractUnitFloorNum = contract.ContractUnitFloorNum,
                     ContractOpligation = contract.ContractOpligation,
                     UnitId = contract.UnitCloudId,
-                    TenantId = contract.TenantCloudId
-                });
+                    TenantId = contract.TenantCloudId,
 
+                    SignatureCloudPath = contract.SignatureCloudPath,
+                    SignatureFileName = contract.SignatureFileName,
+                    SignatureFileType = contract.SignatureFileType
+                });
+                
                 contractsDB.MarkSynced(contract.Id);
             }
         }

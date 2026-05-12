@@ -72,7 +72,7 @@ public class ReceiptServiceRealEstate
         return (long)cmd.ExecuteScalar()!;
     }
 
-    public void Update(long id, string receiptNo, DateTime date, long contractId, string paymentMethod, double amount)
+    public void Update(long id, DateTime date, long contractId, string paymentMethod, double amount)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
@@ -80,8 +80,7 @@ public class ReceiptServiceRealEstate
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
             UPDATE ReceiptsRealEstate
-            SET ReceiptNumber = $no,
-                ReceiptDate = $date,
+            SET ReceiptDate = $date,
                 ContractId = $contractId,
                 PaymentMethod = $method,
                 Amount = $amount,
@@ -94,7 +93,6 @@ public class ReceiptServiceRealEstate
         """;
 
         cmd.Parameters.AddWithValue("$id", id);
-        cmd.Parameters.AddWithValue("$no", receiptNo);
         cmd.Parameters.AddWithValue("$date", date);
         cmd.Parameters.AddWithValue("$contractId", contractId);
         cmd.Parameters.AddWithValue("$method", paymentMethod);

@@ -172,7 +172,11 @@ public class InstallmentSyncService
                     InterestPercent = contract.InterestPercent,
                     ContractState = contract.ContractState,
                     ProductId = contract.ProductCloudId,
-                    CustomerId = contract.CustomerCloudId
+                    CustomerId = contract.CustomerCloudId,
+
+                    SignatureCloudPath = contract.SignatureCloudPath,
+                    SignatureFileName = contract.SignatureFileName,
+                    SignatureFileType = contract.SignatureFileType
                 });
 
                 contractsDB.UpdateCloudId(contract.Id, cloudId);
@@ -196,7 +200,11 @@ public class InstallmentSyncService
                     InterestPercent = contract.InterestPercent,
                     ContractState = contract.ContractState,
                     ProductId = contract.ProductCloudId,
-                    CustomerId = contract.CustomerCloudId
+                    CustomerId = contract.CustomerCloudId,
+
+                    SignatureCloudPath = contract.SignatureCloudPath,
+                    SignatureFileName = contract.SignatureFileName,
+                    SignatureFileType = contract.SignatureFileType
                 });
 
                 contractsDB.MarkSynced(contract.Id);

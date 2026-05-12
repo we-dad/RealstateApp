@@ -65,7 +65,6 @@ public partial class ReceiptsWindowViewRealEstate : Window
             if (_receipt is null)
                 return;
 
-            var receiptNum = ReceiptNumBox.Text?.Trim() ?? "";
             var receiptDate = ReceiptDate.SelectedDate?.LocalDateTime ?? DateTime.Today;
 
             if (_selectedContract == null)
@@ -85,7 +84,6 @@ public partial class ReceiptsWindowViewRealEstate : Window
 
             _receiptsDB.Update(
                 _receiptID,
-                receiptNum,
                 receiptDate,
                 contract.Id,
                 paymentMethod,

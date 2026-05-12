@@ -41,13 +41,33 @@
                     </Button>
 
                 </Grid>
+                <Grid ColumnDefinitions="Auto,Auto"
+                      ColumnSpacing="8"
+                      HorizontalAlignment="Left">
+                    
+                    <Button Grid.Column="1" Content="📎"
+                            Tag="{Binding}"
+                            Click="UploadSignature_Click"
+                            Width="40"
+                            Height="32"
+                            Background="{Binding SignatureButton}"
+                            ToolTip.Tip="رفع ملف العقد"/>
+                    
+                    <Button Grid.Column="0" Content="👁"
+                            Tag="{Binding}"
+                            Click="OpenSignature_Click"
+                            Width="40"
+                            Height="32"
+                            ToolTip.Tip="فتح ملف العقد"/>
+
+                </Grid>
                 <Grid ColumnDefinitions="*,*"
                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                       ColumnSpacing="10"
                       RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBox x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ بدء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                     <DatePicker x:Name="ContractDateStartPicker" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>

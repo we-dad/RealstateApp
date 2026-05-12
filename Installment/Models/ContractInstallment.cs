@@ -13,6 +13,9 @@ public class ContractInstallment : INotifyPropertyChanged
     public long ProductCloudId { get; set; }
     public long CustomerCloudId { get; set; }
     public string SyncAction { get; set; } = "";
+    public string SignatureCloudPath { get; set; } = "";
+    public string SignatureFileName { get; set; } = "";
+    public string SignatureFileType { get; set; } = "";
     public string ContractNumber { get; set; } = "";
     public DateTime ContractStartDate { get; set; } = DateTime.Now;
     public DateTime ContractEndDate { get; set; } = DateTime.Now;
@@ -179,4 +182,9 @@ public class ContractInstallment : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+    
+    public IBrush SignatureButton =>
+        string.IsNullOrWhiteSpace(SignatureCloudPath)
+            ? Brushes.Gray
+            : Brushes.Green;
 }

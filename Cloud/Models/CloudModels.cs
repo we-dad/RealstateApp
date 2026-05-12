@@ -122,6 +122,15 @@ public class ContractRealEstateRow : BaseModel
 
     [Column("tenant_id")]
     public long TenantId { get; set; }
+
+    [Column("signature_cloud_path")]
+    public string SignatureCloudPath { get; set; } = "";
+
+    [Column("signature_file_name")]
+    public string SignatureFileName { get; set; } = "";
+
+    [Column("signature_file_type")]
+    public string SignatureFileType { get; set; } = "";
 }
 
 [Table("receipts_real_estate")]
@@ -307,6 +316,15 @@ public class ContractInstallmentRow : BaseModel
 
     [Column("customer_id")]
     public long CustomerId { get; set; }
+
+    [Column("signature_cloud_path")]
+    public string SignatureCloudPath { get; set; } = "";
+
+    [Column("signature_file_name")]
+    public string SignatureFileName { get; set; } = "";
+
+    [Column("signature_file_type")]
+    public string SignatureFileType { get; set; } = "";
 }
 
 [Table("receipts_installment")]

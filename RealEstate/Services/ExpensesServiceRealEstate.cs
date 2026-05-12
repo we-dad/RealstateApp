@@ -83,7 +83,6 @@ public class ExpensesServiceRealEstate
 
     public void Update(
         long id,
-        string expensesNo,
         DateTime date,
         long unitId,
         string expensesService,
@@ -96,8 +95,7 @@ public class ExpensesServiceRealEstate
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
             UPDATE ExpensesRealEstate
-            SET ExpensesNumber  = $no,
-                ExpensesDate    = $date,
+            SET ExpensesDate    = $date,
                 UnitId          = $unitId,
                 ExpensesService = $expensesService,
                 ExpensesAmount  = $expensesAmount,
@@ -111,7 +109,6 @@ public class ExpensesServiceRealEstate
         """;
 
         cmd.Parameters.AddWithValue("$id", id);
-        cmd.Parameters.AddWithValue("$no", expensesNo);
         cmd.Parameters.AddWithValue("$date", date);
         cmd.Parameters.AddWithValue("$unitId", unitId);
         cmd.Parameters.AddWithValue("$expensesService", expensesService);

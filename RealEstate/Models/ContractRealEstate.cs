@@ -11,6 +11,9 @@ public class ContractRealEstate
     public long UnitCloudId { get; set; }
     public long TenantCloudId { get; set; }
     public string SyncAction { get; set; } = "";
+    public string SignatureCloudPath { get; set; } = "";
+    public string SignatureFileName { get; set; } = "";
+    public string SignatureFileType { get; set; } = "";
     public string ContractNumber { get; set; } = "";
     public DateTime ContractStartDate { get; set; }
     public DateTime ContractEndDate { get; set; }
@@ -53,4 +56,9 @@ public class ContractRealEstate
     //for state box color
     public IBrush StateColor =>
         ContractState == "منتهي" ? Brushes.Red : Brushes.Green;
+    
+    public IBrush SignatureButton =>
+        string.IsNullOrWhiteSpace(SignatureCloudPath)
+            ? Brushes.Gray
+            : Brushes.Green;
 }

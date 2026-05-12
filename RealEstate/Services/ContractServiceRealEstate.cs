@@ -160,6 +160,38 @@ public class ContractServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    public void UpdateSignatureCloudInfo(
+        long id,
+        string cloudPath,
+        string fileName,
+        string fileType)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+            UPDATE ContractsRealEstate
+            SET SignatureCloudPath = $cloudPath,
+                SignatureFileName = $fileName,
+                SignatureFileType = $fileType,
+                IsDirty = 1,
+                SyncAction = CASE
+                    WHEN SyncAction = 'insert' THEN 'insert'
+                    ELSE 'update'
+                END
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudPath", cloudPath);
+        cmd.Parameters.AddWithValue("$fileName", fileName);
+        cmd.Parameters.AddWithValue("$fileType", fileType);
+        cmd.Parameters.AddWithValue("$id", id);
+
+        cmd.ExecuteNonQuery();
+    }
+
     public List<ContractRealEstate> GetAll()
     {
         var list = new List<ContractRealEstate>();
@@ -176,7 +208,10 @@ public class ContractServiceRealEstate
                 c.ContractStartDate,
                 c.ContractEndDate,
                 c.ContractState,
-                u.UnitName
+                u.UnitName,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
             FROM ContractsRealEstate c
             JOIN UnitsRealEstate u ON u.Id = c.UnitId
             WHERE c.SyncAction <> 'delete'
@@ -196,6 +231,9 @@ public class ContractServiceRealEstate
                 ContractEndDate = reader.GetDateTime(4),
                 ContractState = reader.GetString(5),
                 UnitName = reader.GetString(6),
+                SignatureCloudPath = reader.GetString(7),
+                SignatureFileName = reader.GetString(8),
+                SignatureFileType = reader.GetString(9)
             });
         }
 
@@ -241,7 +279,11 @@ public class ContractServiceRealEstate
                 t.Name,
                 t.IdentityNumber,
                 t.Phone,
-                t.Address
+                t.Address,
+
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
 
             FROM ContractsRealEstate c
             JOIN UnitsRealEstate u ON u.Id = c.UnitId
@@ -295,6 +337,10 @@ public class ContractServiceRealEstate
             TenantIdentityNumber = reader.GetString(26),
             TenantPhone = reader.GetString(27),
             TenantAddress = reader.GetString(28),
+
+            SignatureCloudPath = reader.GetString(29),
+            SignatureFileName = reader.GetString(30),
+            SignatureFileType = reader.GetString(31)
         };
     }
 
@@ -344,7 +390,10 @@ public class ContractServiceRealEstate
                 c.UnitId,
                 c.TenantId,
                 t.Name,
-                u.UnitName
+                u.UnitName,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
             FROM ContractsRealEstate c
             JOIN UnitsRealEstate u ON u.Id = c.UnitId
             JOIN TenantsRealEstate t ON t.Id = c.TenantId
@@ -368,6 +417,9 @@ public class ContractServiceRealEstate
             TenantId = reader.GetInt64(3),
             TenantName = reader.GetString(4),
             UnitName = reader.GetString(5),
+            SignatureCloudPath = reader.GetString(6),
+            SignatureFileName = reader.GetString(7),
+            SignatureFileType = reader.GetString(8)
         };
     }
 
@@ -421,7 +473,10 @@ public class ContractServiceRealEstate
         string contractApartmentType,
         int contractUnitRoomsNum,
         int contractUnitFloorNum,
-        string contractOpligation)
+        string contractOpligation,
+        string signatureCloudPath,
+        string signatureFileName,
+        string signatureFileType)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
@@ -453,7 +508,10 @@ public class ContractServiceRealEstate
                     ContractApartmentType = $contractApartmentType,
                     ContractUnitRoomsNum = $contractUnitRoomsNum,
                     ContractUnitFloorNum = $contractUnitFloorNum,
-                    ContractOpligation = $contractOpligation
+                    ContractOpligation = $contractOpligation,
+                    SignatureCloudPath = $signatureCloudPath,
+                    SignatureFileName = $signatureFileName,
+                    SignatureFileType = $signatureFileType
                 WHERE CloudId = $cloudId
                   AND IsDirty = 0;
             """;
@@ -471,6 +529,9 @@ public class ContractServiceRealEstate
             update.Parameters.AddWithValue("$contractUnitRoomsNum", contractUnitRoomsNum);
             update.Parameters.AddWithValue("$contractUnitFloorNum", contractUnitFloorNum);
             update.Parameters.AddWithValue("$contractOpligation", contractOpligation);
+            update.Parameters.AddWithValue("$signatureCloudPath", signatureCloudPath ?? "");
+            update.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
+            update.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
             update.ExecuteNonQuery();
         }
@@ -493,6 +554,9 @@ public class ContractServiceRealEstate
                     ContractUnitRoomsNum,
                     ContractUnitFloorNum,
                     ContractOpligation,
+                    SignatureCloudPath,
+                    SignatureFileName,
+                    SignatureFileType,
                     IsDirty,
                     SyncAction
                 )
@@ -511,6 +575,9 @@ public class ContractServiceRealEstate
                     $contractUnitRoomsNum,
                     $contractUnitFloorNum,
                     $contractOpligation,
+                    $signatureCloudPath,
+                    $signatureFileName,
+                    $signatureFileType,
                     0,
                     ''
                 );
@@ -529,6 +596,9 @@ public class ContractServiceRealEstate
             insert.Parameters.AddWithValue("$contractUnitRoomsNum", contractUnitRoomsNum);
             insert.Parameters.AddWithValue("$contractUnitFloorNum", contractUnitFloorNum);
             insert.Parameters.AddWithValue("$contractOpligation", contractOpligation);
+            insert.Parameters.AddWithValue("$signatureCloudPath", signatureCloudPath ?? "");
+            insert.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
+            insert.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
             insert.ExecuteNonQuery();
         }
@@ -579,7 +649,10 @@ public class ContractServiceRealEstate
                 c.ContractOpligation,
                 u.CloudId,
                 t.CloudId,
-                c.SyncAction
+                c.SyncAction,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
             FROM ContractsRealEstate c
             JOIN UnitsRealEstate u ON u.Id = c.UnitId
             JOIN TenantsRealEstate t ON t.Id = c.TenantId
@@ -610,7 +683,10 @@ public class ContractServiceRealEstate
                 ContractOpligation = reader.GetString(13),
                 UnitCloudId = reader.GetInt64(14),
                 TenantCloudId = reader.GetInt64(15),
-                SyncAction = reader.GetString(16)
+                SyncAction = reader.GetString(16),
+                SignatureCloudPath = reader.GetString(17),
+                SignatureFileName = reader.GetString(18),
+                SignatureFileType = reader.GetString(19)
             });
         }
 

@@ -170,6 +170,38 @@ public class ContractServiceInstallment
         cmd.ExecuteNonQuery();
     }
 
+    public void UpdateSignatureCloudInfo(
+        long id,
+        string cloudPath,
+        string fileName,
+        string fileType)
+    {
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+            UPDATE ContractsInstallment
+            SET SignatureCloudPath = $cloudPath,
+                SignatureFileName = $fileName,
+                SignatureFileType = $fileType,
+                IsDirty = 1,
+                SyncAction = CASE
+                    WHEN SyncAction = 'insert' THEN 'insert'
+                    ELSE 'update'
+                END
+            WHERE Id = $id;
+        """;
+
+        cmd.Parameters.AddWithValue("$cloudPath", cloudPath);
+        cmd.Parameters.AddWithValue("$fileName", fileName);
+        cmd.Parameters.AddWithValue("$fileType", fileType);
+        cmd.Parameters.AddWithValue("$id", id);
+
+        cmd.ExecuteNonQuery();
+    }
+
     public List<ContractInstallment> GetAll()
     {
         var list = new List<ContractInstallment>();
@@ -186,7 +218,10 @@ public class ContractServiceInstallment
                 c.ContractStartDate,
                 c.ContractEndDate,
                 c.ContractState,
-                cus.Name
+                cus.Name,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
             FROM ContractsInstallment c
             JOIN CustomersInstallment cus ON cus.Id = c.CustomerId
             WHERE c.SyncAction <> 'delete'
@@ -194,6 +229,7 @@ public class ContractServiceInstallment
         """;
 
         using var reader = cmd.ExecuteReader();
+
         while (reader.Read())
         {
             list.Add(new ContractInstallment
@@ -205,6 +241,10 @@ public class ContractServiceInstallment
                 ContractEndDate = reader.GetDateTime(4),
                 ContractState = reader.GetString(5),
                 CustomerName = reader.GetString(6),
+
+                SignatureCloudPath = reader.GetString(7),
+                SignatureFileName = reader.GetString(8),
+                SignatureFileType = reader.GetString(9)
             });
         }
 
@@ -263,7 +303,11 @@ public class ContractServiceInstallment
                 o.Name,
                 o.IdentityNumber,
                 o.Phone,
-                o.Address
+                o.Address,
+
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
 
             FROM ContractsInstallment c
             LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
@@ -277,6 +321,7 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$id", id);
 
         using var reader = cmd.ExecuteReader();
+
         if (!reader.Read())
             return null;
 
@@ -330,7 +375,11 @@ public class ContractServiceInstallment
             OwnerName = reader.IsDBNull(37) ? "" : reader.GetString(37),
             OwnerIdentityNumber = reader.IsDBNull(38) ? "" : reader.GetString(38),
             OwnerPhone = reader.IsDBNull(39) ? "" : reader.GetString(39),
-            OwnerAddress = reader.IsDBNull(40) ? "" : reader.GetString(40)
+            OwnerAddress = reader.IsDBNull(40) ? "" : reader.GetString(40),
+
+            SignatureCloudPath = reader.IsDBNull(41) ? "" : reader.GetString(41),
+            SignatureFileName = reader.IsDBNull(42) ? "" : reader.GetString(42),
+            SignatureFileType = reader.IsDBNull(43) ? "" : reader.GetString(43)
         };
 
         contract.BoolDownPayment = contract.DownPayment > 0;
@@ -388,7 +437,10 @@ public class ContractServiceInstallment
                 c.CurrentTotalAmount,
                 c.MonthlyInstallment,
                 cus.Name,
-                p.ProductName
+                p.ProductName,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
             FROM ContractsInstallment c
             JOIN ProductsInstallment p ON p.Id = c.ProductId
             JOIN CustomersInstallment cus ON cus.Id = c.CustomerId
@@ -400,6 +452,7 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$contractNum", contractNum);
 
         using var reader = cmd.ExecuteReader();
+
         if (!reader.Read())
             return null;
 
@@ -415,7 +468,11 @@ public class ContractServiceInstallment
             CurrentTotalAmount = reader.GetDouble(7),
             MonthlyInstallment = reader.GetDouble(8),
             CustomerName = reader.GetString(9),
-            ProductName = reader.GetString(10)
+            ProductName = reader.GetString(10),
+
+            SignatureCloudPath = reader.GetString(11),
+            SignatureFileName = reader.GetString(12),
+            SignatureFileType = reader.GetString(13)
         };
     }
 
@@ -488,7 +545,10 @@ public class ContractServiceInstallment
         double interestPercent,
         string contractState,
         long productLocalId,
-        long customerLocalId)
+        long customerLocalId,
+        string signatureCloudPath,
+        string signatureFileName,
+        string signatureFileType)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
@@ -499,6 +559,7 @@ public class ContractServiceInstallment
             FROM ContractsInstallment
             WHERE CloudId = $cloudId;
         """;
+
         check.Parameters.AddWithValue("$cloudId", cloudId);
 
         var existingId = check.ExecuteScalar();
@@ -520,7 +581,10 @@ public class ContractServiceInstallment
                     InterestPercent = $interestPercent,
                     ContractState = $contractState,
                     ProductId = $productId,
-                    CustomerId = $customerId
+                    CustomerId = $customerId,
+                    SignatureCloudPath = $signatureCloudPath,
+                    SignatureFileName = $signatureFileName,
+                    SignatureFileType = $signatureFileType
                 WHERE CloudId = $cloudId
                   AND IsDirty = 0;
             """;
@@ -539,6 +603,9 @@ public class ContractServiceInstallment
             update.Parameters.AddWithValue("$contractState", contractState);
             update.Parameters.AddWithValue("$productId", productLocalId);
             update.Parameters.AddWithValue("$customerId", customerLocalId);
+            update.Parameters.AddWithValue("$signatureCloudPath", signatureCloudPath ?? "");
+            update.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
+            update.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
             update.ExecuteNonQuery();
         }
@@ -562,6 +629,9 @@ public class ContractServiceInstallment
                     ContractState,
                     ProductId,
                     CustomerId,
+                    SignatureCloudPath,
+                    SignatureFileName,
+                    SignatureFileType,
                     IsDirty,
                     SyncAction
                 )
@@ -581,6 +651,9 @@ public class ContractServiceInstallment
                     $contractState,
                     $productId,
                     $customerId,
+                    $signatureCloudPath,
+                    $signatureFileName,
+                    $signatureFileType,
                     0,
                     ''
                 );
@@ -600,6 +673,9 @@ public class ContractServiceInstallment
             insert.Parameters.AddWithValue("$contractState", contractState);
             insert.Parameters.AddWithValue("$productId", productLocalId);
             insert.Parameters.AddWithValue("$customerId", customerLocalId);
+            insert.Parameters.AddWithValue("$signatureCloudPath", signatureCloudPath ?? "");
+            insert.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
+            insert.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
             insert.ExecuteNonQuery();
         }
@@ -632,10 +708,13 @@ public class ContractServiceInstallment
                 c.CustomerId,
                 p.CloudId,
                 cus.CloudId,
-                c.SyncAction
-           FROM ContractsInstallment c
-        LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
-        LEFT JOIN CustomersInstallment cus ON cus.Id = c.CustomerId
+                c.SyncAction,
+                c.SignatureCloudPath,
+                c.SignatureFileName,
+                c.SignatureFileType
+            FROM ContractsInstallment c
+            LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
+            LEFT JOIN CustomersInstallment cus ON cus.Id = c.CustomerId
             WHERE c.IsDirty = 1
               AND (
                     c.SyncAction = 'delete'
@@ -666,7 +745,11 @@ public class ContractServiceInstallment
                 CustomerId = reader.GetInt64(14),
                 ProductCloudId = reader.GetInt64(15),
                 CustomerCloudId = reader.GetInt64(16),
-                SyncAction = reader.GetString(17)
+                SyncAction = reader.GetString(17),
+
+                SignatureCloudPath = reader.GetString(18),
+                SignatureFileName = reader.GetString(19),
+                SignatureFileType = reader.GetString(20)
             });
         }
 
@@ -692,6 +775,7 @@ public class ContractServiceInstallment
             check.Parameters.AddWithValue("$id", id);
 
             var hasReceipts = Convert.ToInt32(check.ExecuteScalar()) == 1;
+
             if (hasReceipts)
                 throw new InvalidOperationException(".لا يمكن حذف العقد لأنه مرتبط بسندات مسجلة");
         }

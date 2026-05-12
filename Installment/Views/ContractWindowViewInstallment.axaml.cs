@@ -3,7 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -546,5 +548,107 @@ public partial class ContractWindowViewInstallment : Window
         };
 
         await dialog.ShowDialog(this);
+    }
+    
+     private async void UploadSignature_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn)
+            return;
+
+        if (btn.Tag is not ContractInstallment contract)
+            return;
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null)
+            return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = "اختر ملف العقد",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("PDF / Images")
+                    {
+                        Patterns = ["*.pdf", "*.jpg", "*.jpeg", "*.png"]
+                    }
+                ]
+            });
+
+        if (files.Count == 0)
+            return;
+
+        var file = files[0];
+        var extension = Path.GetExtension(file.Name);
+
+        var fileName = $"installment-contract-{contract.Id}{extension}";
+        var cloudPath = $"installment/contracts/{contract.Id}/{fileName}";
+
+        var currentContract = _contractsDB.GetById(contract.Id);
+        var oldCloudPath = currentContract?.SignatureCloudPath ?? "";
+
+        if (!string.IsNullOrWhiteSpace(oldCloudPath))
+        {
+            try
+            {
+                await _supabaseService.Client.Storage
+                    .From("Icontract-signatures")
+                    .Remove(new List<string> { oldCloudPath });
+            }
+            catch
+            {
+                Console.WriteLine("Old file not found, continuing upload.");
+            }
+        }
+
+        await _supabaseService.Client.Storage
+            .From("Icontract-signatures")
+            .Upload(
+                file.Path!.LocalPath,
+                cloudPath,
+                new Supabase.Storage.FileOptions
+                {
+                    Upsert = true,
+                    CacheControl = "3600"
+                });
+
+        _contractsDB.UpdateSignatureCloudInfo(
+            contract.Id,
+            cloudPath,
+            file.Name,
+            extension);
+    }
+    
+    private async void OpenSignature_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is not Button btn)
+                return;
+
+            if (btn.Tag is not ContractInstallment contract)
+                return;
+
+            var currentContract = _contractsDB.GetById(contract.Id);
+            var cloudPath = currentContract?.SignatureCloudPath ?? "";
+
+            if (string.IsNullOrWhiteSpace(cloudPath))
+                return;
+
+            var signedUrl = await _supabaseService.Client.Storage
+                .From("Icontract-signatures")
+                .CreateSignedUrl(cloudPath, 60);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = signedUrl,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            Console.WriteLine("File not found in Supabase Storage.");
+        }
     }
 }

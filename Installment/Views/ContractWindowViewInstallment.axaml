@@ -41,6 +41,27 @@
                     </Button>
 
                 </Grid>
+                
+                <Grid ColumnDefinitions="Auto,Auto"
+                      ColumnSpacing="8"
+                      HorizontalAlignment="Left">
+                    
+                    <Button Grid.Column="1" Content="📎"
+                            Tag="{Binding}"
+                            Click="UploadSignature_Click"
+                            Width="40"
+                            Height="32"
+                            Background="{Binding SignatureButton}"
+                            ToolTip.Tip="رفع ملف العقد"/>
+                    
+                    <Button Grid.Column="0" Content="👁"
+                            Tag="{Binding}"
+                            Click="OpenSignature_Click"
+                            Width="40"
+                            Height="32"
+                            ToolTip.Tip="فتح ملف العقد"/>
+
+                </Grid>
 
                 <Grid ColumnDefinitions="*,*"
                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"

@@ -156,6 +156,36 @@ SyncAction TEXT NOT NULL DEFAULT ''
     """;
             cmd.ExecuteNonQuery();
         }
+        
+        AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureCloudPath", "TEXT NOT NULL DEFAULT ''");
+        AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureFileName", "TEXT NOT NULL DEFAULT ''");
+        AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureFileType", "TEXT NOT NULL DEFAULT ''");
 
+    }
+    
+    private void AddColumnIfNotExists(
+        SqliteConnection connection,
+        string table,
+        string column,
+        string definition)
+    {
+        using var checkCmd = connection.CreateCommand();
+
+        checkCmd.CommandText = $"PRAGMA table_info({table});";
+
+        using var reader = checkCmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            if (reader["name"]?.ToString() == column)
+                return;
+        }
+
+        using var alterCmd = connection.CreateCommand();
+
+        alterCmd.CommandText =
+            $"ALTER TABLE {table} ADD COLUMN {column} {definition};";
+
+        alterCmd.ExecuteNonQuery();
     }
 }
