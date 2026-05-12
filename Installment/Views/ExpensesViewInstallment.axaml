@@ -88,6 +88,7 @@
                         <DataGridTextColumn Header="اسم المنتج" Binding="{Binding ProductName}" Width="160"/>
                         <DataGridTextColumn Header="تاريخ السند" Binding="{Binding ExpensesDate, StringFormat={}{0:yyyy-MM-dd}}" Width="160"/>
                         <DataGridTextColumn Header="نوع الخدمة" Binding="{Binding ExpensesService}" Width="160"/>
+                        <DataGridTextColumn Header="المبلغ" Binding="{Binding ExpensesAmount}" Width="160"/>
 
                         <DataGridTemplateColumn Header="">
                             <DataGridTemplateColumn.CellTemplate>
