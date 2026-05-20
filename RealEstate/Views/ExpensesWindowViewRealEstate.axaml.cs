@@ -132,11 +132,16 @@ public partial class ExpensesWindowViewRealEstate : Window
         ResultExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString(CultureInfo.InvariantCulture);
         ResultExpensesNoteBox.Text = _expenses.ExpensesNote;
 
-        ResultUnitNameBox.Text = unit.UnitName;
-        ResultDistrictBox.Text = unit.District;
-        ResultCityBox.Text = unit.City;
-        ResultUnitTypeBox.Text = unit.UnitType;
-        ResultUnitNumBox.Text = unit.UnitNum + " / " + unit.UnitsCount;
+        UnitDataGrid.ItemsSource = new List<UnitRealEstate> { unit };
+        
+    }
+    
+    private void UnitDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_expenses is null) return;
+
+        var window = new UnitsWindowViewRealEstate(_expenses.UnitId, _supabaseService);
+        window.Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string expensesNumber)

@@ -12,6 +12,9 @@
         <Border Grid.ColumnSpan="2" Padding="12" CornerRadius="12">
             <StackPanel Spacing="8">
                 <TextBlock Text="العميل" FontSize="18" HorizontalAlignment="Right"/>
+                
+                <Button Content="طباعة السجل المالي"
+                        Click="PrintFinancialRecord_Click"/>
 
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               ColumnSpacing="10" RowSpacing="8">
@@ -110,8 +113,172 @@
                 <TextBlock x:Name="ResultSponserJobBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
             </Grid>
+                    
+                    <Border CornerRadius="12" Padding="12" Margin="0,10,0,0">
+                        <StackPanel Spacing="10">
+
+                            <TextBlock Text="الملخص المالي"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Right"/>
+
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+
+                                <Border Grid.Column="3" CornerRadius="10" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="إجمالي العقود" TextAlignment="Center"/>
+                                        <TextBlock x:Name="TotalAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" CornerRadius="10" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="المدفوع" TextAlignment="Center"/>
+                                        <TextBlock x:Name="PaidAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="1" CornerRadius="10" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="المتبقي" TextAlignment="Center"/>
+                                        <TextBlock x:Name="LeftAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="0" CornerRadius="10" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="عدد السندات" TextAlignment="Center"/>
+                                        <TextBlock x:Name="ReceiptsCountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
+                    <StackPanel Margin="0,10,0,0"
+                                Spacing="8">
+
+                        <TextBlock Text="حالة السداد"
+                                   FontSize="18"
+                                   HorizontalAlignment="Right"/>
+
+                        <ProgressBar x:Name="PaymentProgressBar"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Height="18"/>
+
+                        <TextBlock x:Name="PaymentProgressText"
+                                   TextAlignment="Center"/>
+                        
+
+                    </StackPanel>
+                    
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+    <!-- Contracts -->
+    <Border Grid.Column="1"
+            CornerRadius="12"
+            Padding="12">
+
+        <StackPanel Spacing="8">
+
+            <TextBlock Text="العقود"
+                       FontSize="18"
+                       HorizontalAlignment="Right"/>
+
+            <DataGrid x:Name="CustomerContractsGrid"
+                      x:CompileBindings="False"
+                      FlowDirection="RightToLeft"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      Height="250">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="رقم العقد"
+                                        Binding="{Binding ContractNumber}"/>
+
+                    <DataGridTextColumn Header="البداية"
+                                        Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+
+                    <DataGridTextColumn Header="النهاية"
+                                        Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+
+                    <DataGridTextColumn Header="الحالة"
+                                        Binding="{Binding ContractState}"/>
+
+                    <DataGridTemplateColumn Header="فتح">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="فتح"
+                                        Click="OpenContract_Click"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </StackPanel>
+
+    </Border>
+
+    <!-- Receipts -->
+    <Border Grid.Column="0"
+            CornerRadius="12"
+            Padding="12">
+
+        <StackPanel Spacing="8">
+
+            <TextBlock Text="سندات القبض"
+                       FontSize="18"
+                       HorizontalAlignment="Right"/>
+
+            <DataGrid x:Name="CustomerReceiptsGrid"
+                      x:CompileBindings="False"
+                      FlowDirection="RightToLeft"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      Height="250">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="رقم السند"
+                                        Binding="{Binding ReceiptNumber}"/>
+
+                    <DataGridTextColumn Header="التاريخ"
+                                        Binding="{Binding ReceiptDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
+
+                    <DataGridTextColumn Header="المبلغ"
+                                        Binding="{Binding ReceiptAmount}"/>
+
+                    <DataGridTextColumn Header="طريقة الدفع"
+                                        Binding="{Binding PaymentMethod}"/>
+
+                    <DataGridTemplateColumn Header="فتح">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="فتح"
+                                        Click="OpenReceipt_Click"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </StackPanel>
+
+    </Border>
+
+</Grid>
+                    
         </StackPanel>
     </Border>
+            
 </ScrollViewer>
     </Grid>
 </Window>

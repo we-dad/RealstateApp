@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RealEstateInstallmentsManager.Models;
 
 namespace RealEstateInstallmentsManager.Services;
@@ -339,6 +340,62 @@ public class TenantServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+    }
+    
+    public List<TenantRealEstate> GetTenantRelatedData(long tenantId)
+    {
+        var list = new List<TenantRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+                              SELECT
+                                  c.Id,
+                                  c.ContractNumber,
+                                  c.ContractStartDate,
+                                  c.ContractEndDate,
+                                  c.RentAmount,
+                                  c.ContractState,
+
+                                  r.Id,
+                                  r.ReceiptNumber,
+                                  r.ReceiptDate,
+                                  r.Amount
+                              FROM ContractsRealEstate c
+                              LEFT JOIN ReceiptsRealEstate r
+                                  ON r.ContractId = c.Id
+                                 AND r.SyncAction <> 'delete'
+                              WHERE c.TenantId = $tenantId
+                                AND c.SyncAction <> 'delete'
+                              ORDER BY c.ContractStartDate DESC, r.ReceiptDate DESC;
+                          """;
+
+        cmd.Parameters.AddWithValue("$tenantId", tenantId);
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new TenantRealEstate
+            {
+                ContractId = reader.GetInt64(0),
+                ContractNumber = reader.GetString(1),
+                ContractStartDate = reader.GetDateTime(2),
+                ContractEndDate = reader.GetDateTime(3),
+                RentAmount = reader.GetDouble(4),
+                ContractState = reader.GetString(5),
+
+                ReceiptId = reader.IsDBNull(6) ? 0 : reader.GetInt64(6),
+                ReceiptNumber = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                ReceiptDate = reader.IsDBNull(8) ? DateTime.MinValue : reader.GetDateTime(8),
+                ReceiptAmount = reader.IsDBNull(9) ? 0 : reader.GetDouble(9)
+            });
+        }
+
+        return list;
     }
 
     public void DeleteLocalPermanent(long id)

@@ -287,6 +287,54 @@ public class OwnerServiceRealEstate
 
         return list;
     }
+    public List<UnitRealEstate> GetUnitsByOwnerId(long ownerId)
+    {
+        var list = new List<UnitRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+                              SELECT 
+                                  Id,
+                                  CloudId,
+                                  OwnerId,
+                                  UnitName,
+                                  City,
+                                  District,
+                                  UnitState,
+                                  UnitType,
+                                  UnitsCount,
+                                  UnitNum
+                              FROM UnitsRealEstate
+                              WHERE OwnerId = $ownerId
+                                AND SyncAction <> 'delete'
+                              ORDER BY Id DESC;
+                          """;
+
+        cmd.Parameters.AddWithValue("$ownerId", ownerId);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new UnitRealEstate
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                OwnerId = reader.GetInt64(2),
+                UnitName = reader.GetString(3),
+                City = reader.GetString(4),
+                District = reader.GetString(5),
+                UnitState = reader.GetString(6),
+                UnitType = reader.GetString(7),
+                UnitsCount = reader.GetInt32(8),
+                UnitNum = reader.GetInt32(9)
+            });
+        }
+
+        return list;
+    }
 
     public void Delete(long id)
     {

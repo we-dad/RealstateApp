@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -344,6 +346,12 @@ public class PdfServiceRealEstate
                                 .Height(24);
                             });
                             });
+                            
+                            s.Item()
+                                .AlignRight()
+                                .PaddingTop(10)
+                                .Text($"السند رقم {r.ReceiptsCount}")
+                                .Bold();
                         });
                     });
                 });
@@ -470,5 +478,112 @@ public class PdfServiceRealEstate
         })
         .GeneratePdf(filePath);
     }
+    
+ public void GenerateTenantReceiptsRecordPdf(
+    TenantRealEstate tenant,
+    List<TenantRealEstate> receipts,
+    string path)
+{
+    QuestPDF.Settings.License = LicenseType.Community;
 
+    var orderedReceipts = receipts
+        .OrderBy(x => x.ReceiptDate)
+        .ThenBy(x => x.ReceiptId)
+        .ToList();
+
+    var totalPaid = orderedReceipts.Sum(x => x.ReceiptAmount);
+
+    Document.Create(container =>
+    {
+        container.Page(page =>
+        {
+            page.Size(PageSizes.A4);
+            page.Margin(30);
+
+            page.DefaultTextStyle(x =>
+                x.FontFamily("Arial")
+                 .FontSize(11));
+
+            page.Header().Column(col =>
+            {
+                col.Item()
+                    .AlignRight()
+                    .Text("السجل المالي للمستأجر")
+                    .FontSize(22)
+                    .Bold();
+
+                col.Item()
+                    .PaddingTop(10)
+                    .Border(1)
+                    .Padding(10)
+                    .Column(info =>
+                    {
+                        info.Item().AlignRight().Text($"اسم المستأجر : {tenant.Name}");
+                        info.Item().AlignRight().Text($"رقم الهوية : {tenant.IdentityNumber}");
+                        info.Item().AlignRight().Text($"الجوال : {tenant.Phone}");
+                        info.Item().AlignRight().Text($"العنوان : {tenant.Address}");
+                    });
+            });
+
+            page.Content().PaddingTop(15).Column(col =>
+            {
+                col.Item()
+                    .AlignRight()
+                    .Text($"إجمالي المدفوع : {totalPaid:N2}")
+                    .FontSize(14)
+                    .Bold();
+
+                col.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn();      // المبلغ
+                        columns.RelativeColumn();      // رقم العقد
+                        columns.RelativeColumn();      // التاريخ
+                        columns.RelativeColumn();      // رقم السند
+                        columns.ConstantColumn(45);    // الترتيب
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Border(1).Padding(5).AlignCenter().Text("المبلغ").Bold();
+                        header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم العقد").Bold();
+                        header.Cell().Border(1).Padding(5).AlignCenter().Text("التاريخ").Bold();
+                        header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم السند").Bold();
+                        header.Cell().Border(1).Padding(5).AlignCenter().Text("#").Bold();
+                    });
+
+                    var order = 1;
+
+                    foreach (var r in orderedReceipts)
+                    {
+                        table.Cell().Border(1).Padding(5).AlignCenter()
+                            .Text(r.ReceiptAmount.ToString("N2"));
+
+                        table.Cell().Border(1).Padding(5).AlignCenter()
+                            .Text(r.ContractNumber);
+
+                        table.Cell().Border(1).Padding(5).AlignCenter()
+                            .Text(r.ReceiptDate.ToString("yyyy-MM-dd"));
+
+                        table.Cell().Border(1).Padding(5).AlignCenter()
+                            .Text(r.ReceiptNumber);
+
+                        table.Cell().Border(1).Padding(5).AlignCenter()
+                            .Text(order++.ToString());
+                    }
+                });
+            });
+
+            page.Footer()
+                .AlignCenter()
+                .Text(x =>
+                {
+                    x.Span("صفحة ");
+                    x.CurrentPageNumber();
+                });
+        });
+    })
+    .GeneratePdf(path);
+}
 }

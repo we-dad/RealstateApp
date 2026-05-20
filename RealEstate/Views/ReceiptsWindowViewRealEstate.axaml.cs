@@ -139,6 +139,11 @@ public partial class ReceiptsWindowViewRealEstate : Window
             return;
 
         _selectedContract = contract;
+        
+        ContractDataGrid.ItemsSource = new List<ContractRealEstate> { contract };
+        UnitDataGrid.ItemsSource = new List<ContractRealEstate> { contract };
+        OwnerDataGrid.ItemsSource = new List<ContractRealEstate> { contract };
+        TenantDataGrid.ItemsSource = new List<ContractRealEstate> { contract };
 
         LoadPaymentMethod();
 
@@ -157,27 +162,41 @@ public partial class ReceiptsWindowViewRealEstate : Window
         ResultReceiptDateBox.Text = _receipt.ReceiptDate.ToString("yyyy-MM-dd");
         ResultAmountBox.Text = _receipt.Amount.ToString(CultureInfo.InvariantCulture);
         ResultPaymentMethodBox.Text = _receipt.PaymentMethod;
+        
+    }
+    
+    private void ContractDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_selectedContract is null) return;
 
-        ResultContractNumBox.Text = contract.ContractNumber;
-        ResultContractDateStartBox.Text = contract.ContractStartDate.ToString("yyyy-MM-dd");
-        ResultContractDateEndBox.Text = contract.ContractEndDate.ToString("yyyy-MM-dd");
-        ResultRentAmountBox.Text = contract.RentAmount.ToString(CultureInfo.InvariantCulture);
+        var window = new ContractsWindowViewRealEstate(_selectedContract.Id, _supabaseService);
+        window.Show();
+    }
 
-        ResultUnitNameBox.Text = contract.UnitName;
-        ResultDistrictBox.Text = contract.District;
-        ResultCityBox.Text = contract.City;
-        ResultUnitTypeBox.Text = contract.UnitType;
-        ResultUnitNumBox.Text = contract.UnitNum + " / " + contract.UnitsCount;
+    private void UnitDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_selectedContract is null) return;
 
-        ResultOwnerNameBox.Text = contract.OwnerName;
-        ResultOwnerIdentityNumberBox.Text = contract.OwnerIdentityNumber;
-        ResultOwnerPhoneBox.Text = contract.OwnerPhone;
-        ResultOwnerAddressBox.Text = contract.OwnerAddress;
+        var window = new UnitsWindowViewRealEstate(_selectedContract.UnitId, _supabaseService);
+        window.Show();
+    }
 
-        ResultTenantNameBox.Text = contract.TenantName;
-        ResultTenantIdentityNumberBox.Text = contract.TenantIdentityNumber;
-        ResultTenantPhoneBox.Text = contract.TenantPhone;
-        ResultTenantAddressBox.Text = contract.TenantAddress;
+    private void OwnerDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_selectedContract is null) return;
+
+        var owner = new OwnerRealEstate { Id = _selectedContract.OwnerId };
+        var window = new OwnersWindowViewRealEstate(owner, _supabaseService);
+        window.Show();
+    }
+
+    private void TenantDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_selectedContract is null) return;
+
+        var tenant = new TenantRealEstate { Id = _selectedContract.TenantId };
+        var window = new TenantsWindowViewRealEstate(tenant, _supabaseService);
+        window.Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)

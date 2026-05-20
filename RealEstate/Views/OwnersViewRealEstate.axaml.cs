@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
@@ -118,9 +119,13 @@ public partial class OwnersViewRealEstate : UserControl
         _ = SyncOwnersFromCloudAsync();
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void OwnersGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is OwnerRealEstate owner)
-            new OwnersWindowViewRealEstate(owner, _supabaseService).Show();
+        if (OwnersGrid.SelectedItem is not OwnerRealEstate owner)
+            return;
+
+        var window = new OwnersWindowViewRealEstate(owner, _supabaseService);
+
+        window.Show();
     }
 }

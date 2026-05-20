@@ -111,9 +111,12 @@ public partial class TenantsViewRealEstate : UserControl
         _ = SyncTenantsFromCloudAsync();
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void TenantsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is TenantRealEstate tenant)
-            new TenantsWindowViewRealEstate(tenant, _supabaseService).Show();
+        if (TenantsGrid.SelectedItem is not TenantRealEstate tenant)
+            return;
+
+        var window = new TenantsWindowViewRealEstate(tenant, _supabaseService);
+        window.Show();
     }
 }

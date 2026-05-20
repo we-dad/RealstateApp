@@ -204,10 +204,13 @@ public partial class ReceiptsViewRealEstate : UserControl
         _selectedContract = null;
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ReceiptRealEstate receipt)
-            new ReceiptsWindowViewRealEstate(receipt.Id, _supabaseService).Show();
+        if (ReceiptsGrid.SelectedItem is not ReceiptRealEstate receipt)
+            return;
+
+        var window = new ReceiptsWindowViewRealEstate(receipt.Id, _supabaseService);
+        window.Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)

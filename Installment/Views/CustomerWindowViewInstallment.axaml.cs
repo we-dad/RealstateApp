@@ -3,7 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
@@ -15,6 +18,9 @@ public partial class CustomerWindowViewInstallment : Window
     private readonly CustomerInstallment _customer;
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly CustomerServiceInstallment _customerDB;
+    private readonly ContractServiceInstallment _contractDB;
+    private readonly ReceiptServiceInstallment _receiptDB;
+    private readonly PdfServiceInstallment _pdfServiceInstallment;
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
     
@@ -27,6 +33,9 @@ public partial class CustomerWindowViewInstallment : Window
 
         _db.Initialize();
         _customerDB = new CustomerServiceInstallment(_db);
+        _contractDB = new ContractServiceInstallment(_db);
+        _receiptDB = new ReceiptServiceInstallment(_db);
+        _pdfServiceInstallment = new PdfServiceInstallment();
 
         _customer = customer;
 
@@ -112,6 +121,115 @@ public partial class CustomerWindowViewInstallment : Window
         ResultSponserIdentityNumberBox.Text = refreshedCustomer.SponserIdentityNumber;
         ResultSponserAddressBox.Text = refreshedCustomer.SponserAddress;
         ResultSponserJobBox.Text = refreshedCustomer.SponserJob;
+        
+        LoadCustomerRelatedData();
+    }
+    
+    private void LoadCustomerRelatedData()
+    {
+        var rows = _customerDB.GetCustomerRelatedData(_customer.Id);
+
+        CustomerContractsGrid.ItemsSource = rows
+            .Where(x => x.ContractId > 0)
+            .GroupBy(x => x.ContractId)
+            .Select(x => x.First())
+            .ToList();
+
+        CustomerReceiptsGrid.ItemsSource = rows
+            .Where(x => x.ReceiptId > 0)
+            .ToList();
+
+        var summary = rows.FirstOrDefault();
+
+        TotalAmountText.Text = summary?.TotalAmount.ToString() ?? "0";
+        PaidAmountText.Text = summary?.PaidAmount.ToString() ?? "0";
+        LeftAmountText.Text = summary?.LeftAmount.ToString() ?? "0";
+        ReceiptsCountText.Text = summary?.ReceiptsCount.ToString() ?? "0";
+
+        PaymentProgressBar.Value = summary?.PaymentProgressPercent ?? 0;
+
+        PaymentProgressText.Text =
+            $"المدفوع: {summary?.PaidInstallments ?? 0} / {summary?.TotalInstallments ?? 0} | المتبقي: {summary?.LeftInstallments ?? 0}";
+    }
+    
+    private void OpenContract_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button) return;
+        if (button.DataContext is not CustomerInstallment row) return;
+        
+        if (row.ContractId <= 0)
+            return;
+        
+        var window = new ContractWindowViewInstallment(row.ContractId, _supabaseService);
+
+        window.Show();
+    }
+    
+    private void OpenReceipt_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button) return;
+        if (button.DataContext is not CustomerInstallment row) return;
+
+        if (row.ReceiptId <= 0)
+            return;
+
+        var window = new ReceiptWindowViewInstallment(row.ReceiptId, _supabaseService);
+
+        window.Show();
+    }
+    private async Task<string?> PickSavePdfPathAsync(string fileName)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        if (topLevel is null)
+            return null;
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+            new FilePickerSaveOptions
+            {
+                Title = "حفظ السجل المالي PDF",
+                SuggestedFileName = $"{fileName}.pdf",
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType("PDF")
+                    {
+                        Patterns = new[] { "*.pdf" }
+                    }
+                }
+            });
+
+        return file?.Path.LocalPath;
+    }
+    
+    private async void PrintFinancialRecord_Click(object? sender, RoutedEventArgs e)
+    {
+        var customer = _customerDB.GetById(_customer.Id);
+        if (customer == null) return;
+
+        var rows = _customerDB.GetCustomerRelatedData(_customer.Id);
+
+        if (rows.Count == 0)
+        {
+            await ShowMessageAsync("تنبيه", "لا توجد عقود أو سندات لهذا العميل");
+            return;
+        }
+
+        var path = await PickSavePdfPathAsync($"Financial_Record_{customer.Name}");
+
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        _pdfServiceInstallment.GenerateCustomerFinancialRecordPdf(
+            customer,
+            rows,
+            path
+        );
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = path,
+            UseShellExecute = true
+        });
     }
 
     private void Delete_Click(object? sender, RoutedEventArgs e)

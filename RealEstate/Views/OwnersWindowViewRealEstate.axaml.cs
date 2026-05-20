@@ -15,8 +15,8 @@ public partial class OwnersWindowViewRealEstate : Window
     private readonly OwnerRealEstate _ownerRealEstate;
     private readonly DbServiceRealEstate _db = new DbServiceRealEstate();
     private readonly OwnerServiceRealEstate _ownersDB;
-    private readonly SupabaseService _supabaseService;
-    private readonly RealEstateSyncService _sync;
+    private readonly SupabaseService? _supabaseService;
+    private readonly RealEstateSyncService? _sync;
 
     public OwnersWindowViewRealEstate(OwnerRealEstate ownerRealEstate ,SupabaseService supabaseService)
     {
@@ -70,6 +70,8 @@ public partial class OwnersWindowViewRealEstate : Window
         ResultPhoneBox.Text = Refresh_owner.Phone;
         ResultIdentityNumberBox.Text = Refresh_owner.IdentityNumber;
         ResultAddressBox.Text = Refresh_owner.Address;
+        
+        UnitsGrid.ItemsSource = _ownersDB.GetUnitsByOwnerId(_ownerRealEstate.Id);
     }
     private void Delete_Click(object? sender, RoutedEventArgs e)
     {
@@ -94,7 +96,7 @@ public partial class OwnersWindowViewRealEstate : Window
             _ = ShowMessageAsync("خطأ", ex.Message);
         }
     }
-    private async System.Threading.Tasks.Task ShowMessageAsync(string title, string message)
+    private async Task ShowMessageAsync(string title, string message)
     {
         var dialog = new Window
         {

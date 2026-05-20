@@ -193,24 +193,32 @@ public class ReceiptServiceRealEstate
         con.Open();
 
         using var cmd = con.CreateCommand();
+
         cmd.CommandText = """
-            SELECT 
-                r.Id,
-                r.CloudId,
-                r.ReceiptNumber,
-                r.ReceiptDate,
-                r.Amount,
-                r.PaymentMethod,
-                c.Id,
-                c.CloudId,
-                c.ContractNumber,
-                t.Name
-            FROM ReceiptsRealEstate r
-            JOIN ContractsRealEstate c ON c.Id = r.ContractId
-            JOIN TenantsRealEstate t ON t.Id = c.TenantId
-            WHERE r.SyncAction <> 'delete'
-            ORDER BY r.Id DESC;
-        """;
+                              SELECT 
+                                  r.Id,
+                                  r.CloudId,
+                                  r.ReceiptNumber,
+                                  r.ReceiptDate,
+                                  r.Amount,
+                                  r.PaymentMethod,
+                                  c.Id,
+                                  c.CloudId,
+                                  c.ContractNumber,
+                                  t.Name,
+                                  (
+                                      SELECT COUNT(*)
+                                      FROM ReceiptsRealEstate r2
+                                      WHERE r2.ContractId = r.ContractId
+                                        AND r2.Id <= r.Id
+                                        AND IFNULL(r2.SyncAction, '') <> 'delete'
+                                  ) AS ReceiptOrderInContract
+                              FROM ReceiptsRealEstate r
+                              JOIN ContractsRealEstate c ON c.Id = r.ContractId
+                              JOIN TenantsRealEstate t ON t.Id = c.TenantId
+                              WHERE IFNULL(r.SyncAction, '') <> 'delete'
+                              ORDER BY r.Id DESC;
+                          """;
 
         using var reader = cmd.ExecuteReader();
 
@@ -228,6 +236,7 @@ public class ReceiptServiceRealEstate
                 ContractCloudId = reader.GetInt64(7),
                 ContractNumber = reader.GetString(8),
                 TenantName = reader.GetString(9),
+                ReceiptsCount = reader.GetInt32(10)
             });
         }
 
@@ -240,22 +249,30 @@ public class ReceiptServiceRealEstate
         con.Open();
 
         using var cmd = con.CreateCommand();
+
         cmd.CommandText = """
-            SELECT 
-                r.Id,
-                r.CloudId,
-                r.ReceiptNumber,
-                r.ReceiptDate,
-                r.ContractId,
-                c.CloudId,
-                r.PaymentMethod,
-                r.Amount
-            FROM ReceiptsRealEstate r
-            JOIN ContractsRealEstate c ON c.Id = r.ContractId
-            WHERE r.Id = $id
-              AND r.SyncAction <> 'delete'
-            LIMIT 1;
-        """;
+                              SELECT 
+                                  r.Id,
+                                  r.CloudId,
+                                  r.ReceiptNumber,
+                                  r.ReceiptDate,
+                                  r.ContractId,
+                                  c.CloudId,
+                                  r.PaymentMethod,
+                                  r.Amount,
+                                  (
+                                      SELECT COUNT(*)
+                                      FROM ReceiptsRealEstate r2
+                                      WHERE r2.ContractId = r.ContractId
+                                        AND r2.Id <= r.Id
+                                        AND IFNULL(r2.SyncAction, '') <> 'delete'
+                                  ) AS ReceiptOrderInContract
+                              FROM ReceiptsRealEstate r
+                              JOIN ContractsRealEstate c ON c.Id = r.ContractId
+                              WHERE r.Id = $id
+                                AND IFNULL(r.SyncAction, '') <> 'delete'
+                              LIMIT 1;
+                          """;
 
         cmd.Parameters.AddWithValue("$id", id);
 
@@ -274,9 +291,9 @@ public class ReceiptServiceRealEstate
             ContractCloudId = reader.GetInt64(5),
             PaymentMethod = reader.GetString(6),
             Amount = reader.GetDouble(7),
+            ReceiptsCount = reader.GetInt32(8)
         };
     }
-
     public void UpdateCloudId(long id, long cloudId)
     {
         using var con = new SqliteConnection(_db.ConnectionString);

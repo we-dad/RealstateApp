@@ -172,9 +172,12 @@ public partial class UnitsViewRealEstate : UserControl
         _ = SyncUnitsFromCloudAsync();
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void UnitsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is UnitRealEstate unit)
-            new UnitsWindowViewRealEstate(unit.Id, _supabaseService).Show();
+        if (UnitsGrid.SelectedItem is not UnitRealEstate unit)
+            return;
+
+        var window = new UnitsWindowViewRealEstate(unit.Id, _supabaseService);
+        window.Show();
     }
 }

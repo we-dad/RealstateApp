@@ -244,22 +244,73 @@ public partial class ContractsWindowViewRealEstate : Window
         ResultContractUnitDetealsBox.Text =
             "غرف " + _contract.ContractUnitRoomsNum + " دور " + _contract.ContractUnitFloorNum;
         ResultContractOpligationBox.Text = _contract.ContractOpligation;
+        
+        ReceiptsGrid.ItemsSource =
+            _contractDB.GetReceiptsByContractId(_contract.Id);
 
-        ResultUnitNameBox.Text = _contract.UnitName;
-        ResultDistrictBox.Text = _contract.District;
-        ResultCityBox.Text = _contract.City;
-        ResultUnitTypeBox.Text = _contract.UnitType;
-        ResultUnitNumBox.Text = _contract.UnitNum + " / " + _contract.UnitsCount;
+        ExpensesGrid.ItemsSource =
+            _contractDB.GetExpensesByContractId(_contract.Id);
+        
+        UnitDataGrid.ItemsSource = new List<ContractRealEstate> { _contract };
+        OwnerDataGrid.ItemsSource = new List<ContractRealEstate> { _contract };
+        TenantDataGrid.ItemsSource = new List<ContractRealEstate> { _contract };
+    }
+    private void ReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ReceiptsGrid.SelectedItem is not ReceiptRealEstate receipt)
+            return;
 
-        ResultOwnerNameBox.Text = _contract.OwnerName;
-        ResultOwnerIdentityNumberBox.Text = _contract.OwnerIdentityNumber;
-        ResultOwnerPhoneBox.Text = _contract.OwnerPhone;
-        ResultOwnerAddressBox.Text = _contract.OwnerAddress;
+        var window = new ReceiptsWindowViewRealEstate(
+            receipt.Id,
+            _supabaseService);
 
-        ResultTenantNameBox.Text = _contract.TenantName;
-        ResultTenantIdentityNumberBox.Text = _contract.TenantIdentityNumber;
-        ResultTenantPhoneBox.Text = _contract.TenantPhone;
-        ResultTenantAddressBox.Text = _contract.TenantAddress;
+        window.Show();
+    }
+
+    private void ExpensesGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ExpensesGrid.SelectedItem is not ExpensesRealEstate expense)
+            return;
+
+        var window = new ExpensesWindowViewRealEstate(
+            expense.Id,
+            _supabaseService);
+
+        window.Show();
+    }
+
+    private void UnitDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_contract is null) return;
+
+        var window = new UnitsWindowViewRealEstate(_contract.UnitId, _supabaseService);
+        window.Show();
+    }
+
+    private void OwnerDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_contract is null) return;
+
+        var owner = new OwnerRealEstate
+        {
+            Id = _contract.OwnerId
+        };
+
+        var window = new OwnersWindowViewRealEstate(owner, _supabaseService);
+        window.Show();
+    }
+
+    private void TenantDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_contract is null) return;
+
+        var tenant = new TenantRealEstate
+        {
+            Id = _contract.TenantId
+        };
+
+        var window = new TenantsWindowViewRealEstate(tenant, _supabaseService);
+        window.Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string contractNumber)

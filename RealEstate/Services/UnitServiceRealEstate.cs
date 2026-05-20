@@ -466,6 +466,54 @@ public class UnitServiceRealEstate
 
         return list;
     }
+    
+    public List<ContractRealEstate> GetContractsByUnitId(long unitId)
+    {
+        var list = new List<ContractRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+                              SELECT
+                                  c.Id,
+                                  c.CloudId,
+                                  c.ContractNumber,
+                                  c.ContractStartDate,
+                                  c.ContractEndDate,
+                                  c.RentAmount,
+                                  c.ContractState,
+                                  c.ContractPayMethod,
+                                  t.Name
+                              FROM ContractsRealEstate c
+                              JOIN TenantsRealEstate t ON t.Id = c.TenantId
+                              WHERE c.UnitId = $unitId
+                                AND c.SyncAction <> 'delete'
+                              ORDER BY c.Id DESC;
+                          """;
+
+        cmd.Parameters.AddWithValue("$unitId", unitId);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new ContractRealEstate
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                ContractNumber = reader.GetString(2),
+                ContractStartDate = DateTime.Parse(reader.GetString(3)),
+                ContractEndDate = DateTime.Parse(reader.GetString(4)),
+                RentAmount = reader.GetDouble(5),
+                ContractState = reader.GetString(6),
+                ContractPayMethod = reader.GetString(7),
+                TenantName = reader.GetString(8)
+            });
+        }
+
+        return list;
+    }
 
     public void Delete(long id)
     {

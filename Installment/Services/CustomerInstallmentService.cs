@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RealEstateInstallmentsManager.Models;
 
 namespace RealEstateInstallmentsManager.Services;
@@ -420,6 +421,98 @@ public class CustomerServiceInstallment
 
         return list;
     }
+    
+   public List<CustomerInstallment> GetCustomerRelatedData(long customerId)
+{
+    var list = new List<CustomerInstallment>();
+
+    using var con = new SqliteConnection(_db.ConnectionString);
+    con.Open();
+
+    using var cmd = con.CreateCommand();
+
+    cmd.CommandText = """
+        SELECT
+            c.Id,
+            c.ContractNumber,
+            c.ContractStartDate,
+            c.ContractEndDate,
+            c.CurrentTotalAmount,
+            c.ContractPeriod,
+            c.ContractState,
+
+            r.Id,
+            r.ReceiptNumber,
+            r.ReceiptDate,
+            r.Amount,
+            r.PaymentMethod
+        FROM ContractsInstallment c
+        LEFT JOIN ReceiptsInstallment r
+            ON r.ContractId = c.Id
+           AND IFNULL(r.SyncAction, '') <> 'delete'
+        WHERE c.CustomerId = $customerId
+          AND IFNULL(c.SyncAction, '') <> 'delete'
+        ORDER BY c.Id DESC, r.ReceiptDate DESC;
+    """;
+
+    cmd.Parameters.AddWithValue("$customerId", customerId);
+
+    using var reader = cmd.ExecuteReader();
+
+    while (reader.Read())
+    {
+        list.Add(new CustomerInstallment
+        {
+            ContractId = reader.GetInt64(0),
+            ContractNumber = reader.GetString(1),
+            ContractStartDate = reader.GetDateTime(2),
+            ContractEndDate = reader.GetDateTime(3),
+            ContractAmount = reader.GetDouble(4),
+            ContractPeriod = reader.GetDouble(5),
+            ContractState = reader.GetString(6),
+
+            ReceiptId = reader.IsDBNull(7) ? 0 : reader.GetInt64(7),
+            ReceiptNumber = reader.IsDBNull(8) ? "" : reader.GetString(8),
+            ReceiptDate = reader.IsDBNull(9) ? DateTime.MinValue : reader.GetDateTime(9),
+            ReceiptAmount = reader.IsDBNull(10) ? 0 : reader.GetDouble(10),
+            PaymentMethod = reader.IsDBNull(11) ? "" : reader.GetString(11)
+        });
+    }
+
+    var contracts = list
+        .Where(x => x.ContractId > 0)
+        .GroupBy(x => x.ContractId)
+        .Select(x => x.First())
+        .ToList();
+
+    var totalAmount = contracts.Sum(x => x.ContractAmount);
+    var paidAmount = list.Where(x => x.ReceiptId > 0).Sum(x => x.ReceiptAmount);
+    var receiptsCount = list.Where(x => x.ReceiptId > 0).Select(x => x.ReceiptId).Distinct().Count();
+
+    var totalInstallments = contracts.Sum(x => (int)x.ContractPeriod);
+    var paidInstallments = receiptsCount;
+    var leftInstallments = Math.Max(totalInstallments - paidInstallments, 0);
+
+    var progress = totalInstallments == 0
+        ? 0
+        : (double)paidInstallments / totalInstallments * 100;
+    
+
+    foreach (var item in list)
+    {
+        item.TotalAmount = totalAmount;
+        item.PaidAmount = paidAmount;
+        item.LeftAmount = totalAmount - paidAmount;
+        item.ReceiptsCount = receiptsCount;
+
+        item.TotalInstallments = totalInstallments;
+        item.PaidInstallments = paidInstallments;
+        item.LeftInstallments = leftInstallments;
+        item.PaymentProgressPercent = progress;
+    }
+
+    return list;
+}
 
     public void Delete(long id)
     {

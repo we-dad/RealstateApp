@@ -179,12 +179,15 @@ public partial class ExpensesViewRealEstate : UserControl
         ExpensesNoteBox.Text = "";
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ExpensesGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ExpensesRealEstate expenses)
-            new ExpensesWindowViewRealEstate(expenses.Id, _supabaseService).Show();
-    }
+        if (ExpensesGrid.SelectedItem is not ExpensesRealEstate expense)
+            return;
 
+        var window = new ExpensesWindowViewRealEstate(expense.Id, _supabaseService);
+        window.Show();
+    }
+    
     private async Task<string?> PickSavePdfPathAsync(string expensesNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);

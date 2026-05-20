@@ -19,6 +19,7 @@ public class ReceiptRealEstate
 
     //Tenant
     public string TenantName { get; set; } = "";
-
+    
+    public int ReceiptsCount { get; set; }
 
 }

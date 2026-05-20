@@ -20,6 +20,8 @@ public class ReceiptInstallment
 
     //Customer
     public string CustomerName { get; set; } = "";
+    
+    public int ReceiptsCount { get; set; }
 
 
 }

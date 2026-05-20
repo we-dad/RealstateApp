@@ -4,141 +4,161 @@
         x:Class="RealEstateInstallmentsManager.Views.ExpensesWindowViewRealEstate"
         x:DataType="models:ExpensesRealEstate"
         Title="معلومات سند الصرف"
-        Width="700"
-        Height="500">
+        Width="800"
+        Height="700">
 
-    <Grid RowDefinitions="Auto,*" Margin="6">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
 
-        <Border Padding="12" CornerRadius="12">
-            <StackPanel Spacing="8">
-                <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
+        <StackPanel Margin="6" Spacing="10">
 
-                <Button Click="Print_Click"
-                        Tag="{Binding}"
-                        ToolTip.Tip="طباعة سند الصرف"
-                        Width="36"
-                        Height="32"
-                        Padding="0"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        FontSize="16">
-                    🖨️
-                </Button>
+            <Border Padding="12" CornerRadius="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
 
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                      ColumnSpacing="10"
-                      RowSpacing="8">
+                    <Button Click="Print_Click"
+                            Tag="{Binding}"
+                            ToolTip.Tip="طباعة سند الصرف"
+                            Width="36"
+                            Height="32"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            FontSize="16">
+                        🖨️
+                    </Button>
 
-                    <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="8">
 
-                    <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                    <DatePicker x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
+                        <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
-                    <TextBlock Text="اسم الوحدة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <ComboBox x:Name="UnitsBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:UnitRealEstate">
-                                <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                        <DatePicker x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
 
-                    <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                    <ComboBox x:Name="ExpensesServiceBox"
-                              Grid.Row="3"
-                              Grid.Column="0"
-                              HorizontalAlignment="Stretch"
-                              HorizontalContentAlignment="Right">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}"
-                                           TextAlignment="Right"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <TextBlock Text="اسم الوحدة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                        <ComboBox x:Name="UnitsBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:UnitRealEstate">
+                                    <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <TextBlock Text="مبلغ الصرف" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBox x:Name="ExpensesAmountBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                        <ComboBox x:Name="ExpensesServiceBox"
+                                  Grid.Row="3"
+                                  Grid.Column="0"
+                                  HorizontalAlignment="Stretch"
+                                  HorizontalContentAlignment="Right">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextAlignment="Right"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-                    <TextBox x:Name="ExpensesNoteBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="مبلغ الصرف" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBox x:Name="ExpensesAmountBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
 
-                </Grid>
+                        <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBox x:Name="ExpensesNoteBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                    <Button Content="حذف البيانات" Click="Delete_Click"/>
-                    <Button Content="تحديث البيانات" Click="Update_Click"/>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                        <Button Content="حذف البيانات" Click="Delete_Click"/>
+                        <Button Content="تحديث البيانات" Click="Update_Click"/>
+                    </StackPanel>
                 </StackPanel>
+            </Border>
 
-            </StackPanel>
-        </Border>
+            <Border CornerRadius="12" Padding="12">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="بيانات الصرف"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Right"/>
 
-        <Border Grid.Row="1" Padding="12" CornerRadius="12">
-            <StackPanel Spacing="8">
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto"
-                      ColumnSpacing="10"
-                      RowSpacing="10">
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10"
+                          FlowDirection="RightToLeft">
 
-                    <!-- Expenses Info -->
-                    <Border Grid.Row="0" Grid.Column="1" CornerRadius="12" Padding="12" Margin="0,10,0,0">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="بيانات الصرف" HorizontalAlignment="Right"/>
+                        <Border Grid.Row="0" Grid.Column="0" Padding="10" CornerRadius="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="رقم سند الصرف" FontWeight="Bold" TextAlignment="Right"/>
+                                <TextBlock x:Name="ResultExpensesNumBox" TextAlignment="Right"/>
+                            </StackPanel>
+                        </Border>
 
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="10" RowSpacing="8">
+                        <Border Grid.Row="0" Grid.Column="1" Padding="10" CornerRadius="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="تاريخ السند" FontWeight="Bold" TextAlignment="Right"/>
+                                <TextBlock x:Name="ResultExpensesDateBox" TextAlignment="Right"/>
+                            </StackPanel>
+                        </Border>
 
-                                <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                        <Border Grid.Row="1" Grid.Column="0" Padding="10" CornerRadius="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="نوع الخدمة" FontWeight="Bold" TextAlignment="Right"/>
+                                <TextBlock x:Name="ResultExpensesServiceBox" TextAlignment="Right"/>
+                            </StackPanel>
+                        </Border>
 
-                                <TextBlock Text="تاريخ السند" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                        <Border Grid.Row="1" Grid.Column="1" Padding="10" CornerRadius="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="مبلغ الصرف" FontWeight="Bold" TextAlignment="Right"/>
+                                <TextBlock x:Name="ResultExpensesAmountBox" TextAlignment="Right"/>
+                            </StackPanel>
+                        </Border>
 
-                                <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesServiceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                        <Border Grid.Row="2"
+                                Grid.ColumnSpan="2"
+                                Padding="10"
+                                CornerRadius="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="الملاحظات" FontWeight="Bold" TextAlignment="Right"/>
+                                <TextBlock x:Name="ResultExpensesNoteBox"
+                                           TextAlignment="Right"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
 
-                                <TextBlock Text="مبلغ الصرف" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesAmountBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-                                <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesNoteBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+            <Border CornerRadius="12" Padding="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="بيانات الوحدة"
+                               FontSize="16"
+                               HorizontalAlignment="Right"/>
 
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                    <DataGrid x:Name="UnitDataGrid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="All"
+                              FlowDirection="RightToLeft"
+                              Height="150"
+                              DoubleTapped="UnitDataGrid_DoubleTapped">
 
-                    <!-- Unit Info -->
-                    <Border Grid.Row="0" Grid.Column="0" CornerRadius="12" Padding="12" Margin="0,10,0,0">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="بيانات الوحدة" HorizontalAlignment="Right"/>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="اسم الوحدة" Binding="{ReflectionBinding UnitName}" Width="160"/>
+                            <DataGridTextColumn Header="الحي" Binding="{ReflectionBinding District}" Width="120"/>
+                            <DataGridTextColumn Header="المدينة" Binding="{ReflectionBinding City}" Width="120"/>
+                            <DataGridTextColumn Header="نوع الوحدة" Binding="{ReflectionBinding UnitType}" Width="120"/>
+                            <DataGridTextColumn Header="رقم الوحدة" Binding="{ReflectionBinding UnitNum}" Width="100"/>
+                        </DataGrid.Columns>
 
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="10" RowSpacing="8">
+                    </DataGrid>
+                </StackPanel>
+            </Border>
 
-                                <TextBlock Text="اسم الوحدة" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="الحي" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultDistrictBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="المدينة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultCityBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="نوع الوحده" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitTypeBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="رقم الوحدة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitNumBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                </Grid>
-            </StackPanel>
-        </Border>
-
-    </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

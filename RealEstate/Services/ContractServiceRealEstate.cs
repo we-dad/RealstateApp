@@ -692,6 +692,118 @@ public class ContractServiceRealEstate
 
         return list;
     }
+    
+    public List<ReceiptRealEstate> GetReceiptsByContractId(long contractId)
+    {
+        var list = new List<ReceiptRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+                              SELECT
+                                  r.Id,
+                                  r.CloudId,
+                                  r.ReceiptNumber,
+                                  r.ReceiptDate,
+                                  r.PaymentMethod,
+                                  r.Amount,
+                                  r.ContractId,
+                                  c.ContractNumber,
+                                  t.Name
+                              FROM ReceiptsRealEstate r
+                              JOIN ContractsRealEstate c ON c.Id = r.ContractId
+                              JOIN TenantsRealEstate t ON t.Id = c.TenantId
+                              WHERE r.ContractId = $contractId
+                                AND r.SyncAction <> 'delete'
+                              ORDER BY r.Id DESC;
+                          """;
+
+        cmd.Parameters.AddWithValue("$contractId", contractId);
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new ReceiptRealEstate
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                ReceiptNumber = reader.GetString(2),
+                ReceiptDate = reader.GetDateTime(3),
+                PaymentMethod = reader.GetString(4),
+                Amount = reader.GetDouble(5),
+                ContractId = reader.GetInt64(6),
+                ContractNumber = reader.GetString(7),
+                TenantName = reader.GetString(8)
+            });
+        }
+
+        return list;
+    }
+
+    public List<ExpensesRealEstate> GetExpensesByContractId(long contractId)
+    {
+        var list = new List<ExpensesRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+
+        cmd.CommandText = """
+                              SELECT
+                                  e.Id,
+                                  e.CloudId,
+                                  e.ExpensesNumber,
+                                  e.ExpensesDate,
+                                  e.ExpensesService,
+                                  e.ExpensesAmount,
+                                  e.ExpensesNote,
+                                  e.UnitId,
+                                  u.UnitName
+                              FROM ExpensesRealEstate e
+                              JOIN UnitsRealEstate u
+                                  ON u.Id = e.UnitId
+                              JOIN ContractsRealEstate c
+                                  ON c.UnitId = e.UnitId
+                              WHERE c.Id = $contractId
+                                AND e.SyncAction <> 'delete'
+                              ORDER BY e.Id DESC;
+                          """;
+
+        cmd.Parameters.AddWithValue("$contractId", contractId);
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new ExpensesRealEstate
+            {
+                Id = reader.GetInt64(0),
+
+                CloudId = reader.GetInt64(1),
+
+                ExpensesNumber = reader.GetString(2),
+
+                ExpensesDate = reader.GetDateTime(3),
+
+                ExpensesService = reader.GetString(4),
+
+                ExpensesAmount = reader.GetDouble(5),
+
+                ExpensesNote = reader.GetString(6),
+
+                UnitId = reader.GetInt64(7),
+
+                UnitName = reader.GetString(8)
+            });
+        }
+
+        return list;
+    }
 
     public void Delete(long id)
     {

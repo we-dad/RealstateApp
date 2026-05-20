@@ -300,10 +300,13 @@ public partial class ContractsViewRealEstate : UserControl
         ContractUnitFloorNumBox.Text = "";
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ContractGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ContractRealEstate contract)
-            new ContractsWindowViewRealEstate(contract.Id, _supabaseService).Show();
+        if (ContractGrid.SelectedItem is not ContractRealEstate contract)
+            return;
+
+        var window = new ContractsWindowViewRealEstate(contract.Id, _supabaseService);
+        window.Show();
     }
 
     private async Task<string?> PickSavePdfPathAsync(string contractNumber)

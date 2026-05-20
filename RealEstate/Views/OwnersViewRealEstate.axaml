@@ -4,83 +4,90 @@
              x:Class="RealEstateInstallmentsManager.Views.OwnersViewRealEstate"
              x:DataType="models:OwnerRealEstate">
 
-  <Grid RowDefinitions="Auto,*" ColumnDefinitions="*,*" Margin="6">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
 
-    <!-- Form -->
-    <Border Grid.ColumnSpan="2" Padding="12" CornerRadius="12">
-      <StackPanel Spacing="8">
-        <TextBlock Text="الملاك" FontSize="18" HorizontalAlignment="Right"/>
+        <StackPanel Margin="6" Spacing="10">
 
-        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-              ColumnSpacing="10" RowSpacing="8">
+            <Border Padding="12" CornerRadius="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="الملاك" FontSize="18" HorizontalAlignment="Right"/>
 
-          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-          <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="8">
 
-          <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-          <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
-          <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-          <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
-          <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-          <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
-          <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-            <Button Content="تحديث" Click="Refresh_Click"/>
-            <Button Content="إضافة" Click="Add_Click"/>
-          </StackPanel>
+                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
 
-        </Grid>
-      </StackPanel>
-    </Border>
+                        <StackPanel Grid.Row="4"
+                                    Grid.ColumnSpan="2"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    HorizontalAlignment="Right">
+                            <Button Content="تحديث" Click="Refresh_Click"/>
+                            <Button Content="إضافة" Click="Add_Click"/>
+                        </StackPanel>
 
-    <!-- Table -->
-    <Border Grid.Row="1"
-            Grid.ColumnSpan="2"
-            CornerRadius="12"
-            Padding="12"
-            Margin="0,10,0,0">
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-      <Grid RowDefinitions="Auto,*">
+            <Border CornerRadius="12"
+                    Padding="12">
 
-        <TextBlock Text="قائمة الملاك"
-                   Grid.Row="0"
-                   HorizontalAlignment="Right"/>
+                <StackPanel Spacing="8">
 
-        <DataGrid x:Name="OwnersGrid"
-                  Grid.Row="1"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  x:DataType="models:OwnerRealEstate"
-                  FlowDirection="RightToLeft"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+                    <TextBlock Text="قائمة الملاك"
+                               HorizontalAlignment="Right"/>
 
-          <DataGrid.Columns>
+                    <DataGrid x:Name="OwnersGrid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              x:DataType="models:OwnerRealEstate"
+                              FlowDirection="RightToLeft"
+                              HorizontalAlignment="Stretch"
+                              Height="420"
+                              DoubleTapped="OwnersGrid_DoubleTapped">
 
-            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="80"/>
-            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
-            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="200"/>
-            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="200"/>
-            <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+                        <DataGrid.Columns>
 
-            <DataGridTemplateColumn Header="">
-              <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate>
-                  <Button Content="فتح"
-                          Tag="{Binding}"
-                          Click="OpenInfoWindow_Click"/>
-                </DataTemplate>
-              </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="#"
+                                                Binding="{Binding Id}"
+                                                Width="80"/>
 
-          </DataGrid.Columns>
+                            <DataGridTextColumn Header="الاسم"
+                                                Binding="{Binding Name}"
+                                                Width="*"/>
 
-        </DataGrid>
+                            <DataGridTextColumn Header="رقم الهوية"
+                                                Binding="{Binding IdentityNumber}"
+                                                Width="200"/>
 
-      </Grid>
-    </Border>
+                            <DataGridTextColumn Header="الجوال"
+                                                Binding="{Binding Phone}"
+                                                Width="200"/>
 
-  </Grid>
+                            <DataGridTextColumn Header="العنوان"
+                                                Binding="{Binding Address}"
+                                                Width="*"/>
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

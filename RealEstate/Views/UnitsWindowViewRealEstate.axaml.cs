@@ -116,16 +116,35 @@ public partial class UnitsWindowViewRealEstate : Window
         UnitNumBox.Text = _unit.UnitNum.ToString();
         UnitsCountBox.Text = _unit.UnitsCount.ToString();
 
-        ResultNameBox.Text = _unit.OwnerName ?? "";
-        ResultIdentityNumberBox.Text = _unit.OwnerIdentityNumber ?? "";
-        ResultPhoneBox.Text = _unit.OwnerPhone ?? "";
-        ResultAddressBox.Text = _unit.OwnerAddress ?? "";
 
         ResultUnitNameBox.Text = _unit.UnitName ?? "";
         ResultDistrictBox.Text = _unit.District ?? "";
         ResultCityBox.Text = _unit.City ?? "";
         ResultUnitTypeBox.Text = _unit.UnitType ?? "";
         ResultUnitNumBox.Text = _unit.UnitsCount + " / " + _unit.UnitNum;
+        
+        OwnerDataGrid.ItemsSource = new List<UnitRealEstate> { _unit };
+        ContractsGrid.ItemsSource = _unitsDB.GetContractsByUnitId(_unit.Id);
+    }
+    private void OwnerDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (_unit is null) return;
+
+        var owner = new OwnerRealEstate
+        {
+            Id = _unit.OwnerId
+        };
+
+        var window = new OwnersWindowViewRealEstate(owner, _supabaseService);
+        window.Show();
+    }
+    private void ContractsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ContractsGrid.SelectedItem is not ContractRealEstate contract)
+            return;
+
+        var window = new ContractsWindowViewRealEstate(contract.Id, _supabaseService);
+        window.Show();
     }
 
     private void Delete_Click(object? sender, RoutedEventArgs e)

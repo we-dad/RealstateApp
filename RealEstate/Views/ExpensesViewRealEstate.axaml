@@ -4,128 +4,132 @@
              x:Class="RealEstateInstallmentsManager.Views.ExpensesViewRealEstate"
              x:DataType="models:ExpensesRealEstate">
 
-    <Grid RowDefinitions="Auto,*" Margin="6">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
 
-        <Border Padding="12" CornerRadius="12">
-            <StackPanel Spacing="8">
-                <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
+        <StackPanel Margin="6" Spacing="10">
 
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                      ColumnSpacing="10"
-                      RowSpacing="8">
+            <Border Padding="12" CornerRadius="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
 
-                    <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="8">
 
-                    <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
+                        <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
-                    <TextBlock Text="اسم الوحدة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <ComboBox x:Name="UnitsBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:UnitRealEstate">
-                                <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
 
-                    <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                    <ComboBox x:Name="ExpensesServiceBox"
-                              Grid.Row="3"
-                              Grid.Column="0"
-                              HorizontalAlignment="Stretch"
-                              HorizontalContentAlignment="Right">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}"
-                                           TextAlignment="Right"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <TextBlock Text="اسم الوحدة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                        <ComboBox x:Name="UnitsBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:UnitRealEstate">
+                                    <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <TextBlock Text="مبلغ الصرف" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBox x:Name="ExpensesAmountBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                        <ComboBox x:Name="ExpensesServiceBox"
+                                  Grid.Row="3"
+                                  Grid.Column="0"
+                                  HorizontalAlignment="Stretch"
+                                  HorizontalContentAlignment="Right">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextAlignment="Right"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-                    <TextBox x:Name="ExpensesNoteBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="مبلغ الصرف" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBox x:Name="ExpensesAmountBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
 
-                </Grid>
+                        <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBox x:Name="ExpensesNoteBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                    <Button Content="تحديث" Click="Refresh_Click"/>
-                    <Button Content="إضافة" Click="Add_Click"/>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                        <Button Content="تحديث" Click="Refresh_Click"/>
+                        <Button Content="إضافة" Click="Add_Click"/>
+                    </StackPanel>
+
                 </StackPanel>
+            </Border>
 
-            </StackPanel>
-        </Border>
+            <Border CornerRadius="12"
+                    Padding="12">
 
-        <!-- Table -->
-        <Border Grid.Row="1"
-                CornerRadius="12"
-                Padding="12"
-                Margin="0,10,0,0">
+                <StackPanel Spacing="8">
 
-            <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="قائمة المصروفات"
+                               TextAlignment="Right"/>
 
-                <TextBlock Text="قائمة المصروفات"
-                           Grid.Row="0"
-                           TextAlignment="Right"/>
+                    <DataGrid x:Name="ExpensesGrid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              x:DataType="models:ExpensesRealEstate"
+                              FlowDirection="RightToLeft"
+                              HorizontalAlignment="Stretch"
+                              Height="430"
+                              DoubleTapped="ExpensesGrid_DoubleTapped">
 
-                <DataGrid x:Name="ExpensesGrid"
-                          Grid.Row="1"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          x:DataType="models:ExpensesRealEstate"
-                          FlowDirection="RightToLeft"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch">
+                        <DataGrid.Columns>
 
-                    <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"
+                                                Binding="{Binding Id}"
+                                                Width="70"/>
 
-                        <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="70"/>
-                        <DataGridTextColumn Header="رقم سند الصرف" Binding="{Binding ExpensesNumber}" Width="*"/>
-                        <DataGridTextColumn Header="اسم الوحدة" Binding="{Binding UnitName}" Width="160"/>
-                        <DataGridTextColumn Header="تاريخ السند" Binding="{Binding ExpensesDate, StringFormat={}{0:yyyy-MM-dd}}" Width="160"/>
-                        <DataGridTextColumn Header="نوع الخدمة" Binding="{Binding ExpensesService}" Width="160"/>
-                        <DataGridTextColumn Header="المبلغ" Binding="{Binding ExpensesAmount}" Width="160"/>
-                        
-                        <DataGridTemplateColumn Header="">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="فتح"
-                                            Tag="{Binding}"
-                                            Click="OpenInfoWindow_Click"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="رقم سند الصرف"
+                                                Binding="{Binding ExpensesNumber}"
+                                                Width="*"/>
 
-                        <DataGridTemplateColumn Header="">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Click="Print_Click"
-                                            Tag="{Binding}"
-                                            ToolTip.Tip="طباعة سند الصرف"
-                                            Width="36"
-                                            Height="32"
-                                            Padding="0"
-                                            HorizontalContentAlignment="Center"
-                                            VerticalContentAlignment="Center"
-                                            FontSize="16">
-                                        🖨️
-                                    </Button>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="اسم الوحدة"
+                                                Binding="{Binding UnitName}"
+                                                Width="160"/>
 
-                    </DataGrid.Columns>
+                            <DataGridTextColumn Header="تاريخ السند"
+                                                Binding="{Binding ExpensesDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                                Width="160"/>
 
-                </DataGrid>
+                            <DataGridTextColumn Header="نوع الخدمة"
+                                                Binding="{Binding ExpensesService}"
+                                                Width="160"/>
 
-            </Grid>
-        </Border>
+                            <DataGridTextColumn Header="المبلغ"
+                                                Binding="{Binding ExpensesAmount}"
+                                                Width="160"/>
 
+                            <DataGridTemplateColumn Header="طباعة" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Click="Print_Click"
+                                                Tag="{Binding}"
+                                                ToolTip.Tip="طباعة سند الصرف"
+                                                Width="36"
+                                                Height="32"
+                                                Padding="0"
+                                                HorizontalContentAlignment="Center"
+                                                VerticalContentAlignment="Center"
+                                                FontSize="16">
+                                            🖨️
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
+                        </DataGrid.Columns>
 
-    </Grid>
+                    </DataGrid>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
