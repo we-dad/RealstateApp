@@ -21,6 +21,7 @@ public partial class ContractWindowViewInstallment : Window
     private readonly ContractServiceInstallment _contractsDB;
     private readonly CustomerServiceInstallment _customersDB;
     private readonly ProductServiceInstallment _productDB;
+    private readonly OwnerInstallmentService _ownersDB; 
     private readonly PdfServiceInstallment _pdfService;
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
@@ -31,10 +32,13 @@ public partial class ContractWindowViewInstallment : Window
     private TextBox? _customerIdSearchBox;
     private bool _isRefreshing;
     private double realMainPrice;
+    
+    private bool IsManualMode => ManualModeRadio.IsChecked == true;
 
     public ContractWindowViewInstallment(long contract, SupabaseService supabaseService)
     {
         InitializeComponent();
+        
         _supabaseService = supabaseService;
 
         _contractID = contract;
@@ -44,7 +48,15 @@ public partial class ContractWindowViewInstallment : Window
         _contractsDB = new ContractServiceInstallment(_db);
         _customersDB = new CustomerServiceInstallment(_db);
         _productDB = new ProductServiceInstallment(_db);
+        _ownersDB = new OwnerInstallmentService(_db); 
         _pdfService = new PdfServiceInstallment();
+        
+        InterestPercentBox.ItemsSource = new List<string> { "5", "7.5", "10", "12.5", "15", "أخرى" };
+        InterestPercentBox.SelectedItem = "12.5";
+        
+        ProductGrid.DoubleTapped += ProductGrid_DoubleTapped;
+        CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
+        OwnerGrid.DoubleTapped += OwnerGrid_DoubleTapped;
 
         Refresh();
 
@@ -281,33 +293,74 @@ public partial class ContractWindowViewInstallment : Window
             ResultManagementFeeBox.Text = _contract.ManagementFee.ToString("0.##");
             ResultMonthlyInstallmentBox.Text = _contract.MonthlyInstallment.ToString("0.##");
 
-            ResultProductNameBox.Text = _contract.ProductName;
-            ResultProductTypeBox.Text = _contract.ProductType;
-            ResultProductMainPriceBox.Text = _contract.ProductMainPrice.ToString("0.##");
+            var gridProduct = _productDB.GetById(_contract.ProductId);
+            ProductGrid.ItemsSource = gridProduct is null
+                ? new List<ProductInstallment>() : new List<ProductInstallment> { gridProduct };
 
-            ResultOwnerNameBox.Text = _contract.OwnerName;
-            ResultOwnerIdentityNumberBox.Text = _contract.OwnerIdentityNumber;
-            ResultOwnerPhoneBox.Text = _contract.OwnerPhone;
-            ResultOwnerAddressBox.Text = _contract.OwnerAddress;
+            var gridCustomer = _customersDB.GetById(_contract.CustomerId);
+            CustomerGrid.ItemsSource = gridCustomer is null
+                ? new List<CustomerInstallment>() : new List<CustomerInstallment> { gridCustomer };
 
-            ResultNameBox.Text = _contract.CustomerName;
-            ResultIdentityNumberBox.Text = _contract.CustomerIdentityNumber;
-            ResultPhoneBox.Text = _contract.CustomerPhone;
-            ResultAddressBox.Text = _contract.CustomerAddress;
-            ResultJobBox.Text = _contract.CustomerJob;
-
-            SponsorSection.IsVisible =
-                !string.IsNullOrWhiteSpace(_contract.CustomerSponserName);
-
-            ResultSponserNameBox.Text = _contract.CustomerSponserName;
-            ResultSponserIdentityNumberBox.Text = _contract.CustomerSponserIdentityNumber;
-            ResultSponserPhoneBox.Text = _contract.CustomerSponserPhone;
-            ResultSponserAddressBox.Text = _contract.CustomerSponserAddress;
-            ResultSponserJobBox.Text = _contract.CustomerSponserJob;
+            var gridOwner = _ownersDB.GetById(_contract.OwnerId);
+            OwnerGrid.ItemsSource = gridOwner is null
+                ? new List<OwnerInstallment>() : new List<OwnerInstallment> { gridOwner };
         }
         finally
         {
             _isRefreshing = false;
+        }
+    }
+    
+    private async void ProductGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ProductGrid.SelectedItem is not ProductInstallment product) return;
+
+        var window = new ProductWindowViewInstallment(product.Id, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
+    }
+
+    private async void CustomerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (CustomerGrid.SelectedItem is not CustomerInstallment customer) return;
+
+        var window = new CustomerWindowViewInstallment(customer, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
+    }
+
+    private async void OwnerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (OwnerGrid.SelectedItem is not OwnerInstallment owner) return;
+
+        var window = new OwnersWindowViewInstallment(owner, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
+    }
+    
+    private void Mode_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (ContractNumBox is null) return;
+
+        ContractNumBox.IsReadOnly = !IsManualMode;
+        MainTotalAmountBox.IsReadOnly = !IsManualMode;
+
+        if (!IsManualMode)
+        {
+            // back to auto: restore the contract's saved number and recompute
+            ContractNumBox.Text = _contract.ContractNumber;
+            UpdateProductTotalAmount();
+        }
+    }
+
+    private void MainTotalAmountBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_isRefreshing || !IsManualMode) return;
+
+        if (double.TryParse(MainTotalAmountBox.Text?.Trim(), out var total) && total > 0)
+        {
+            _contract.MainTotalAmount = Math.Round(total, 2);
+            UpdateInstallmentAfterTotalChanged();   // recompute monthly from the manual total
         }
     }
 
@@ -365,12 +418,41 @@ public partial class ContractWindowViewInstallment : Window
     private void InterestPercentBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isRefreshing) return;
+        if (InterestPercentBox.SelectedItem is not string selected) return;
 
-        if (InterestPercentBox.SelectedItem != null &&
-            double.TryParse(InterestPercentBox.SelectedItem.ToString(), out double value))
+        if (selected == "أخرى")
+        {
+            CustomInterestBox.IsVisible = true;
+            CustomInterestBox.Focus();
+            return;   // wait for the user to type
+        }
+
+        CustomInterestBox.IsVisible = false;
+        CustomInterestErrorText.Text = "";
+
+        if (double.TryParse(selected, out double value))
         {
             _contract.InterestPercent = value;
             UpdateProductTotalAmount();
+        }
+    }
+    
+    private void CustomInterestBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_isRefreshing || !CustomInterestBox.IsVisible) return;
+
+        var text = CustomInterestBox.Text?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(text)) { CustomInterestErrorText.Text = ""; return; }
+
+        if (double.TryParse(text, out double value) && value >= 0 && value <= 100)
+        {
+            CustomInterestErrorText.Text = "";
+            _contract.InterestPercent = value;
+            UpdateProductTotalAmount();
+        }
+        else
+        {
+            CustomInterestErrorText.Text = "قيمة غير صحيحة";
         }
     }
 

@@ -5,70 +5,70 @@
         x:DataType="models:ProductInstallment"
         Title="معلومات السلعة"
         Width="700"
-        Height="700">
+        Height="700"
+        FlowDirection="RightToLeft">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" Margin="6">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid RowDefinitions="Auto,Auto,Auto" Margin="16" RowSpacing="12">
 
-     <Border Padding="12" CornerRadius="12">
+     <Border Grid.Row="0" Padding="12" CornerRadius="12"
+             BorderBrush="#DDD" BorderThickness="1">
       <StackPanel Spacing="8">
-        <TextBlock Text="السلع" FontSize="18" TextAlignment="Right"/>
+        <TextBlock Text="السلع" FontSize="18"/>
 
         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               ColumnSpacing="10" RowSpacing="8">
 
-          <TextBlock Text="اسم السلعة" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-          <TextBox x:Name="ProductNameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+          <TextBlock Text="اسم السلعة" Grid.Row="0" Grid.Column="0"/>
+          <TextBox x:Name="ProductNameBox" Grid.Row="1" Grid.Column="0"/>
 
-          <TextBlock Text="المالك" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-          <ComboBox x:Name="OwnerBox" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right">
+          <TextBlock Text="المالك" Grid.Row="0" Grid.Column="1"/>
+          <ComboBox x:Name="OwnerBox" Grid.Row="1" Grid.Column="1"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
             <ComboBox.ItemTemplate>
               <DataTemplate x:DataType="models:OwnerInstallment">
-                <TextBlock Text="{Binding Name}" TextAlignment="Right"/>
+                <TextBlock Text="{Binding Name}"/>
               </DataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
 
-        <TextBlock Text="نوع السلعة" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-          <ComboBox Grid.Row="3"
-                    Grid.Column="0"
+          <TextBlock Text="نوع السلعة" Grid.Row="2" Grid.Column="0"/>
+          <ComboBox Grid.Row="3" Grid.Column="0"
                     ItemsSource="{Binding ProductTypes}"
                     SelectedItem="{Binding ProductType, Mode=TwoWay}"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Right">
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
             <ComboBox.ItemTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding}" TextAlignment="Right"/>
+                <TextBlock Text="{Binding}"/>
               </DataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
-          
-          <TextBlock Text="قيمة السلعة الأصلية" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-          <TextBox x:Name="ProductMainPriceBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-          
-          <TextBlock Text="رقم اللوحة" Grid.Row="4" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          <TextBox x:Name="CarsPlateNumberBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-          <TextBlock Text="رقم الهيكل" Grid.Row="4" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          <TextBox x:Name="CarsVINBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-          <TextBlock Text="الموديل" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          <TextBox x:Name="CarsModelBox" Grid.Row="7" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-          <TextBlock Text="اللون" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          <TextBox x:Name="CarsColorBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-          
-          <TextBlock Text="سعة التخزين" Grid.Row="4" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-          <TextBox x:Name="MobileStorageBox" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-          
-          <TextBlock Text="اللون" Grid.Row="4" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-          <TextBox x:Name="MobileColorBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-          
-          
+
+          <TextBlock Text="قيمة السلعة الأصلية" Grid.Row="2" Grid.Column="1"/>
+          <TextBox x:Name="ProductMainPriceBox" Grid.Row="3" Grid.Column="1"/>
+
+          <TextBlock Text="رقم اللوحة" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+          <TextBox x:Name="CarsPlateNumberBox" Grid.Row="5" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+          <TextBlock Text="رقم الهيكل" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+          <TextBox x:Name="CarsVINBox" Grid.Row="5" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+          <TextBlock Text="الموديل" Grid.Row="6" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+          <TextBox x:Name="CarsModelBox" Grid.Row="7" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+          <TextBlock Text="اللون" Grid.Row="6" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+          <TextBox x:Name="CarsColorBox" Grid.Row="7" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+
+          <TextBlock Text="سعة التخزين" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+          <TextBox x:Name="MobileStorageBox" Grid.Row="5" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+
+          <TextBlock Text="اللون" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+          <TextBox x:Name="MobileColorBox" Grid.Row="5" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+
         </Grid>
 
-        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
             <Button Content="حذف البيانات" Click="Delete_Click"/>
             <Button Content="تحديث البيانات" Click="Update_Click"/>
         </StackPanel>
@@ -76,70 +76,72 @@
       </StackPanel>
     </Border>
 
-        <Border Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="12" Padding="12" Margin="0,10,0,0">
+        <Border Grid.Row="1" CornerRadius="12" Padding="12"
+                BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
-                <TextBlock Text="بيانات المنتج" HorizontalAlignment="Right"/>
+                <TextBlock Text="بيانات المنتج"/>
 
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                       ColumnSpacing="10" RowSpacing="8">
 
-                    <TextBlock Text="اسم المنتج" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                    
+                    <TextBlock Text="اسم المنتج" Grid.Row="0" Grid.Column="0"/>
+                    <TextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="1"/>
 
-          <TextBlock Text="نوع المنتج" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="نوع المنتج" Grid.Row="1" Grid.Column="0"/>
+                    <TextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="1"/>
 
-          <TextBlock Text="قيمة المنتج الأصلية" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-          <TextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="0" Text="0" TextAlignment="Right"/>
-                    
-                    <TextBlock Text="رقم اللوحة" Grid.Row="3" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsPlateNumberBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-                    <TextBlock Text="رقم الهيكل" Grid.Row="4" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsVINBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-                    <TextBlock Text="الموديل" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsModelBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-                    <TextBlock Text="اللون" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsColorBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsCarFieldsVisible}"/>
-          
-          
-                    <TextBlock Text="سعة التخزين" Grid.Row="3" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-                    <TextBlock x:Name="ResultMobileStorageBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-          
-                    <TextBlock Text="اللون" Grid.Row="4" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-                    <TextBlock x:Name="ResultMobileColorBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+                    <TextBlock Text="قيمة المنتج الأصلية" Grid.Row="2" Grid.Column="0"/>
+                    <TextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="1" Text="1"/>
 
-          
+                    <TextBlock Text="رقم اللوحة" Grid.Row="3" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <TextBlock x:Name="ResultCarsPlateNumberBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+                    <TextBlock Text="رقم الهيكل" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <TextBlock x:Name="ResultCarsVINBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+                    <TextBlock Text="الموديل" Grid.Row="5" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <TextBlock x:Name="ResultCarsModelBox" Grid.Row="5" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+                    <TextBlock Text="اللون" Grid.Row="6" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <TextBlock x:Name="ResultCarsColorBox" Grid.Row="6" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+
+
+                    <TextBlock Text="سعة التخزين" Grid.Row="3" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+                    <TextBlock x:Name="ResultMobileStorageBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+
+                    <TextBlock Text="اللون" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+                    <TextBlock x:Name="ResultMobileColorBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
 
                 </Grid>
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="12" Padding="12" Margin="0,10,0,0">
+        <Border Grid.Row="2" CornerRadius="12" Padding="12"
+                BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
-                <TextBlock Text="بيانات المالك" HorizontalAlignment="Right"/>
-
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                      ColumnSpacing="10" RowSpacing="8">
-
-                    <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                    <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                    <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                    <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="بيانات المالك" FontSize="15"/>
+                    <TextBlock Grid.Column="1" Text="انقر مرتين لفتح المالك"
+                               Foreground="Gray" FontSize="11" VerticalAlignment="Center"/>
                 </Grid>
+
+                <DataGrid x:Name="OwnerGrid"
+                          x:DataType="models:OwnerInstallment"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Height="90">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="Auto"/>
+                        <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="Auto"/>
+                        <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
             </StackPanel>
         </Border>
 
     </Grid>
+    </ScrollViewer>
 </Window>

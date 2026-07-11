@@ -28,6 +28,8 @@ public partial class OwnersViewInstallment : UserControl
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = _sync.PushAllDirtyAsync();
         _ = SyncOwnersFromCloudAsync();
+        
+        OwnersGrid.DoubleTapped += OwnersGrid_DoubleTapped;
     }
 
     private void LoadOwners()
@@ -108,9 +110,9 @@ public partial class OwnersViewInstallment : UserControl
         _ = SyncOwnersFromCloudAsync();
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void OwnersGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is OwnerInstallment owner)
+        if (OwnersGrid.SelectedItem is OwnerInstallment owner)
             new OwnersWindowViewInstallment(owner, _supabaseService).Show();
     }
 }

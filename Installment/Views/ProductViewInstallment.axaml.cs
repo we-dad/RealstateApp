@@ -35,6 +35,8 @@ public partial class ProductViewInstallment : UserControl
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = _sync.PushAllDirtyAsync();
         _ = SyncProductsFromCloudAsync();
+        
+        ProductGrid.DoubleTapped += ProductGrid_DoubleTapped;
     }
 
     private void LoadOwners()
@@ -170,9 +172,9 @@ public partial class ProductViewInstallment : UserControl
         _ = SyncProductsFromCloudAsync();
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ProductGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ProductInstallment product)
+        if (ProductGrid.SelectedItem is ProductInstallment product)
             new ProductWindowViewInstallment(product.Id, _supabaseService).Show();
     }
 }

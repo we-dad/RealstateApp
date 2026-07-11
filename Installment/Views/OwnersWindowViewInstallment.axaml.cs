@@ -15,6 +15,7 @@ public partial class OwnersWindowViewInstallment : Window
     private readonly OwnerInstallment _owner;
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly OwnerInstallmentService _ownersDB;
+    private readonly ProductServiceInstallment _productsDB; 
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
 
@@ -25,11 +26,14 @@ public partial class OwnersWindowViewInstallment : Window
 
         _db.Initialize();
         _ownersDB = new OwnerInstallmentService(_db);
-
+        _productsDB = new ProductServiceInstallment(_db);
+        
         _owner = owner;
         
     _sync = new InstallmentSyncService(_db, _supabaseService);
     _ = _sync.PushAllDirtyAsync();
+    
+    ProductsGrid.DoubleTapped += ProductsGrid_DoubleTapped;
 
         Refresh();
     }
@@ -75,6 +79,17 @@ public partial class OwnersWindowViewInstallment : Window
         ResultPhoneBox.Text = refreshedOwner.Phone;
         ResultIdentityNumberBox.Text = refreshedOwner.IdentityNumber;
         ResultAddressBox.Text = refreshedOwner.Address;
+        
+        ProductsGrid.ItemsSource = _ownersDB.GetProductsByOwnerId(_owner.Id);
+    }
+    
+    private void ProductsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ProductsGrid.SelectedItem is not ProductInstallment selected)
+            return;
+
+        var window = new ProductWindowViewInstallment(selected.Id, _supabaseService);
+        window.Show();
     }
 
     private void Delete_Click(object? sender, RoutedEventArgs e)

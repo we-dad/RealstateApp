@@ -4,12 +4,21 @@
              x:Class="RealEstateInstallmentsManager.Views.ContractViewInstallment"
              x:DataType="models:ContractInstallment">
 
-
     <Grid RowDefinitions="Auto,*" Margin="6">
 
-        <Border Padding="12" CornerRadius="12">
+        <Border Padding="12" CornerRadius="12"
+                BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
                 <TextBlock Text="عقد البيع" FontSize="18" TextAlignment="Right"/>
+
+                <!-- Entry mode: auto / manual (left side) -->
+                <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Left">
+                    <RadioButton x:Name="AutoModeRadio" Content="تلقائي" IsChecked="True"
+                                 IsCheckedChanged="Mode_Changed"/>
+                    <RadioButton x:Name="ManualModeRadio" Content="يدوي"
+                                 IsCheckedChanged="Mode_Changed"/>
+                    <TextBlock Text=": طريقة الإدخال" VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <Grid ColumnDefinitions="*,*"
                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
@@ -17,7 +26,8 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBox x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1"
+                             TextAlignment="Right" IsReadOnly="True"/>
 
                     <TextBlock Text="تاريخ العقد" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                     <DatePicker x:Name="ContractDateStartPicker" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -68,12 +78,12 @@
                     </Grid>
 
                     <TextBlock Text="نسبة الفائدة السنوية"
-           Grid.Row="4"
-           Grid.Column="0"
-           TextAlignment="Right"
-           FlowDirection="RightToLeft"/>
+                               Grid.Row="4"
+                               Grid.Column="0"
+                               TextAlignment="Right"
+                               FlowDirection="RightToLeft"/>
 
-<StackPanel Grid.Row="5" Grid.Column="0" Spacing="4">
+                    <StackPanel Grid.Row="5" Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="6"
                                     FlowDirection="RightToLeft">
@@ -81,8 +91,6 @@
                             <ComboBox x:Name="InterestPercentBox"
                                       HorizontalAlignment="Stretch"
                                       FlowDirection="RightToLeft"
-                                      ItemsSource="{Binding InterestPercentOptions}"
-                                      SelectedItem="{Binding InterestPercent, Mode=TwoWay}"
                                       SelectionChanged="InterestPercentBox_SelectionChanged">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
@@ -92,13 +100,25 @@
                             </ComboBox>
                             <TextBlock Text="%"
                                        VerticalAlignment="Center"/>
+
+                            <TextBox x:Name="CustomInterestBox"
+                                     Width="100"
+                                     Watermark="النسبة"
+                                     TextAlignment="Right"
+                                     IsVisible="False"
+                                     TextChanged="CustomInterestBox_TextChanged"/>
                         </StackPanel>
+
+                        <TextBlock x:Name="CustomInterestErrorText"
+                                   Foreground="Red"
+                                   FontSize="12"
+                                   TextAlignment="Right"/>
                     </StackPanel>
 
-<TextBlock Text="رسوم ادارية"
-           Grid.Row="4"
-           Grid.Column="1"
-           TextAlignment="Right"/>
+                    <TextBlock Text="رسوم ادارية"
+                               Grid.Row="4"
+                               Grid.Column="1"
+                               TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="5" Grid.Column="1" Spacing="4">
                         <StackPanel Orientation="Horizontal"
@@ -117,80 +137,79 @@
                                    FontSize="12"
                                    TextAlignment="Right"/>
                     </StackPanel>
-                    
-<TextBlock Text="مدة العقد"
-           Grid.Row="6"
-           Grid.Column="1"
-           TextAlignment="Right"/>
+
+                    <TextBlock Text="مدة العقد"
+                               Grid.Row="6"
+                               Grid.Column="1"
+                               TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="7" Grid.Column="1" Spacing="4">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="6"
                                     FlowDirection="RightToLeft">
-                        <TextBox x:Name="ContractPeriodBox"
-                                 Width="150"
-                                 TextAlignment="Right"
-                                 TextChanged="ContractPeriodBox_TextChanged"/>
-                        <TextBlock Text="شهر"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
+                            <TextBox x:Name="ContractPeriodBox"
+                                     Width="150"
+                                     TextAlignment="Right"
+                                     TextChanged="ContractPeriodBox_TextChanged"/>
+                            <TextBlock Text="شهر"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock x:Name="ContractPeriodErrorText"
                                    Foreground="Red"
                                    FontSize="12"
                                    TextAlignment="Right"/>
                     </StackPanel>
-                    
-<TextBlock Text="اجمالي قيمة المنتج"
-           Grid.Row="6"
-           Grid.Column="0"
-           TextAlignment="Right"/>
 
-                    
+                    <TextBlock Text="اجمالي قيمة المنتج"
+                               Grid.Row="6"
+                               Grid.Column="0"
+                               TextAlignment="Right"/>
+
                     <StackPanel Grid.Row="7" Grid.Column="0" Spacing="4">
-
-                        <TextBox TextAlignment="Right"
+                        <TextBox x:Name="MainTotalAmountBox"
+                                 TextAlignment="Right"
                                  Text="{Binding MainTotalAmount}"
-                                 IsReadOnly="True"/>
+                                 IsReadOnly="True"
+                                 TextChanged="MainTotalAmountBox_TextChanged"/>
                     </StackPanel>
 
-<TextBlock Text="القسط الشهري"
-           Grid.Row="8"
-           Grid.Column="1"
-           TextAlignment="Right"/>
+                    <TextBlock Text="القسط الشهري"
+                               Grid.Row="8"
+                               Grid.Column="1"
+                               TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="9" Grid.Column="1" Spacing="4">
                         <TextBlock x:Name="MonthlyInstallmentBox"
                                    FontSize="32"
                                    FontWeight="Bold"
-                                 TextAlignment="Right"/>
+                                   TextAlignment="Right"/>
                     </StackPanel>
 
-<StackPanel Orientation="Horizontal"
-            Spacing="10"
-            HorizontalAlignment="Stretch"
-            FlowDirection="RightToLeft"
-            Grid.Row="9"
-            Grid.Column="0">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Stretch"
+                                FlowDirection="RightToLeft"
+                                Grid.Row="9"
+                                Grid.Column="0">
 
-    <CheckBox Content="بدفعة مقدمة"
-              VerticalAlignment="Center"
-              IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
+                        <CheckBox Content="بدفعة مقدمة"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
 
-    <StackPanel Spacing="4">
-        <TextBox x:Name="DownPaymentBox"
-                 Width="150"
-                 Watermark="ادخل الرقم"
-                 TextAlignment="Right"
-                 IsVisible="{Binding BoolDownPayment}"
-                 TextChanged="DownPaymentBox_TextChanged"/>
+                        <StackPanel Spacing="4">
+                            <TextBox x:Name="DownPaymentBox"
+                                     Width="150"
+                                     Watermark="ادخل الرقم"
+                                     TextAlignment="Right"
+                                     IsVisible="{Binding BoolDownPayment}"
+                                     TextChanged="DownPaymentBox_TextChanged"/>
 
-        <TextBlock x:Name="DownPaymentErrorText"
-                   Foreground="Red"
-                   FontSize="12"
-                   TextAlignment="Right"
-                   IsVisible="{Binding BoolDownPayment}"/>
-    </StackPanel>
-    
+                            <TextBlock x:Name="DownPaymentErrorText"
+                                       Foreground="Red"
+                                       FontSize="12"
+                                       TextAlignment="Right"
+                                       IsVisible="{Binding BoolDownPayment}"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
@@ -206,13 +225,16 @@
         <Border Grid.Row="1"
                 CornerRadius="12"
                 Padding="12"
-                Margin="0,10,0,0">
+                Margin="0,10,0,0"
+                BorderBrush="#DDD" BorderThickness="1">
 
             <Grid RowDefinitions="Auto,*">
 
-                <TextBlock Text="قائمة العقود"
-                           Grid.Row="0"
-                           TextAlignment="Right"/>
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="انقر مرتين على العقد لفتح التفاصيل"
+                               FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="قائمة العقود" TextAlignment="Right"/>
+                </Grid>
 
                 <DataGrid x:Name="ContractGrid"
                           Grid.Row="1"
@@ -220,17 +242,18 @@
                           IsReadOnly="True"
                           x:DataType="models:ContractInstallment"
                           FlowDirection="RightToLeft"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch">
 
                     <DataGrid.Columns>
-
                         <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="70"/>
                         <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="*"/>
                         <DataGridTextColumn Header="اسم العميل" Binding="{Binding CustomerName}" Width="160"/>
                         <DataGridTextColumn Header="تاريخ بدء العقد" Binding="{Binding ContractStartDate, StringFormat={}{0:yyyy-MM-dd}}" Width="160"/>
                         <DataGridTextColumn Header="تاريخ انتهاء العقد" Binding="{Binding ContractEndDate, StringFormat={}{0:yyyy-MM-dd}}" Width="160"/>
-                        
+
                         <DataGridTemplateColumn Header="حالة العقد" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:ContractInstallment">
@@ -248,86 +271,61 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="فتح"
-                                            Tag="{Binding}"
-                                            Click="OpenInfoWindow_Click"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
                         <DataGridTemplateColumn Header="طباعة العقد">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="Print_Click"
                                             Tag="{Binding}"
                                             ToolTip.Tip="طباعة العقد"
-                                            Width="36"
-                                            Height="32"
-                                            Padding="0"
+                                            Width="36" Height="32" Padding="0"
                                             HorizontalContentAlignment="Center"
                                             VerticalContentAlignment="Center"
-                                            FontSize="16">
-                                        🖨️
-                                    </Button>
+                                            FontSize="16">🖨️</Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        
+
                         <DataGridTemplateColumn Header="طباعة سند لأمر">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="PrintSanadAmr_Click"
                                             Tag="{Binding}"
                                             ToolTip.Tip="طباعة سند لأمر"
-                                            Width="36"
-                                            Height="32"
-                                            Padding="0"
+                                            Width="36" Height="32" Padding="0"
                                             HorizontalContentAlignment="Center"
                                             VerticalContentAlignment="Center"
-                                            FontSize="16">
-                                        🖨️
-                                    </Button>
+                                            FontSize="16">🖨️</Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        
+
                         <DataGridTemplateColumn Header="ملف العقد" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:ContractInstallment">
                                     <Button Content="📎"
                                             Tag="{Binding}"
                                             Click="UploadSignature_Click"
-                                            Width="40"
-                                            Height="32"
+                                            Width="40" Height="32"
                                             Background="{Binding SignatureButton}"
                                             ToolTip.Tip="رفع ملف العقد"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        
+
                         <DataGridTemplateColumn Header="فتح الملف" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:ContractInstallment">
                                     <Button Content="👁"
                                             Tag="{Binding}"
                                             Click="OpenSignature_Click"
-                                            Width="40"
-                                            Height="32"
+                                            Width="40" Height="32"
                                             ToolTip.Tip="فتح ملف العقد"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
-
                     </DataGrid.Columns>
                 </DataGrid>
-
             </Grid>
         </Border>
-
     </Grid>
-
 </UserControl>

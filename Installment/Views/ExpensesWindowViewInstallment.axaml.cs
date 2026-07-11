@@ -39,6 +39,8 @@ public partial class ExpensesWindowViewInstallment : Window
         _pdfServiceInstallment = new PdfServiceInstallment();
 
         _expensesID = expensesID;
+        
+        ProductGrid.DoubleTapped += ProductGrid_DoubleTapped;
 
         Refresh();
     }
@@ -189,11 +191,16 @@ public partial class ExpensesWindowViewInstallment : Window
         ResultExpensesAmountBox.Text = _expenses.ExpensesAmount.ToString(CultureInfo.InvariantCulture);
         ResultExpensesNoteBox.Text = _expenses.ExpensesNote;
 
-        ResultProductNameBox.Text = product.ProductName;
-        ResultProductTypeBox.Text = product.ProductType;
-        ResultProductMainPriceBox.Text = product.ProductMainPrice.ToString("0.##");
+        ProductGrid.ItemsSource = new List<ProductInstallment> { product };
     }
+    private async void ProductGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ProductGrid.SelectedItem is not ProductInstallment p) return;
 
+        var window = new ProductWindowViewInstallment(p.Id, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
+    }
     private async Task<string?> PickSavePdfPathAsync(string expensesNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);

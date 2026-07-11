@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -31,6 +32,8 @@ public partial class ProductWindowViewInstallment : Window
 
         _owners = new OwnerInstallmentService(_db);
         _products = new ProductServiceInstallment(_db);
+        
+        OwnerGrid.DoubleTapped += OwnerGrid_DoubleTapped;
 
         _productID = productID;
 
@@ -129,12 +132,24 @@ public partial class ProductWindowViewInstallment : Window
 
         ResultMobileStorageBox.Text = _product.MobileStorage ?? "";
         ResultMobileColorBox.Text = _product.MobileColor ?? "";
-
-        ResultNameBox.Text = _product.OwnerName ?? "";
-        ResultIdentityNumberBox.Text = _product.OwnerIdentityNumber ?? "";
-        ResultPhoneBox.Text = _product.OwnerPhone ?? "";
-        ResultAddressBox.Text = _product.OwnerAddress ?? "";
+        
+        var gridOwner = _owners.GetById(_product.OwnerId);
+        OwnerGrid.ItemsSource = gridOwner is null
+            ? new List<OwnerInstallment>()
+            : new List<OwnerInstallment> { gridOwner };
+        
     }
+    
+    private async void OwnerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (OwnerGrid.SelectedItem is not OwnerInstallment owner) return;
+
+        var window = new OwnersWindowViewInstallment(owner, _supabaseService);
+        await window.ShowDialog(this);
+
+        Refresh();   // owner may have been edited — reload the row
+    }
+    
     private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         try

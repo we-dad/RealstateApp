@@ -15,9 +15,9 @@
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <AvaloniaApplicationIcon>Assets/app.icns</AvaloniaApplicationIcon>
 
-    <Version>1.0.26</Version>
-    <AssemblyVersion>1.0.26.0</AssemblyVersion>
-    <FileVersion>1.0.26.0</FileVersion>
+    <Version>1.0.27</Version>
+    <AssemblyVersion>1.0.27.0</AssemblyVersion>
+    <FileVersion>1.0.27.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,10 +36,6 @@
     <PackageReference Include="QuestPDF" Version="2025.12.3" />
     <PackageReference Include="supabase-csharp" Version="0.16.2" />
     <PackageReference Include="Velopack" Version="0.0.1298" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Installment\Models\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
 
@@ -26,6 +27,13 @@ public class ProductInstallment : INotifyPropertyChanged
 
     public string MobileStorage { get; set; } = "";
     public string MobileColor { get; set; } = "";
+    
+    public string Details =>
+        ProductType == "جوالات"
+            ? string.Join("  -  ", new[] { MobileStorage, MobileColor }
+                .Where(s => !string.IsNullOrWhiteSpace(s)))
+            : string.Join("  -  ", new[] { CarModel, CarColor, CarPlateNumber }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
     
     
     public List<string> ProductTypes { get; } = new()

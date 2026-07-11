@@ -8,60 +8,21 @@
              Height="750">
 
 
-    <Grid RowDefinitions="Auto,*" Margin="6">
+   <Grid RowDefinitions="Auto,*" Margin="6">
 
-        <Border Padding="12" CornerRadius="12">
+        <Border Padding="12" CornerRadius="12"
+                BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
                 <TextBlock Text="عقد البيع" FontSize="18" TextAlignment="Right"/>
-                
-                <Grid ColumnDefinitions="Auto,Auto"
-                      ColumnSpacing="8"
-                      HorizontalAlignment="Left">
-                    <Border Grid.Column="1"
-                            Background="{Binding StateColor}"
-                            Padding="6,2"
-                            MinWidth="60"
-                            CornerRadius="4"
-                            VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ContractState}"
-                                   Foreground="White"
-                                   TextAlignment="Center"
-                                   HorizontalAlignment="Center"/>
-                    </Border>
-                    <Button Grid.Column="0"
-                            Click="Print_Click"
-                            ToolTip.Tip="طباعة العقد"
-                            Width="36"
-                            Height="32"
-                            Padding="0"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            FontSize="16">
-                        🖨️
-                    </Button>
 
-                </Grid>
-                
-                <Grid ColumnDefinitions="Auto,Auto"
-                      ColumnSpacing="8"
-                      HorizontalAlignment="Left">
-                    
-                    <Button Grid.Column="1" Content="📎"
-                            Tag="{Binding}"
-                            Click="UploadSignature_Click"
-                            Width="40"
-                            Height="32"
-                            Background="{Binding SignatureButton}"
-                            ToolTip.Tip="رفع ملف العقد"/>
-                    
-                    <Button Grid.Column="0" Content="👁"
-                            Tag="{Binding}"
-                            Click="OpenSignature_Click"
-                            Width="40"
-                            Height="32"
-                            ToolTip.Tip="فتح ملف العقد"/>
-
-                </Grid>
+                <!-- Entry mode: auto / manual (left side) -->
+                <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Left">
+                    <RadioButton x:Name="AutoModeRadio" Content="تلقائي" IsChecked="True"
+                                 IsCheckedChanged="Mode_Changed"/>
+                    <RadioButton x:Name="ManualModeRadio" Content="يدوي"
+                                 IsCheckedChanged="Mode_Changed"/>
+                    <TextBlock Text=": طريقة الإدخال" VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <Grid ColumnDefinitions="*,*"
                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
@@ -69,7 +30,8 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBox x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1"
+                             TextAlignment="Right" IsReadOnly="True"/>
 
                     <TextBlock Text="تاريخ العقد" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                     <DatePicker x:Name="ContractDateStartPicker" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -120,12 +82,12 @@
                     </Grid>
 
                     <TextBlock Text="نسبة الفائدة السنوية"
-           Grid.Row="4"
-           Grid.Column="0"
-           TextAlignment="Right"
-           FlowDirection="RightToLeft"/>
+                               Grid.Row="4"
+                               Grid.Column="0"
+                               TextAlignment="Right"
+                               FlowDirection="RightToLeft"/>
 
-<StackPanel Grid.Row="5" Grid.Column="0" Spacing="4">
+                    <StackPanel Grid.Row="5" Grid.Column="0" Spacing="4">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="6"
                                     FlowDirection="RightToLeft">
@@ -133,8 +95,6 @@
                             <ComboBox x:Name="InterestPercentBox"
                                       HorizontalAlignment="Stretch"
                                       FlowDirection="RightToLeft"
-                                      ItemsSource="{Binding InterestPercentOptions}"
-                                      SelectedItem="{Binding InterestPercent, Mode=TwoWay}"
                                       SelectionChanged="InterestPercentBox_SelectionChanged">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
@@ -144,13 +104,25 @@
                             </ComboBox>
                             <TextBlock Text="%"
                                        VerticalAlignment="Center"/>
+
+                            <TextBox x:Name="CustomInterestBox"
+                                     Width="100"
+                                     Watermark="النسبة"
+                                     TextAlignment="Right"
+                                     IsVisible="False"
+                                     TextChanged="CustomInterestBox_TextChanged"/>
                         </StackPanel>
+
+                        <TextBlock x:Name="CustomInterestErrorText"
+                                   Foreground="Red"
+                                   FontSize="12"
+                                   TextAlignment="Right"/>
                     </StackPanel>
 
-<TextBlock Text="رسوم ادارية"
-           Grid.Row="4"
-           Grid.Column="1"
-           TextAlignment="Right"/>
+                    <TextBlock Text="رسوم ادارية"
+                               Grid.Row="4"
+                               Grid.Column="1"
+                               TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="5" Grid.Column="1" Spacing="4">
                         <StackPanel Orientation="Horizontal"
@@ -160,7 +132,7 @@
                                      Width="150"
                                      TextAlignment="Right"
                                      TextChanged="ManagementFeeBox_TextChanged"/>
-                            <TextBlock Text="%"
+                            <TextBlock Text="ريال"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
@@ -169,40 +141,40 @@
                                    FontSize="12"
                                    TextAlignment="Right"/>
                     </StackPanel>
-                    
-<TextBlock Text="مدة العقد"
-           Grid.Row="6"
-           Grid.Column="1"
-           TextAlignment="Right"/>
+
+                    <TextBlock Text="مدة العقد"
+                               Grid.Row="6"
+                               Grid.Column="1"
+                               TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="7" Grid.Column="1" Spacing="4">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="6"
                                     FlowDirection="RightToLeft">
-                        <TextBox x:Name="ContractPeriodBox"
-                                 Width="150"
-                                 TextAlignment="Right"
-                                 TextChanged="ContractPeriodBox_TextChanged"/>
-                        <TextBlock Text="شهر"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
+                            <TextBox x:Name="ContractPeriodBox"
+                                     Width="150"
+                                     TextAlignment="Right"
+                                     TextChanged="ContractPeriodBox_TextChanged"/>
+                            <TextBlock Text="شهر"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock x:Name="ContractPeriodErrorText"
                                    Foreground="Red"
                                    FontSize="12"
                                    TextAlignment="Right"/>
                     </StackPanel>
-                    
-<TextBlock Text="اجمالي قيمة المنتج"
-           Grid.Row="6"
-           Grid.Column="0"
-           TextAlignment="Right"/>
 
-                    
+                    <TextBlock Text="اجمالي قيمة المنتج"
+                               Grid.Row="6"
+                               Grid.Column="0"
+                               TextAlignment="Right"/>
+
                     <StackPanel Grid.Row="7" Grid.Column="0" Spacing="4">
-
-                        <TextBox TextAlignment="Right"
+                        <TextBox x:Name="MainTotalAmountBox"
+                                 TextAlignment="Right"
                                  Text="{Binding MainTotalAmount}"
-                                 IsReadOnly="True"/>
+                                 IsReadOnly="True"
+                                 TextChanged="MainTotalAmountBox_TextChanged"/>
                     </StackPanel>
 
                     <TextBlock Text="القسط الشهري"
@@ -217,32 +189,31 @@
                                    TextAlignment="Right"/>
                     </StackPanel>
 
-<StackPanel Orientation="Horizontal"
-            Spacing="10"
-            HorizontalAlignment="Stretch"
-            FlowDirection="RightToLeft"
-            Grid.Row="9"
-            Grid.Column="0">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Stretch"
+                                FlowDirection="RightToLeft"
+                                Grid.Row="9"
+                                Grid.Column="0">
 
-    <CheckBox Content="بدفعة مقدمة"
-              VerticalAlignment="Center"
-              IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
+                        <CheckBox Content="بدفعة مقدمة"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
 
-    <StackPanel Spacing="4">
-        <TextBox x:Name="DownPaymentBox"
-                 Width="150"
-                 Watermark="ادخل الرقم"
-                 TextAlignment="Right"
-                 IsVisible="{Binding BoolDownPayment}"
-                 TextChanged="DownPaymentBox_TextChanged"/>
+                        <StackPanel Spacing="4">
+                            <TextBox x:Name="DownPaymentBox"
+                                     Width="150"
+                                     Watermark="ادخل الرقم"
+                                     TextAlignment="Right"
+                                     IsVisible="{Binding BoolDownPayment}"
+                                     TextChanged="DownPaymentBox_TextChanged"/>
 
-        <TextBlock x:Name="DownPaymentErrorText"
-                   Foreground="Red"
-                   FontSize="12"
-                   TextAlignment="Right"
-                   IsVisible="{Binding BoolDownPayment}"/>
-    </StackPanel>
-    
+                            <TextBlock x:Name="DownPaymentErrorText"
+                                       Foreground="Red"
+                                       FontSize="12"
+                                       TextAlignment="Right"
+                                       IsVisible="{Binding BoolDownPayment}"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
@@ -254,176 +225,134 @@
             </StackPanel>
         </Border>
              
-         <ScrollViewer Grid.Row="1"
+       <ScrollViewer Grid.Row="1"
               VerticalScrollBarVisibility="Auto"
               HorizontalScrollBarVisibility="Disabled"
-              MaxHeight="320">
+              Margin="0,10,0,0">
 
-    <Border Padding="12" CornerRadius="12">
-        <Grid ColumnDefinitions="*,*"
-              RowDefinitions="Auto,Auto"
-              ColumnSpacing="10"
-              RowSpacing="10">
+    <StackPanel Spacing="10">
 
-            <!-- Contract Info -->
-            <Border Grid.Row="0"
-                    Grid.Column="1"
-                    CornerRadius="12"
-                    Padding="12"
-                    Margin="0,10,0,0">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="بيانات العقد" HorizontalAlignment="Right"/>
+        <!-- Contract Info (readout, unchanged content) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <TextBlock Text="بيانات العقد" HorizontalAlignment="Right"/>
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="8">
+                <Grid ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10" RowSpacing="8">
 
-                        <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="تاريخ بدء العقد" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="تاريخ بدء العقد" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="تاريخ انتهاء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultContractDateEndBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="تاريخ انتهاء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultContractDateEndBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="اجمالي مبلغ السلعة" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultProductTotalAmount" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="اجمالي مبلغ السلعة" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultProductTotalAmount" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="نسبة الفائدة السنوية" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultInterestPercentBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="نسبة الفائدة السنوية" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultInterestPercentBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="مدة العقد" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultContractPeriodBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="مدة العقد" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultContractPeriodBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="دفعة مقدمة" Grid.Row="6" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultDownPaymentBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="دفعة مقدمة" Grid.Row="6" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultDownPaymentBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="نسبة الرسوم الادارية" Grid.Row="7" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultManagementFeeBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="نسبة الرسوم الادارية" Grid.Row="7" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultManagementFeeBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right"/>
 
-                        <TextBlock Text="مبلغ القسط الشهري" Grid.Row="8" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultMonthlyInstallmentBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
+                    <TextBlock Text="مبلغ القسط الشهري" Grid.Row="8" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultMonthlyInstallmentBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right"/>
+                </Grid>
+            </StackPanel>
+        </Border>
 
-            <!-- Product Info -->
-            <Border Grid.Row="0"
-                    Grid.Column="0"
-                    CornerRadius="12"
-                    Padding="12"
-                    Margin="0,10,0,0">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="بيانات المنتج" HorizontalAlignment="Right"/>
+        <!-- Product (single-row grid, double-tap opens product) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="انقر مرتين لفتح السلعة"
+                               FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="بيانات المنتج" TextAlignment="Right"/>
+                </Grid>
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="8">
+                <DataGrid x:Name="ProductGrid"
+                          x:DataType="models:ProductInstallment"
+                          FlowDirection="RightToLeft"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Height="90">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="اسم المنتج" Binding="{Binding ProductName}" Width="1.5*"/>
+                        <DataGridTextColumn Header="النوع" Binding="{Binding ProductType}" Width="*"/>
+                        <DataGridTextColumn Header="السعر الأساسي" Binding="{Binding ProductMainPrice, StringFormat='{}{0:N2}'}" Width="*"/>
+                        <DataGridTextColumn Header="التفاصيل" Binding="{Binding Details}" Width="2*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
 
-                        <TextBlock Text="اسم المنتج" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+        <!-- Customer (single-row grid, double-tap opens customer) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="انقر مرتين لفتح العميل"
+                               FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="بيانات العميل" TextAlignment="Right"/>
+                </Grid>
 
-                        <TextBlock Text="نوع المنتج" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                <DataGrid x:Name="CustomerGrid"
+                          x:DataType="models:CustomerInstallment"
+                          FlowDirection="RightToLeft"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Height="90">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="1.5*"/>
+                        <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="*"/>
+                        <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="*"/>
+                        <DataGridTextColumn Header="الكفيل" Binding="{Binding SponserName}" Width="1.5*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
 
-                        <TextBlock Text="سعر المنتج الأساسي" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
+        <!-- Owner (single-row grid, double-tap opens owner) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="انقر مرتين لفتح المالك"
+                               FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="بيانات المالك" TextAlignment="Right"/>
+                </Grid>
 
-            <!-- Owner Info -->
-            <Border Grid.Row="1"
-                    Grid.Column="0"
-                    CornerRadius="12"
-                    Padding="12"
-                    Margin="0,10,0,0">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="بيانات المالك" HorizontalAlignment="Right"/>
+                <DataGrid x:Name="OwnerGrid"
+                          x:DataType="models:OwnerInstallment"
+                          FlowDirection="RightToLeft"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Height="90">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="1.5*"/>
+                        <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="*"/>
+                        <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="*"/>
+                        <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="2*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="8">
-
-                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultOwnerNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultOwnerIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultOwnerPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultOwnerAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Customer Info -->
-            <Border Grid.Row="1"
-                    Grid.Column="1"
-                    CornerRadius="12"
-                    Padding="12"
-                    Margin="0,10,0,0">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="بيانات العميل" HorizontalAlignment="Right"/>
-
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="8">
-
-                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="رقم الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-
-                        <TextBlock Text="الوظيفة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-
-                        <!-- Sponsor Section -->
-                        <Grid x:Name="SponsorSection"
-                              Grid.Row="5"
-                              Grid.ColumnSpan="2"
-                              ColumnDefinitions="*,*"
-                              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                              ColumnSpacing="10"
-                              RowSpacing="8"
-                              Margin="0,8,0,0">
-
-                            <TextBlock Text="اسم الكفيل" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultSponserNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                            <TextBlock Text="رقم هوية الكفيل" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultSponserIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                            <TextBlock Text="رقم جوال الكفيل" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultSponserPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                            <TextBlock Text="عنوان الكفيل" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultSponserAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-
-                            <TextBlock Text="وظيفة الكفيل" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultSponserJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-                        </Grid>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-        </Grid>
-    </Border>
+    </StackPanel>
 </ScrollViewer>
         
     </Grid>

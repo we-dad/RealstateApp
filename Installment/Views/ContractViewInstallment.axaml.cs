@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using RealEstateInstallmentsManager.Models;
-using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
 
 namespace RealEstateInstallmentsManager.Views;
@@ -29,10 +28,13 @@ public partial class ContractViewInstallment : UserControl
     private string? ContractNumber;
     private bool _isRefreshing;
     private double realMainPrice;
+    
+    private bool IsManualMode => ManualModeRadio.IsChecked == true;
 
     public ContractViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+
         _supabaseService = supabaseService;
 
         _contract = new ContractInstallment();
@@ -44,6 +46,10 @@ public partial class ContractViewInstallment : UserControl
         _customersDB = new CustomerServiceInstallment(_db);
         _productDB = new ProductServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
+
+        InterestPercentBox.ItemsSource = new List<string> { "5", "7.5", "10", "12.5", "15", "أخرى" };
+        InterestPercentBox.SelectedItem = "12.5";
+        ContractGrid.DoubleTapped += ContractGrid_DoubleTapped;
 
         Refresh();
 
@@ -259,11 +265,42 @@ public partial class ContractViewInstallment : UserControl
             _isRefreshing = false;
         }
     }
-
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    
+    private void Mode_Changed(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ContractInstallment contract)
-            new ContractWindowViewInstallment(contract.Id, _supabaseService).Show();
+        if (ContractNumBox is null) return;   // fires during InitializeComponent
+
+        ContractNumBox.IsReadOnly = !IsManualMode;
+        MainTotalAmountBox.IsReadOnly = !IsManualMode;
+
+        if (!IsManualMode)
+        {
+            // back to auto: regenerate number and recompute totals
+            ContractNumber = _contractsDB.GenerateContractNumber();
+            ContractNumBox.Text = ContractNumber;
+            UpdateProductTotalAmount();
+        }
+    }
+
+    private void MainTotalAmountBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_isRefreshing || !IsManualMode) return;
+
+        if (double.TryParse(MainTotalAmountBox.Text?.Trim(), out var total) && total > 0)
+        {
+            _contract.MainTotalAmount = Math.Round(total, 2);
+            UpdateInstallmentAfterTotalChanged();   // recompute monthly from the manual total
+        }
+    }
+
+    private async void ContractGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ContractGrid.SelectedItem is not ContractInstallment contract) return;
+
+        var window = new ContractWindowViewInstallment(contract.Id, _supabaseService);
+        await window.ShowDialog(TopLevel.GetTopLevel(this) as Window);
+
+        LoadContract();
     }
 
     private void UpdateProductTotalAmount()
@@ -300,12 +337,41 @@ public partial class ContractViewInstallment : UserControl
     private void InterestPercentBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isRefreshing) return;
+        if (InterestPercentBox.SelectedItem is not string selected) return;
 
-        if (InterestPercentBox.SelectedItem != null &&
-            double.TryParse(InterestPercentBox.SelectedItem.ToString(), out double value))
+        if (selected == "أخرى")
+        {
+            CustomInterestBox.IsVisible = true;
+            CustomInterestBox.Focus();
+            return;   // wait for the user to type
+        }
+
+        CustomInterestBox.IsVisible = false;
+        CustomInterestErrorText.Text = "";
+
+        if (double.TryParse(selected, out double value))
         {
             _contract.InterestPercent = value;
             UpdateProductTotalAmount();
+        }
+    }
+
+    private void CustomInterestBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_isRefreshing || !CustomInterestBox.IsVisible) return;
+
+        var text = CustomInterestBox.Text?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(text)) { CustomInterestErrorText.Text = ""; return; }
+
+        if (double.TryParse(text, out double value) && value >= 0 && value <= 100)
+        {
+            CustomInterestErrorText.Text = "";
+            _contract.InterestPercent = value;
+            UpdateProductTotalAmount();
+        }
+        else
+        {
+            CustomInterestErrorText.Text = "قيمة غير صحيحة";
         }
     }
 

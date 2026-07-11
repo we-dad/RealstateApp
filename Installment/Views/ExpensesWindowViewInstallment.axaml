@@ -9,7 +9,8 @@
 
     <Grid RowDefinitions="Auto,*" Margin="6">
 
-        <Border Padding="12" CornerRadius="12">
+        <Border Grid.Row="0" Padding="12" CornerRadius="12"
+                BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
                 <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
 
@@ -75,69 +76,64 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" CornerRadius="12">
+       <ScrollViewer Grid.Row="1"
+              VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled"
+              Margin="0,10,0,0">
+
+    <StackPanel Spacing="10">
+
+        <!-- Expenses Info (readout) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto"
-                      ColumnSpacing="10"
-                      RowSpacing="10">
+                <TextBlock Text="بيانات الصرف" HorizontalAlignment="Right"/>
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10" RowSpacing="8">
 
-                    <!-- Expenses Info -->
-                    <Border Grid.Row="0" Grid.Column="1" CornerRadius="12" Padding="12" Margin="0,10,0,0">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="بيانات الصرف" HorizontalAlignment="Right"/>
+                    <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                                  ColumnSpacing="10" RowSpacing="8">
+                    <TextBlock Text="تاريخ السند" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultExpensesDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
-                                <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultExpensesServiceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
-                                <TextBlock Text="تاريخ السند" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="مبلغ الصرف" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultExpensesAmountBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
-                                <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesServiceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="مبلغ الصرف" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesAmountBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultExpensesNoteBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Product Info -->
-                    <Border Grid.Row="0"
-                            Grid.Column="0"
-                            CornerRadius="12"
-                            Padding="12"
-                            Margin="0,10,0,0">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="بيانات المنتج" HorizontalAlignment="Right"/>
-
-                            <Grid ColumnDefinitions="*,*"
-                                  RowDefinitions="Auto,Auto,Auto"
-                                  ColumnSpacing="10"
-                                  RowSpacing="8">
-
-                                <TextBlock Text="اسم المنتج" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="نوع المنتج" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
-
-                                <TextBlock Text="سعر المنتج الأساسي" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
+                    <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock x:Name="ResultExpensesNoteBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
                 </Grid>
             </StackPanel>
         </Border>
+
+        <!-- Product (double-tap opens product) -->
+        <Border CornerRadius="12" Padding="12" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="انقر مرتين لفتح السلعة"
+                               FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="بيانات المنتج" TextAlignment="Right"/>
+                </Grid>
+                <DataGrid x:Name="ProductGrid"
+                          x:DataType="models:ProductInstallment"
+                          FlowDirection="RightToLeft"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                          Height="90">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="اسم المنتج" Binding="{Binding ProductName}" Width="1.5*"/>
+                        <DataGridTextColumn Header="النوع" Binding="{Binding ProductType}" Width="*"/>
+                        <DataGridTextColumn Header="السعر الأساسي" Binding="{Binding ProductMainPrice, StringFormat='{}{0:N2}'}" Width="*"/>
+                        <DataGridTextColumn Header="التفاصيل" Binding="{Binding Details}" Width="2*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</ScrollViewer>
 
     </Grid>
 </Window>

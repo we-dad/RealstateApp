@@ -38,6 +38,9 @@ public partial class CustomerWindowViewInstallment : Window
         _pdfServiceInstallment = new PdfServiceInstallment();
 
         _customer = customer;
+        
+        CustomerContractsGrid.DoubleTapped += CustomerContractsGrid_DoubleTapped;
+        CustomerReceiptsGrid.DoubleTapped += CustomerReceiptsGrid_DoubleTapped;
 
         Refresh();
         
@@ -230,6 +233,28 @@ public partial class CustomerWindowViewInstallment : Window
             FileName = path,
             UseShellExecute = true
         });
+    }
+    
+    private async void CustomerContractsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (CustomerContractsGrid.SelectedItem is not CustomerInstallment row) return;
+        if (row.ContractId <= 0) return;
+
+        var window = new ContractWindowViewInstallment(row.ContractId, _supabaseService);
+        await window.ShowDialog(this);
+
+        Refresh();
+    }
+
+    private async void CustomerReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (CustomerReceiptsGrid.SelectedItem is not CustomerInstallment row) return;
+        if (row.ReceiptId <= 0) return;
+
+        var window = new ReceiptWindowViewInstallment(row.ReceiptId, _supabaseService);
+        await window.ShowDialog(this);
+
+        Refresh();
     }
 
     private void Delete_Click(object? sender, RoutedEventArgs e)

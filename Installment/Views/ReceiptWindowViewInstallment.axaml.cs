@@ -19,6 +19,9 @@ public partial class ReceiptWindowViewInstallment : Window
     private readonly DbServiceInstallment _db = new DbServiceInstallment();
     private readonly ReceiptServiceInstallment _receiptsDB;
     private readonly ContractServiceInstallment _contractsDB;
+    private readonly ProductServiceInstallment _productDB;
+    private readonly OwnerInstallmentService _ownersDB;
+    private readonly CustomerServiceInstallment _customersDB;
     private readonly PdfServiceInstallment _pdfService;
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
@@ -37,9 +40,17 @@ public partial class ReceiptWindowViewInstallment : Window
 
         _receiptsDB = new ReceiptServiceInstallment(_db);
         _contractsDB = new ContractServiceInstallment(_db);
+        _productDB = new ProductServiceInstallment(_db);
+        _ownersDB = new OwnerInstallmentService(_db);
+        _customersDB = new CustomerServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
 
         _receiptID = receiptID;
+        
+        ContractGrid.DoubleTapped += ContractGrid_DoubleTapped;
+        ProductGrid.DoubleTapped += ProductGrid_DoubleTapped;
+        CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
+        OwnerGrid.DoubleTapped += OwnerGrid_DoubleTapped;
 
         Refresh();
 
@@ -178,39 +189,19 @@ public partial class ReceiptWindowViewInstallment : Window
         ResultPaymentMethodBox.Text = _receipt.PaymentMethod;
         ResultCurrentTotalAmountBox.Text = _receipt.CurrentTotalAmount.ToString(CultureInfo.InvariantCulture);
 
-        ResultContractNumBox.Text = contract.ContractNumber;
-        ResultContractDateStartBox.Text = contract.ContractStartDate.ToString("yyyy-MM-dd");
-        ResultContractDateEndBox.Text = contract.ContractEndDate.ToString("yyyy-MM-dd");
-        ResultProductTotalAmount.Text = contract.MainTotalAmount.ToString("0.##");
-        ResultInterestPercentBox.Text = contract.InterestPercent.ToString("0.##");
-        ResultContractPeriodBox.Text = contract.ContractPeriod.ToString("0.##");
-        ResultDownPaymentBox.Text = contract.DownPayment.ToString("0.##");
-        ResultManagementFeeBox.Text = contract.ManagementFee.ToString("0.##");
-        ResultMonthlyInstallmentBox.Text = contract.MonthlyInstallment.ToString("0.##");
+        ContractGrid.ItemsSource = new List<ContractInstallment> { contract };
 
-        ResultProductNameBox.Text = contract.ProductName;
-        ResultProductTypeBox.Text = contract.ProductType;
-        ResultProductMainPriceBox.Text = contract.ProductMainPrice.ToString("0.##");
+        var gridProduct = _productDB.GetById(contract.ProductId);
+        ProductGrid.ItemsSource = gridProduct is null
+            ? new List<ProductInstallment>() : new List<ProductInstallment> { gridProduct };
 
-        ResultOwnerNameBox.Text = contract.OwnerName;
-        ResultOwnerIdentityNumberBox.Text = contract.OwnerIdentityNumber;
-        ResultOwnerPhoneBox.Text = contract.OwnerPhone;
-        ResultOwnerAddressBox.Text = contract.OwnerAddress;
+        var gridCustomer = _customersDB.GetById(contract.CustomerId);
+        CustomerGrid.ItemsSource = gridCustomer is null
+            ? new List<CustomerInstallment>() : new List<CustomerInstallment> { gridCustomer };
 
-        ResultNameBox.Text = contract.CustomerName;
-        ResultIdentityNumberBox.Text = contract.CustomerIdentityNumber;
-        ResultPhoneBox.Text = contract.CustomerPhone;
-        ResultAddressBox.Text = contract.CustomerAddress;
-        ResultJobBox.Text = contract.CustomerJob;
-
-        SponsorSection.IsVisible =
-            !string.IsNullOrWhiteSpace(contract.CustomerSponserName);
-
-        ResultSponserNameBox.Text = contract.CustomerSponserName;
-        ResultSponserIdentityNumberBox.Text = contract.CustomerSponserIdentityNumber;
-        ResultSponserPhoneBox.Text = contract.CustomerSponserPhone;
-        ResultSponserAddressBox.Text = contract.CustomerSponserAddress;
-        ResultSponserJobBox.Text = contract.CustomerSponserJob;
+        var gridOwner = _ownersDB.GetById(contract.OwnerId);
+        OwnerGrid.ItemsSource = gridOwner is null
+            ? new List<OwnerInstallment>() : new List<OwnerInstallment> { gridOwner };
     }
 
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)
@@ -256,6 +247,38 @@ public partial class ReceiptWindowViewInstallment : Window
             FileName = path,
             UseShellExecute = true
         });
+    }
+    
+    private async void ContractGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ContractGrid.SelectedItem is not ContractInstallment c) return;
+        var w = new ContractWindowViewInstallment(c.Id, _supabaseService);
+        await w.ShowDialog(this);
+        Refresh();
+    }
+
+    private async void ProductGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ProductGrid.SelectedItem is not ProductInstallment p) return;
+        var w = new ProductWindowViewInstallment(p.Id, _supabaseService);
+        await w.ShowDialog(this);
+        Refresh();
+    }
+
+    private async void CustomerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (CustomerGrid.SelectedItem is not CustomerInstallment cust) return;
+        var w = new CustomerWindowViewInstallment(cust, _supabaseService);
+        await w.ShowDialog(this);
+        Refresh();
+    }
+
+    private async void OwnerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (OwnerGrid.SelectedItem is not OwnerInstallment owner) return;
+        var w = new OwnersWindowViewInstallment(owner, _supabaseService);
+        await w.ShowDialog(this);
+        Refresh();
     }
 
     private void Delete_Click(object? sender, RoutedEventArgs e)

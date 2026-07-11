@@ -32,6 +32,8 @@ public partial class CustomerViewInstallment : UserControl
     _ = _sync.PushAllDirtyAsync();
     _ = SyncCustomersFromCloudAsync();
     
+    CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
+    
     }
 
     private void LoadCustomer()
@@ -146,9 +148,9 @@ public partial class CustomerViewInstallment : UserControl
     
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void CustomerGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is CustomerInstallment customer)
+        if (CustomerGrid.SelectedItem is CustomerInstallment customer)
             new CustomerWindowViewInstallment(customer, _supabaseService).Show();
     }
 }

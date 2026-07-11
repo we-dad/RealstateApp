@@ -32,6 +32,8 @@ public partial class ExpensesViewInstallment : UserControl
         _productsDB = new ProductServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
 
+        ExpensesGrid.DoubleTapped += ExpensesGrid_DoubleTapped;
+
         Refresh();
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
@@ -175,12 +177,12 @@ public partial class ExpensesViewInstallment : UserControl
         ExpensesNoteBox.Text = "";
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ExpensesGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ExpensesInstallment expense)
+        if (ExpensesGrid.SelectedItem is ExpensesInstallment expense)
             new ExpensesWindowViewInstallment(expense.Id, _supabaseService).Show();
     }
-
+    
     private async Task<string?> PickSavePdfPathAsync(string expensesNumber)
     {
         var topLevel = TopLevel.GetTopLevel(this);

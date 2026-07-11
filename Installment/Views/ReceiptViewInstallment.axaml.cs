@@ -35,6 +35,8 @@ public partial class ReceiptViewInstallment : UserControl
         _receiptsDB = new ReceiptServiceInstallment(_db);
         _contractsDB = new ContractServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
+        
+        ReceiptsGrid.DoubleTapped += ReceiptsGrid_DoubleTapped;
 
         Refresh();
 
@@ -210,9 +212,9 @@ public partial class ReceiptViewInstallment : UserControl
         _selectedContract = null;
     }
 
-    private void OpenInfoWindow_Click(object? sender, RoutedEventArgs e)
+    private void ReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ReceiptInstallment receipt)
+        if (ReceiptsGrid.SelectedItem is ReceiptInstallment receipt)
             new ReceiptWindowViewInstallment(receipt.Id, _supabaseService).Show();
     }
 

@@ -314,6 +314,46 @@ public class OwnerInstallmentService
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
     }
+    
+    public List<ProductInstallment> GetProductsByOwnerId(long ownerId)
+    {
+        var list = new List<ProductInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+                              SELECT Id, CloudId, ProductName, ProductType, ProductMainPrice,
+                                     CarPlateNumber, CarVIN, CarModel, CarColor, MobileStorage, MobileColor
+                              FROM ProductsInstallment
+                              WHERE OwnerId = $ownerId
+                                AND SyncAction <> 'delete'
+                              ORDER BY Id DESC;
+                          """;
+        cmd.Parameters.AddWithValue("$ownerId", ownerId);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new ProductInstallment
+            {
+                Id = reader.GetInt64(0),
+                CloudId = reader.GetInt64(1),
+                ProductName = reader.GetString(2),
+                ProductType = reader.GetString(3),
+                ProductMainPrice = Convert.ToSingle(reader.GetValue(4)),
+                CarPlateNumber = reader.GetString(5),
+                CarVIN = reader.GetString(6),
+                CarModel = reader.GetString(7),
+                CarColor = reader.GetString(8),
+                MobileStorage = reader.GetString(9),
+                MobileColor = reader.GetString(10),
+            });
+        }
+
+        return list;
+    }
 
     public void DeleteLocalPermanent(long id)
     {
