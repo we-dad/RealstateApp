@@ -437,7 +437,7 @@ public class CustomerServiceInstallment
             c.ContractNumber,
             c.ContractStartDate,
             c.ContractEndDate,
-            c.CurrentTotalAmount,
+            c.MainTotalAmount,
             c.ContractPeriod,
             c.ContractState,
 

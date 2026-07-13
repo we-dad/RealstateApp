@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using Microsoft.Data.Sqlite;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
 using RealEstateInstallmentsManager.Services;
@@ -153,8 +154,8 @@ public partial class CustomerWindowViewInstallment : Window
 
         PaymentProgressText.Text =
             $"المدفوع: {summary?.PaidInstallments ?? 0} / {summary?.TotalInstallments ?? 0} | المتبقي: {summary?.LeftInstallments ?? 0}";
+
     }
-    
     private void OpenContract_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button button) return;
