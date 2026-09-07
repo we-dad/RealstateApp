@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Media;
 
 namespace RealEstateInstallmentsManager.Models;
@@ -24,4 +25,13 @@ public class UnitRealEstate
     //for state box color
     public IBrush StateColor =>
         UnitState == "مؤجرة" ? Brushes.Red : Brushes.Green;
+    
+    public long ParentId { get; set; }
+    
+    public int ChildCount  { get; set; }
+    public int VacantCount { get; set; }
+    public List<UnitRealEstate> Children { get; set; } = new();
+
+    public string StateSummary =>
+        ParentId == 0 ? $"{VacantCount} شاغرة من {ChildCount}" : "";
 }

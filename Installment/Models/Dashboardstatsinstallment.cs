@@ -31,6 +31,13 @@ public class DashboardStatsInstallment
     public List<TopProduct> TopProducts { get; set; } = new();     // best sellers
     public List<LatePayer> LatePayers { get; set; } = new();       // behind schedule
     public List<UpcomingInstallment> Upcoming { get; set; } = new(); // due in next 7 days
+    
+    public int OwnersCount { get; set; }
+    public int CustomersCount { get; set; }
+    public int ProductsCount { get; set; }
+    public int ContractsCount { get; set; }
+    public int ReceiptsCount { get; set; }
+    public int ExpensesCount { get; set; }
 }
 
 public class MonthlyFlow
@@ -60,6 +67,18 @@ public class LatePayer
     public double ShortfallAmount => Math.Max(ExpectedPaid - ActualPaid, 0);
     public int PaymentsBehind { get; set; }
     public string BehindText => $"متأخر {PaymentsBehind} قسط";
+    
+    public double MonthlyInstallment { get; set; }
+    public int PaidCount { get; set; }
+    public int DueCount { get; set; }
+    public System.DateTime? LastPaymentDate { get; set; }
+
+    public string LastPaymentText =>
+        LastPaymentDate.HasValue ? LastPaymentDate.Value.ToString("yyyy-MM-dd") : "لا يوجد";
+
+    public string ProgressText => $"دفع {PaidCount} من {DueCount}";
+    
+    public long CustomerId { get; set; }
 }
 
 public class UpcomingInstallment
@@ -71,4 +90,6 @@ public class UpcomingInstallment
     public double Amount { get; set; }
     public int DaysUntilDue { get; set; }
     public string DueText => $"بعد {DaysUntilDue} يوم — {Amount:N0}";
+    
+    public long CustomerId { get; set; }
 }

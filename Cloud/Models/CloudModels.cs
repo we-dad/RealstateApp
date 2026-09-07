@@ -37,6 +37,9 @@ public class UnitRealEstateRow : BaseModel
 
     [Column("owner_id")]
     public long OwnerId { get; set; }
+    
+    [Column("parent_id")]
+    public long ParentId { get; set; }
 
     [Column("unit_name")]
     public string UnitName { get; set; } = "";

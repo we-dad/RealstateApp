@@ -5,153 +5,129 @@
         x:DataType="models:TenantRealEstate"
         Title="معلومات المستأجر"
         Width="850"
-        Height="750">
+        Height="750"
+        FlowDirection="RightToLeft">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="16" Spacing="10">
+        <StackPanel Margin="16" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="المستأجر" FontSize="18" HorizontalAlignment="Right"/>
-
-                    <Button Content="طباعة السجل المالي"
-                            HorizontalAlignment="Left"
-                            Click="PrintAllReceipts_Click"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="المستأجر" FontSize="18" FontWeight="SemiBold"/>
+                        <Button Grid.Column="1" Content="طباعة السجل المالي" Click="PrintAllReceipts_Click"/>
+                    </Grid>
 
                     <Grid ColumnDefinitions="*,*"
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="10"
                           RowSpacing="8">
 
-                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0"/>
+                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0"/>
 
-                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1"/>
+                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
 
-                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0"/>
+                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0"/>
 
-                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1"/>
+                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1"/>
 
                         <StackPanel Grid.Row="4"
                                     Grid.ColumnSpan="2"
                                     Orientation="Horizontal"
                                     Spacing="8"
-                                    HorizontalAlignment="Right">
-
+                                    HorizontalAlignment="Left">
                             <Button Content="حذف البيانات" Click="Delete_Click"/>
                             <Button Content="تحديث البيانات" Click="Update_Click"/>
-
                         </StackPanel>
 
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12"
-                    Padding="12">
-
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="10">
+                    <TextBlock Text="بيانات المستأجر" FontSize="16" FontWeight="SemiBold"/>
 
-                    <TextBlock Text="بيانات المستأجر"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Right"/>
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="16" RowSpacing="8">
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="10"
-                          FlowDirection="RightToLeft">
+                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="1"/>
 
-                        <Border Grid.Row="0" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الاسم" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultNameBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
 
-                        <Border Grid.Row="0" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="رقم الهوية" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultIdentityNumberBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="1"/>
 
-                        <Border Grid.Row="1" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الجوال" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultPhoneBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="1" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="العنوان" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultAddressBox"
-                                           TextAlignment="Right"
-                                           TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
+                        <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="1" TextWrapping="Wrap"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <Grid ColumnDefinitions="*,*"
-                  ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
 
-                <Border Grid.Column="1" CornerRadius="12" Padding="12">
+                <!-- Receipts (right) -->
+                <Border Grid.Column="0" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="العقود" FontSize="18" HorizontalAlignment="Right"/>
-
-                        <DataGrid x:Name="TenantContractsGrid"
-                                  x:CompileBindings="False"
-                                  FlowDirection="RightToLeft"
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="سندات القبض" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1" Text="انقر مرتين للفتح" Foreground="Gray" FontSize="11" VerticalAlignment="Center"/>
+                        </Grid>
+                        <DataGrid x:Name="TenantReceiptsGrid"
+                                  x:DataType="models:TenantRealEstate"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   Height="250"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   CanUserSortColumns="True"
-                                  DoubleTapped="TenantContractsGrid_DoubleTapped">
-
+                                  DoubleTapped="TenantReceiptsGrid_DoubleTapped">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}"/>
-                                <DataGridTextColumn Header="البداية" Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                                <DataGridTextColumn Header="النهاية" Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                                <DataGridTextColumn Header="الإيجار" Binding="{Binding RentAmount}"/>
-                                <DataGridTextColumn Header="الحالة" Binding="{Binding ContractState}"/>
+                                <DataGridTextColumn Header="رقم السند" Binding="{Binding ReceiptNumber}" Width="1.5*"/>
+                                <DataGridTextColumn Header="التاريخ" Binding="{Binding ReceiptDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                                <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="*"/>
+                                <DataGridTextColumn Header="المبلغ" Binding="{Binding ReceiptAmount, StringFormat='{}{0:N2}'}" Width="*"/>
                             </DataGrid.Columns>
-
                         </DataGrid>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="0" CornerRadius="12" Padding="12">
+                <!-- Contracts (left) -->
+                <Border Grid.Column="1" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="سندات القبض" FontSize="18" HorizontalAlignment="Right"/>
-
-                        <DataGrid x:Name="TenantReceiptsGrid"
-                                  x:CompileBindings="False"
-                                  FlowDirection="RightToLeft"
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="العقود" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1" Text="انقر مرتين للفتح" Foreground="Gray" FontSize="11" VerticalAlignment="Center"/>
+                        </Grid>
+                        <DataGrid x:Name="TenantContractsGrid"
+                                  x:DataType="models:TenantRealEstate"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   Height="250"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   CanUserSortColumns="True"
-                                  DoubleTapped="TenantReceiptsGrid_DoubleTapped">
-
+                                  DoubleTapped="TenantContractsGrid_DoubleTapped">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="رقم السند" Binding="{Binding ReceiptNumber}"/>
-                                <DataGridTextColumn Header="التاريخ" Binding="{Binding ReceiptDate, StringFormat='{}{0:yyyy-MM-dd}'}"/>
-                                <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}"/>
-                                <DataGridTextColumn Header="المبلغ" Binding="{Binding ReceiptAmount}"/>
+                                <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="1.5*"/>
+                                <DataGridTextColumn Header="البداية" Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                                <DataGridTextColumn Header="النهاية" Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                                <DataGridTextColumn Header="الإيجار" Binding="{Binding RentAmount, StringFormat='{}{0:N2}'}" Width="*"/>
+                                <DataGridTextColumn Header="الحالة" Binding="{Binding ContractState}" Width="*"/>
                             </DataGrid.Columns>
-
                         </DataGrid>
                     </StackPanel>
                 </Border>

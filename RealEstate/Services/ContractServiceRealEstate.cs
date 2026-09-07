@@ -14,6 +14,31 @@ public class ContractServiceRealEstate
         _db = db;
     }
 
+    // ------------------------------------------------------------------
+    // Guard: a parent row (a building) can never hold a contract.
+    // A row is treated as a parent only if it actually HAS children,
+    // so legacy units with ParentId = 0 and no children still work.
+    // ------------------------------------------------------------------
+    private static void EnsureUnitIsRentable(SqliteConnection con, long unitId)
+    {
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT EXISTS(
+                SELECT 1
+                FROM UnitsRealEstate
+                WHERE ParentId = $unitId
+            );
+        """;
+
+        cmd.Parameters.AddWithValue("$unitId", unitId);
+
+        var isParent = Convert.ToInt32(cmd.ExecuteScalar()) == 1;
+
+        if (isParent)
+            throw new InvalidOperationException(
+                ".لا يمكن إنشاء عقد على العمارة، اختر وحدة من وحداتها");
+    }
+
     public string GenerateContractNumber()
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -47,6 +72,8 @@ public class ContractServiceRealEstate
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
+
+        EnsureUnitIsRentable(con, unitId);
 
         var contractState = contractEndDate.Date < DateTime.Today ? "منتهي" : "جاري";
 
@@ -119,6 +146,8 @@ public class ContractServiceRealEstate
     {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
+
+        EnsureUnitIsRentable(con, unitId);
 
         var contractState = contractEndDate.Date < DateTime.Today ? "منتهي" : "جاري";
 
@@ -692,7 +721,7 @@ public class ContractServiceRealEstate
 
         return list;
     }
-    
+
     public List<ReceiptRealEstate> GetReceiptsByContractId(long contractId)
     {
         var list = new List<ReceiptRealEstate>();
@@ -703,23 +732,23 @@ public class ContractServiceRealEstate
         using var cmd = con.CreateCommand();
 
         cmd.CommandText = """
-                              SELECT
-                                  r.Id,
-                                  r.CloudId,
-                                  r.ReceiptNumber,
-                                  r.ReceiptDate,
-                                  r.PaymentMethod,
-                                  r.Amount,
-                                  r.ContractId,
-                                  c.ContractNumber,
-                                  t.Name
-                              FROM ReceiptsRealEstate r
-                              JOIN ContractsRealEstate c ON c.Id = r.ContractId
-                              JOIN TenantsRealEstate t ON t.Id = c.TenantId
-                              WHERE r.ContractId = $contractId
-                                AND r.SyncAction <> 'delete'
-                              ORDER BY r.Id DESC;
-                          """;
+            SELECT
+                r.Id,
+                r.CloudId,
+                r.ReceiptNumber,
+                r.ReceiptDate,
+                r.PaymentMethod,
+                r.Amount,
+                r.ContractId,
+                c.ContractNumber,
+                t.Name
+            FROM ReceiptsRealEstate r
+            JOIN ContractsRealEstate c ON c.Id = r.ContractId
+            JOIN TenantsRealEstate t ON t.Id = c.TenantId
+            WHERE r.ContractId = $contractId
+              AND r.SyncAction <> 'delete'
+            ORDER BY r.Id DESC;
+        """;
 
         cmd.Parameters.AddWithValue("$contractId", contractId);
 
@@ -753,26 +782,29 @@ public class ContractServiceRealEstate
 
         using var cmd = con.CreateCommand();
 
+        // Expenses are linked to the unit, not the contract, so without the
+        // date filter a unit that has had several tenants would show every
+        // tenant's expenses on every contract.
         cmd.CommandText = """
-                              SELECT
-                                  e.Id,
-                                  e.CloudId,
-                                  e.ExpensesNumber,
-                                  e.ExpensesDate,
-                                  e.ExpensesService,
-                                  e.ExpensesAmount,
-                                  e.ExpensesNote,
-                                  e.UnitId,
-                                  u.UnitName
-                              FROM ExpensesRealEstate e
-                              JOIN UnitsRealEstate u
-                                  ON u.Id = e.UnitId
-                              JOIN ContractsRealEstate c
-                                  ON c.UnitId = e.UnitId
-                              WHERE c.Id = $contractId
-                                AND e.SyncAction <> 'delete'
-                              ORDER BY e.Id DESC;
-                          """;
+            SELECT
+                e.Id,
+                e.CloudId,
+                e.ExpensesNumber,
+                e.ExpensesDate,
+                e.ExpensesService,
+                e.ExpensesAmount,
+                e.ExpensesNote,
+                e.UnitId,
+                u.UnitName
+            FROM ExpensesRealEstate e
+            JOIN UnitsRealEstate u     ON u.Id = e.UnitId
+            JOIN ContractsRealEstate c ON c.UnitId = e.UnitId
+            WHERE c.Id = $contractId
+              AND e.SyncAction <> 'delete'
+              AND date(e.ExpensesDate) >= date(c.ContractStartDate)
+              AND date(e.ExpensesDate) <= date(c.ContractEndDate)
+            ORDER BY e.Id DESC;
+        """;
 
         cmd.Parameters.AddWithValue("$contractId", contractId);
 
@@ -783,21 +815,13 @@ public class ContractServiceRealEstate
             list.Add(new ExpensesRealEstate
             {
                 Id = reader.GetInt64(0),
-
                 CloudId = reader.GetInt64(1),
-
                 ExpensesNumber = reader.GetString(2),
-
                 ExpensesDate = reader.GetDateTime(3),
-
                 ExpensesService = reader.GetString(4),
-
                 ExpensesAmount = reader.GetDouble(5),
-
                 ExpensesNote = reader.GetString(6),
-
                 UnitId = reader.GetInt64(7),
-
                 UnitName = reader.GetString(8)
             });
         }

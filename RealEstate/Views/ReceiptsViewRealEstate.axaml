@@ -7,9 +7,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="6" Spacing="10">
+        <StackPanel Margin="12" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="سند القبض" FontSize="18" TextAlignment="Right"/>
 
@@ -64,6 +65,7 @@
                         <ComboBox x:Name="PaymentMethodBox"
                                   Grid.Row="5"
                                   Grid.Column="1"
+                                  VerticalAlignment="Top"
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Right">
                             <ComboBox.ItemTemplate>
@@ -77,6 +79,7 @@
                                    Grid.Row="5"
                                    Grid.Column="0"
                                    TextAlignment="Right"
+                                   TextWrapping="Wrap"
                                    FontSize="16"/>
 
                     </Grid>
@@ -90,18 +93,25 @@
             </Border>
 
             <Border CornerRadius="12"
-                    Padding="12">
+                    Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
 
                 <StackPanel Spacing="8">
 
-                    <TextBlock Text="قائمة السندات"
-                               TextAlignment="Right"/>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="انقر مرتين على السند لفتح التفاصيل"
+                                   FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="قائمة السندات"
+                                   TextAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
 
                     <DataGrid x:Name="ReceiptsGrid"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               x:DataType="models:ReceiptRealEstate"
                               FlowDirection="RightToLeft"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
                               HorizontalAlignment="Stretch"
                               Height="430"
                               DoubleTapped="ReceiptsGrid_DoubleTapped">
@@ -110,27 +120,27 @@
 
                             <DataGridTextColumn Header="#"
                                                 Binding="{Binding Id}"
-                                                Width="70"/>
+                                                Width="60"/>
 
                             <DataGridTextColumn Header="اسم المستأجر"
                                                 Binding="{Binding TenantName}"
-                                                Width="*"/>
+                                                Width="1.5*"/>
 
                             <DataGridTextColumn Header="رقم السند"
                                                 Binding="{Binding ReceiptNumber}"
-                                                Width="160"/>
+                                                Width="*"/>
 
                             <DataGridTextColumn Header="تاريخ السند"
                                                 Binding="{Binding ReceiptDate, StringFormat='{}{0:yyyy-MM-dd}'}"
-                                                Width="160"/>
+                                                Width="*"/>
 
                             <DataGridTextColumn Header="رقم العقد"
                                                 Binding="{Binding ContractNumber}"
-                                                Width="160"/>
+                                                Width="*"/>
 
                             <DataGridTextColumn Header="المبلغ"
-                                                Binding="{Binding Amount}"
-                                                Width="160"/>
+                                                Binding="{Binding Amount, StringFormat='{}{0:N2}'}"
+                                                Width="*"/>
 
                             <DataGridTemplateColumn Header="طباعة" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>

@@ -852,5 +852,287 @@ public class PdfServiceInstallment
         });
     }).GeneratePdf(path);
 }
-
+private static string N(decimal v) => v.ToString("N2", CultureInfo.InvariantCulture);
+    private static string N(double v) => v.ToString("N2", CultureInfo.InvariantCulture);
+ 
+    public void ExportDashboard(string path, string yearLabel, DashboardStatsInstallment s)
+    {
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
+ 
+                page.Header().Column(col =>
+                {
+                    col.Item().Text($"تقرير التقسيط — {yearLabel}").FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                });
+ 
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    col.Spacing(14);
+ 
+                    // ---- Records counts ----
+                    col.Item().Text("السجلات").FontSize(13).Bold();
+                    col.Item().Row(row =>
+                    {
+                        void Count(string label, string value)
+                        {
+                            row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2)
+                               .Padding(6).Column(c =>
+                               {
+                                   c.Item().Text(label).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                   c.Item().Text(value).FontSize(12).Bold();
+                               });
+                        }
+ 
+                        Count("الملاك", s.OwnersCount.ToString());
+                        Count("العملاء", s.CustomersCount.ToString());
+                        Count("المنتجات", s.ProductsCount.ToString());
+                        Count("العقود", s.ContractsCount.ToString());
+                        Count("سندات القبض", s.ReceiptsCount.ToString());
+                        Count("سندات الصرف", s.ExpensesCount.ToString());
+                    });
+ 
+                    // ---- KPIs ----
+                    col.Item().PaddingTop(4).Text("الملخص المالي").FontSize(13).Bold();
+                    col.Item().Row(row =>
+                    {
+                        void Kpi(string label, string value)
+                        {
+                            row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2)
+                               .Padding(8).Column(c =>
+                               {
+                                   c.Item().Text(label).FontSize(9).FontColor(Colors.Grey.Darken1);
+                                   c.Item().Text(value).FontSize(13).Bold();
+                               });
+                        }
+ 
+                        Kpi("إجمالي المحصّل", N(s.TotalCollected));
+                        Kpi("إجمالي المصروفات", N(s.TotalExpenses));
+                        Kpi("صافي الدخل", N(s.NetIncome));
+                        Kpi("المتبقي على العملاء", N(s.OutstandingBalance));
+                    });
+ 
+                    // ---- Portfolio status ----
+                    col.Item().PaddingTop(4).Text("حالة المحفظة").FontSize(13).Bold();
+                    col.Item().Row(row =>
+                    {
+                        void Kpi(string label, string value)
+                        {
+                            row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2)
+                               .Padding(8).Column(c =>
+                               {
+                                   c.Item().Text(label).FontSize(9).FontColor(Colors.Grey.Darken1);
+                                   c.Item().Text(value).FontSize(13).Bold();
+                               });
+                        }
+ 
+                        Kpi("عقود جارية", s.ActiveContracts.ToString());
+                        Kpi("عقود متعثرة", s.LateContracts.ToString());
+                        Kpi("عقود منتهية", s.FinishedContracts.ToString());
+                    });
+ 
+                    // ---- Monthly income vs expenses ----
+                    if (s.MonthlyFlows.Count > 0)
+                    {
+                        col.Item().PaddingTop(4).Text("الدخل مقابل المصروفات (شهريًا)").FontSize(13).Bold();
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                            });
+ 
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
+ 
+                            H("الشهر"); H("الدخل"); H("المصروفات"); H("الصافي");
+ 
+                            foreach (var f in s.MonthlyFlows)
+                            {
+                                var net = f.Collected - f.Spent;
+                                table.Cell().Padding(4).Text(f.Month).FontSize(9);
+                                table.Cell().Padding(4).Text(N(f.Collected)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(f.Spent)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(net)).FontSize(9)
+                                     .FontColor(net < 0 ? Colors.Red.Medium : Colors.Black);
+                            }
+                        });
+                    }
+ 
+                    // ---- Top products ----
+                    col.Item().PaddingTop(6).Text("الأكثر مبيعاً").FontSize(13).Bold();
+                    if (s.TopProducts.Count == 0)
+                        col.Item().Text("لا يوجد.").FontSize(10).FontColor(Colors.Grey.Medium);
+                    else
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c => { c.RelativeColumn(4); c.RelativeColumn(1); });
+                            table.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("المنتج").Bold().FontSize(9);
+                            table.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("عدد العقود").Bold().FontSize(9);
+                            foreach (var p in s.TopProducts)
+                            {
+                                table.Cell().Padding(4).Text(p.ProductName).FontSize(9);
+                                table.Cell().Padding(4).Text(p.ContractCount.ToString()).FontSize(9);
+                            }
+                        });
+                });
+ 
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
+                });
+            });
+        })
+        .GeneratePdf(path);
+    }
+ 
+    // ---- dedicated report: late payers only ----
+    public void ExportLatePayers(string path, string yearLabel, DashboardStatsInstallment s)
+    {
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
+ 
+                page.Header().Column(col =>
+                {
+                    col.Item().Text($"تقرير المتأخرين عن السداد للأقساط — {yearLabel}").FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                });
+ 
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    var totalOutstanding = s.LatePayers.Sum(x => x.ShortfallAmount);
+                    col.Item().PaddingBottom(8)
+                        .Text($"عدد المتأخرين: {s.LatePayers.Count}    |    إجمالي المتأخرات: {N(totalOutstanding)}")
+                        .FontSize(11).Bold();
+ 
+                    if (s.LatePayers.Count == 0)
+                        col.Item().Text("لا يوجد متأخرات.").FontSize(11).FontColor(Colors.Grey.Medium);
+                    else
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(3); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                                c.RelativeColumn(2);
+                            });
+ 
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
+ 
+                            H("العميل"); H("رقم العقد"); H("القسط الشهري");
+                            H("المدفوع"); H("المتأخر"); H("الحالة"); H("آخر دفعة");
+ 
+                            foreach (var l in s.LatePayers)
+                            {
+                                table.Cell().Padding(4).Text(l.CustomerName).FontSize(9);
+                                table.Cell().Padding(4).Text(l.ContractNumber).FontSize(9);
+                                table.Cell().Padding(4).Text(N(l.MonthlyInstallment)).FontSize(9);
+                                table.Cell().Padding(4).Text(l.ProgressText).FontSize(9);
+                                table.Cell().Padding(4).Text(N(l.ShortfallAmount)).FontSize(9)
+                                     .FontColor(Colors.Red.Medium).Bold();
+                                table.Cell().Padding(4).Text(l.BehindText).FontSize(9);
+                                table.Cell().Padding(4).Text(l.LastPaymentText).FontSize(9);
+                            }
+                        });
+                });
+ 
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
+                });
+            });
+        })
+        .GeneratePdf(path);
+    }
+ 
+    // ---- dedicated report: upcoming installments only ----
+    public void ExportUpcoming(string path, string yearLabel, DashboardStatsInstallment s)
+    {
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
+ 
+                page.Header().Column(col =>
+                {
+                    col.Item().Text($"تقرير الأقساط المستحقة خلال 7 أيام — {yearLabel}").FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                });
+ 
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    var totalDue = s.Upcoming.Sum(x => x.Amount);
+                    col.Item().PaddingBottom(8)
+                        .Text($"عدد الأقساط: {s.Upcoming.Count}    |    إجمالي المبالغ: {N(totalDue)}")
+                        .FontSize(11).Bold();
+ 
+                    if (s.Upcoming.Count == 0)
+                        col.Item().Text("لا توجد أقساط قريبة.").FontSize(11).FontColor(Colors.Grey.Medium);
+                    else
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(3); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2); c.RelativeColumn(2);
+                            });
+ 
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
+ 
+                            H("العميل"); H("رقم العقد"); H("التاريخ"); H("المبلغ"); H("متبقٍ (أيام)");
+ 
+                            foreach (var u in s.Upcoming)
+                            {
+                                table.Cell().Padding(4).Text(u.CustomerName).FontSize(9);
+                                table.Cell().Padding(4).Text(u.ContractNumber).FontSize(9);
+                                table.Cell().Padding(4).Text(u.DueDate.ToString("yyyy-MM-dd")).FontSize(9);
+                                table.Cell().Padding(4).Text(N(u.Amount)).FontSize(9);
+                                table.Cell().Padding(4).Text(u.DaysUntilDue.ToString()).FontSize(9);
+                            }
+                        });
+                });
+ 
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
+                });
+            });
+        })
+        .GeneratePdf(path);
+    }
 }

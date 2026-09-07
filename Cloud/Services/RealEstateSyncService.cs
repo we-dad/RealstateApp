@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
 
 namespace RealEstateInstallmentsManager.Services;
@@ -8,6 +12,16 @@ public class RealEstateSyncService
 {
     private readonly DbServiceRealEstate _db;
     private readonly SupabaseService _supabaseService;
+
+    // ------------------------------------------------------------------
+    // CHANGE 1 - one gate for the whole app.
+    // Every view creates its own RealEstateSyncService, and several of
+    // them fire PushAllDirtyAsync without awaiting. Two overlapping
+    // pushes both read IsDirty = 1 on the same rows and both INSERT,
+    // which is what produced the duplicate buildings in Supabase.
+    // static => shared by all instances.
+    // ------------------------------------------------------------------
+    private static readonly SemaphoreSlim _pushGate = new SemaphoreSlim(1, 1);
 
     public RealEstateSyncService(DbServiceRealEstate db, SupabaseService supabaseService)
     {
@@ -19,7 +33,12 @@ public class RealEstateSyncService
     {
         if (!AppSession.CanWriteOnline)
             return;
-        
+
+        // a push is already running - drop this one instead of queuing,
+        // it would only re-read the same rows
+        if (!await _pushGate.WaitAsync(0))
+            return;
+
         try
         {
             // Children first, parents last
@@ -37,6 +56,10 @@ public class RealEstateSyncService
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            _pushGate.Release();
         }
     }
 
@@ -205,19 +228,37 @@ public class RealEstateSyncService
                     SignatureFileName = contract.SignatureFileName,
                     SignatureFileType = contract.SignatureFileType
                 });
-                
+
                 contractsDB.MarkSynced(contract.Id);
             }
         }
     }
 
+    // ------------------------------------------------------------------
+    // CHANGE 2 - ParentId is pushed, and the order respects it.
+    //
+    // Inserts: a building must reach the cloud before its units, because
+    //          a unit's row carries the parent's CloudId.
+    // Deletes: the units must go before the building, or the cloud is
+    //          left with rows pointing at a parent that no longer exists.
+    //
+    // Requires: a ParentId column on the Supabase units table, and a
+    //           ParentId property on UnitRealEstateRow.
+    // ------------------------------------------------------------------
     private async Task PushDirtyUnitsAsync()
     {
         var unitsDB = new UnitServiceRealEstate(_db);
         var ownersDB = new OwnerServiceRealEstate(_db);
         var cloudUnits = new CloudUnitsRealEstateService(_supabaseService);
 
-        foreach (var unit in unitsDB.GetDirtyRows())
+        var dirtyUnits = unitsDB.GetDirtyRows()
+            .OrderBy(u => u.SyncAction == "delete" ? 0 : 1)
+            .ThenBy(u => u.SyncAction == "delete"
+                ? (u.ParentId == 0 ? 1 : 0)      // deletes: children first
+                : (u.ParentId == 0 ? 0 : 1))     // inserts: parents first
+            .ToList();
+
+        foreach (var unit in dirtyUnits)
         {
             if (unit.SyncAction == "delete")
             {
@@ -225,26 +266,43 @@ public class RealEstateSyncService
                     await cloudUnits.DeleteUnitAsync(unit.CloudId);
 
                 unitsDB.DeleteLocalPermanent(unit.Id);
+                continue;
             }
-            else if (unit.SyncAction == "insert")
-            {
-                var owner = ownersDB.GetById(unit.OwnerId);
 
-                if (owner == null || owner.CloudId <= 0)
+            var owner = ownersDB.GetById(unit.OwnerId);
+
+            if (owner == null || owner.CloudId <= 0)
+                continue;
+
+            // resolve the parent's cloud id; skip until the parent is up
+            long parentCloudId = 0;
+
+            if (unit.ParentId > 0)
+            {
+                var parent = unitsDB.GetById(unit.ParentId);
+
+                if (parent == null || parent.CloudId <= 0)
                     continue;
 
-                var cloudId = await cloudUnits.AddUnitAsync(new UnitRealEstateRow
-                {
-                    OwnerId = owner.CloudId,
-                    UnitName = unit.UnitName,
-                    City = unit.City,
-                    District = unit.District,
-                    UnitType = unit.UnitType,
-                    UnitState = unit.UnitState,
-                    UnitsCount = unit.UnitsCount,
-                    UnitNum = unit.UnitNum
-                });
+                parentCloudId = parent.CloudId;
+            }
 
+            var row = new UnitRealEstateRow
+            {
+                OwnerId = owner.CloudId,
+                ParentId = parentCloudId,
+                UnitName = unit.UnitName,
+                City = unit.City,
+                District = unit.District,
+                UnitType = unit.UnitType,
+                UnitState = unit.UnitState,
+                UnitsCount = unit.UnitsCount,
+                UnitNum = unit.UnitNum
+            };
+
+            if (unit.SyncAction == "insert")
+            {
+                var cloudId = await cloudUnits.AddUnitAsync(row);
                 unitsDB.UpdateCloudId(unit.Id, cloudId);
             }
             else if (unit.SyncAction == "update")
@@ -252,23 +310,7 @@ public class RealEstateSyncService
                 if (unit.CloudId <= 0)
                     continue;
 
-                var owner = ownersDB.GetById(unit.OwnerId);
-
-                if (owner == null || owner.CloudId <= 0)
-                    continue;
-
-                await cloudUnits.UpdateUnitAsync(unit.CloudId, new UnitRealEstateRow
-                {
-                    OwnerId = owner.CloudId,
-                    UnitName = unit.UnitName,
-                    City = unit.City,
-                    District = unit.District,
-                    UnitType = unit.UnitType,
-                    UnitState = unit.UnitState,
-                    UnitsCount = unit.UnitsCount,
-                    UnitNum = unit.UnitNum
-                });
-
+                await cloudUnits.UpdateUnitAsync(unit.CloudId, row);
                 unitsDB.MarkSynced(unit.Id);
             }
         }

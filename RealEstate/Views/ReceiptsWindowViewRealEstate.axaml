@@ -10,22 +10,26 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="6" Spacing="10">
+        <StackPanel Margin="12" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="سند القبض" FontSize="18" TextAlignment="Right"/>
 
-                    <Button Click="Print_Click"
-                            ToolTip.Tip="طباعة السند"
-                            Width="36"
-                            Height="32"
-                            Padding="0"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            FontSize="16">
-                        🖨️
-                    </Button>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0"
+                                Click="Print_Click"
+                                ToolTip.Tip="طباعة السند"
+                                Width="36"
+                                Height="32"
+                                Padding="0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                FontSize="16">
+                            🖨️
+                        </Button>
+                        <TextBlock Grid.Column="1" Text="سند القبض" FontSize="18" FontWeight="SemiBold" TextAlignment="Right"/>
+                    </Grid>
 
                     <Grid ColumnDefinitions="*,*"
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
@@ -72,6 +76,7 @@
                                        Grid.Column="0"
                                        Grid.ColumnSpan="2"
                                        TextAlignment="Right"
+                                       TextWrapping="Wrap"
                                        Foreground="Green"/>
                         </Grid>
 
@@ -79,6 +84,7 @@
                         <ComboBox x:Name="PaymentMethodBox"
                                   Grid.Row="5"
                                   Grid.Column="1"
+                                  VerticalAlignment="Top"
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Right">
                             <ComboBox.ItemTemplate>
@@ -98,8 +104,9 @@
                 </StackPanel>
             </Border>
 
-            <!-- Receipt data organized -->
-            <Border CornerRadius="12" Padding="12">
+            <!-- Receipt readout -->
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="10">
 
                     <TextBlock Text="بيانات سند القبض"
@@ -107,39 +114,21 @@
                                FontWeight="Bold"
                                HorizontalAlignment="Right"/>
 
-                    <Grid ColumnDefinitions="*,*"
+                    <Grid ColumnDefinitions="Auto,*,Auto,*"
                           RowDefinitions="Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="10"
+                          ColumnSpacing="16"
+                          RowSpacing="8"
                           FlowDirection="RightToLeft">
 
-                        <Border Grid.Row="0" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="رقم السند" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultReceiptNumBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultReceiptNumBox" Grid.Row="0" Grid.Column="1"/>
+                        <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultReceiptDateBox" Grid.Row="0" Grid.Column="3"/>
 
-                        <Border Grid.Row="0" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="تاريخ السند" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultReceiptDateBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="1" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="مبلغ السند" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultAmountBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="1" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="طريقة الدفع" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultPaymentMethodBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="مبلغ السند" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultAmountBox" Grid.Row="1" Grid.Column="1"/>
+                        <TextBlock Text="طريقة الدفع" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultPaymentMethodBox" Grid.Row="1" Grid.Column="3"/>
 
                     </Grid>
                 </StackPanel>
@@ -149,95 +138,115 @@
             <Grid ColumnDefinitions="*,*"
                   RowDefinitions="Auto,Auto"
                   ColumnSpacing="10"
-                  RowSpacing="10">
+                  RowSpacing="12">
 
-                <Border Grid.Row="0" Grid.Column="1" CornerRadius="12" Padding="12">
+                <Border Grid.Row="0" Grid.Column="1" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="بيانات العقد" FontSize="16" HorizontalAlignment="Right"/>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Text="انقر مرتين للفتح" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="بيانات العقد" FontSize="16" TextAlignment="Right"/>
+                        </Grid>
 
                         <DataGrid x:Name="ContractDataGrid"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   FlowDirection="RightToLeft"
-                                  Height="130"
+                                  Height="100"
                                   DoubleTapped="ContractDataGrid_DoubleTapped">
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="رقم العقد" Binding="{ReflectionBinding ContractNumber}" Width="120"/>
-                                <DataGridTextColumn Header="البداية" Binding="{ReflectionBinding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
-                                <DataGridTextColumn Header="النهاية" Binding="{ReflectionBinding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
-                                <DataGridTextColumn Header="الإيجار" Binding="{ReflectionBinding RentAmount}" Width="100"/>
+                                <DataGridTextColumn Header="رقم العقد" Binding="{ReflectionBinding ContractNumber}" Width="1.5*"/>
+                                <DataGridTextColumn Header="البداية" Binding="{ReflectionBinding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                                <DataGridTextColumn Header="النهاية" Binding="{ReflectionBinding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                                <DataGridTextColumn Header="الإيجار" Binding="{ReflectionBinding RentAmount, StringFormat='{}{0:N2}'}" Width="*"/>
                             </DataGrid.Columns>
 
                         </DataGrid>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="0" Grid.Column="0" CornerRadius="12" Padding="12">
+                <Border Grid.Row="0" Grid.Column="0" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="بيانات الوحدة" FontSize="16" HorizontalAlignment="Right"/>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Text="انقر مرتين للفتح" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="بيانات الوحدة" FontSize="16" TextAlignment="Right"/>
+                        </Grid>
 
                         <DataGrid x:Name="UnitDataGrid"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   FlowDirection="RightToLeft"
-                                  Height="130"
+                                  Height="100"
                                   DoubleTapped="UnitDataGrid_DoubleTapped">
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="اسم الوحدة" Binding="{ReflectionBinding UnitName}" Width="140"/>
-                                <DataGridTextColumn Header="الحي" Binding="{ReflectionBinding District}" Width="110"/>
-                                <DataGridTextColumn Header="المدينة" Binding="{ReflectionBinding City}" Width="110"/>
-                                <DataGridTextColumn Header="النوع" Binding="{ReflectionBinding UnitType}" Width="100"/>
-                                <DataGridTextColumn Header="رقم الوحدة" Binding="{ReflectionBinding UnitNum}" Width="90"/>
+                                <DataGridTextColumn Header="اسم الوحدة" Binding="{ReflectionBinding UnitName}" Width="1.5*"/>
+                                <DataGridTextColumn Header="الحي" Binding="{ReflectionBinding District}" Width="*"/>
+                                <DataGridTextColumn Header="المدينة" Binding="{ReflectionBinding City}" Width="*"/>
+                                <DataGridTextColumn Header="النوع" Binding="{ReflectionBinding UnitType}" Width="*"/>
+                                <DataGridTextColumn Header="رقم الوحدة" Binding="{ReflectionBinding UnitNum}" Width="*"/>
                             </DataGrid.Columns>
 
                         </DataGrid>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="1" Grid.Column="1" CornerRadius="12" Padding="12">
+                <Border Grid.Row="1" Grid.Column="1" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="بيانات المالك" FontSize="16" HorizontalAlignment="Right"/>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Text="انقر مرتين للفتح" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="بيانات المالك" FontSize="16" TextAlignment="Right"/>
+                        </Grid>
 
                         <DataGrid x:Name="OwnerDataGrid"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   FlowDirection="RightToLeft"
-                                  Height="130"
+                                  Height="100"
                                   DoubleTapped="OwnerDataGrid_DoubleTapped">
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="الاسم" Binding="{ReflectionBinding OwnerName}" Width="140"/>
-                                <DataGridTextColumn Header="رقم الهوية" Binding="{ReflectionBinding OwnerIdentityNumber}" Width="130"/>
-                                <DataGridTextColumn Header="الجوال" Binding="{ReflectionBinding OwnerPhone}" Width="120"/>
-                                <DataGridTextColumn Header="العنوان" Binding="{ReflectionBinding OwnerAddress}" Width="160"/>
+                                <DataGridTextColumn Header="الاسم" Binding="{ReflectionBinding OwnerName}" Width="1.5*"/>
+                                <DataGridTextColumn Header="رقم الهوية" Binding="{ReflectionBinding OwnerIdentityNumber}" Width="*"/>
+                                <DataGridTextColumn Header="الجوال" Binding="{ReflectionBinding OwnerPhone}" Width="*"/>
+                                <DataGridTextColumn Header="العنوان" Binding="{ReflectionBinding OwnerAddress}" Width="1.5*"/>
                             </DataGrid.Columns>
 
                         </DataGrid>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="1" Grid.Column="0" CornerRadius="12" Padding="12">
+                <Border Grid.Row="1" Grid.Column="0" CornerRadius="12" Padding="12"
+                        BorderBrush="#DDD" BorderThickness="1">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="بيانات المستأجر" FontSize="16" HorizontalAlignment="Right"/>
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Text="انقر مرتين للفتح" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="بيانات المستأجر" FontSize="16" TextAlignment="Right"/>
+                        </Grid>
 
                         <DataGrid x:Name="TenantDataGrid"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  GridLinesVisibility="All"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
                                   FlowDirection="RightToLeft"
-                                  Height="130"
+                                  Height="100"
                                   DoubleTapped="TenantDataGrid_DoubleTapped">
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="الاسم" Binding="{ReflectionBinding TenantName}" Width="140"/>
-                                <DataGridTextColumn Header="رقم الهوية" Binding="{ReflectionBinding TenantIdentityNumber}" Width="130"/>
-                                <DataGridTextColumn Header="الجوال" Binding="{ReflectionBinding TenantPhone}" Width="120"/>
-                                <DataGridTextColumn Header="العنوان" Binding="{ReflectionBinding TenantAddress}" Width="160"/>
+                                <DataGridTextColumn Header="الاسم" Binding="{ReflectionBinding TenantName}" Width="1.5*"/>
+                                <DataGridTextColumn Header="رقم الهوية" Binding="{ReflectionBinding TenantIdentityNumber}" Width="*"/>
+                                <DataGridTextColumn Header="الجوال" Binding="{ReflectionBinding TenantPhone}" Width="*"/>
+                                <DataGridTextColumn Header="العنوان" Binding="{ReflectionBinding TenantAddress}" Width="1.5*"/>
                             </DataGrid.Columns>
 
                         </DataGrid>

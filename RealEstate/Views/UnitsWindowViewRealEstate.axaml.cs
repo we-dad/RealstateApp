@@ -54,7 +54,7 @@ public partial class UnitsWindowViewRealEstate : Window
 
         UnitTypeBox.SelectedIndex = 0;
     }
-    
+
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -70,7 +70,11 @@ public partial class UnitsWindowViewRealEstate : Window
             var unitType = UnitTypeBox.SelectedItem as string ?? "سكني";
             var unitsCount = int.Parse(UnitsCountBox.Text?.Trim() ?? "1");
             var unitNum = int.Parse(UnitNumBox.Text?.Trim() ?? "1");
-            var finalUnitName = unitName + "-" + unitNum;
+
+            // a building keeps its plain name, a unit gets its number back
+            var finalUnitName = _unit.ParentId == 0
+                ? unitName
+                : unitName + "-" + unitNum;
 
             _unitsDB.Update(
                 _unit.Id,
@@ -86,7 +90,6 @@ public partial class UnitsWindowViewRealEstate : Window
             Refresh();
 
             _ = _sync.PushAllDirtyAsync();
-            
         }
         catch (Exception ex)
         {
@@ -99,33 +102,89 @@ public partial class UnitsWindowViewRealEstate : Window
         _unit = _unitsDB.GetById(_unitID);
         if (_unit is null) return;
 
+        var groupId = _unit.ParentId == 0 ? _unit.Id : _unit.ParentId;
+        var units = _unitsDB.GetChildren(groupId);
+
+        // a building's own UnitState is never maintained, so work it
+        // out from its units before the badge binds to it
+        if (_unit.ParentId == 0 && units.Count > 0)
+        {
+            _unit.UnitState = units.Any(u => u.UnitState == "شاغرة")
+                ? "شاغرة"
+                : "مؤجرة";
+        }
+
         DataContext = _unit;
 
         LoadOwners();
         LoadUnitTypes();
 
-        var unitNameWithoutNum = _unit.UnitName;
-
-        if (unitNameWithoutNum.Length >= 2)
-            unitNameWithoutNum = unitNameWithoutNum.Substring(0, unitNameWithoutNum.Length - 2);
-
-        UnitNameBox.Text = unitNameWithoutNum;
+        UnitNameBox.Text = StripUnitNumber(_unit.UnitName);
         DistrictBox.Text = _unit.District ?? "";
         CityBox.Text = _unit.City ?? "";
-        UnitTypeBox.Text = _unit.UnitType ?? "";
+        UnitTypeBox.SelectedItem = _unit.UnitType ?? "سكني";
         UnitNumBox.Text = _unit.UnitNum.ToString();
         UnitsCountBox.Text = _unit.UnitsCount.ToString();
-
 
         ResultUnitNameBox.Text = _unit.UnitName ?? "";
         ResultDistrictBox.Text = _unit.District ?? "";
         ResultCityBox.Text = _unit.City ?? "";
         ResultUnitTypeBox.Text = _unit.UnitType ?? "";
-        ResultUnitNumBox.Text = _unit.UnitsCount + " / " + _unit.UnitNum;
-        
+
+        ResultUnitNumBox.Text = _unit.ParentId == 0
+            ? _unit.UnitsCount + " وحدة"
+            : _unit.UnitsCount + " / " + _unit.UnitNum;
+
         OwnerDataGrid.ItemsSource = new List<UnitRealEstate> { _unit };
         ContractsGrid.ItemsSource = _unitsDB.GetContractsByUnitId(_unit.Id);
+
+        ShowUnitsList(units);
     }
+
+    // every unit under the same building, including this one
+    private void ShowUnitsList(List<UnitRealEstate> units)
+    {
+        UnitsListGrid.ItemsSource = null;
+        UnitsListGrid.ItemsSource = units;
+
+        var vacant = units.Count(u => u.UnitState == "شاغرة");
+
+        UnitsSummaryText.Text = units.Count == 0
+            ? "لا توجد وحدات تابعة"
+            : $"شاغرة {vacant} من {units.Count} — انقر مرتين لفتح الوحدة";
+    }
+
+    private void UnitsListGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (UnitsListGrid.SelectedItem is not UnitRealEstate unit)
+            return;
+
+        // already looking at it
+        if (unit.Id == _unitID)
+            return;
+
+        var window = new UnitsWindowViewRealEstate(unit.Id, _supabaseService);
+        window.Show();
+    }
+
+    // "عمارة الفهد-12" -> "عمارة الفهد"
+    private static string StripUnitNumber(string? name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return "";
+
+        var dash = name.LastIndexOf('-');
+
+        if (dash <= 0)
+            return name;
+
+        var suffix = name.Substring(dash + 1);
+
+        return int.TryParse(suffix, out _)
+            ? name.Substring(0, dash)
+            : name;
+    }
+
     private void OwnerDataGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         if (_unit is null) return;
@@ -138,6 +197,7 @@ public partial class UnitsWindowViewRealEstate : Window
         var window = new OwnersWindowViewRealEstate(owner, _supabaseService);
         window.Show();
     }
+
     private void ContractsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         if (ContractsGrid.SelectedItem is not ContractRealEstate contract)
@@ -156,7 +216,7 @@ public partial class UnitsWindowViewRealEstate : Window
             _unitsDB.Delete(_unit.Id);
 
             _ = _sync.PushAllDirtyAsync();
-            
+
             Close();
         }
         catch (InvalidOperationException ex)

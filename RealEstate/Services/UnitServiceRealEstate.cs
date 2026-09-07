@@ -14,6 +14,12 @@ public class UnitServiceRealEstate
         _db = db;
     }
 
+    // ------------------------------------------------------------------
+    // ParentId = 0  -> the row is a building (parent), not rentable
+    // ParentId > 0  -> the row is a real unit, value = its parent's Id
+    // ------------------------------------------------------------------
+
+    // CHANGED: returns buildings only, with a count of their vacant units.
     public List<UnitRealEstate> GetAll()
     {
         var list = new List<UnitRealEstate>();
@@ -23,32 +29,113 @@ public class UnitServiceRealEstate
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-            SELECT Id, CloudId, UnitName, City, District, UnitState, UnitType
-            FROM UnitsRealEstate
-            WHERE SyncAction <> 'delete'
-            ORDER BY Id DESC;
+            SELECT
+                u.Id,
+                u.CloudId,
+                u.OwnerId,
+                u.UnitName,
+                u.City,
+                u.District,
+                u.UnitState,
+                u.UnitType,
+                u.UnitsCount,
+
+                (SELECT COUNT(*)
+                   FROM UnitsRealEstate c
+                  WHERE c.ParentId = u.Id
+                    AND c.SyncAction <> 'delete') AS ChildCount,
+
+                (SELECT COUNT(*)
+                   FROM UnitsRealEstate c
+                  WHERE c.ParentId = u.Id
+                    AND c.SyncAction <> 'delete'
+                    AND c.UnitState = 'شاغرة') AS VacantCount
+
+            FROM UnitsRealEstate u
+            WHERE u.ParentId = 0
+              AND u.SyncAction <> 'delete'
+            ORDER BY u.Id DESC;
         """;
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
+            var ownState    = reader.GetString(6);
+            var childCount  = reader.GetInt32(9);
+            var vacantCount = reader.GetInt32(10);
+
             list.Add(new UnitRealEstate
             {
-                Id = reader.GetInt64(0),
-                CloudId = reader.GetInt64(1),
-                UnitName = reader.GetString(2),
-                City = reader.GetString(3),
-                District = reader.GetString(4),
-                UnitState = reader.GetString(5),
-                UnitType = reader.GetString(6),
+                Id          = reader.GetInt64(0),
+                CloudId     = reader.GetInt64(1),
+                OwnerId     = reader.GetInt64(2),
+                UnitName    = reader.GetString(3),
+                City        = reader.GetString(4),
+                District    = reader.GetString(5),
+                UnitType    = reader.GetString(7),
+                UnitsCount  = reader.GetInt32(8),
+
+                ParentId    = 0,
+                ChildCount  = childCount,
+                VacantCount = vacantCount,
+
+                // no children (old row created before this change) -> keep its own state
+                // any vacant unit -> شاغرة ; all rented -> مؤجرة
+                UnitState = childCount == 0
+                    ? ownState
+                    : (vacantCount > 0 ? "شاغرة" : "مؤجرة")
             });
         }
 
         return list;
     }
 
+    // NEW: the units inside one building.
+    public List<UnitRealEstate> GetChildren(long parentId)
+    {
+        var list = new List<UnitRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, CloudId, OwnerId, UnitName, City, District,
+                   UnitState, UnitType, UnitsCount, UnitNum, ParentId
+            FROM UnitsRealEstate
+            WHERE ParentId = $parentId
+              AND SyncAction <> 'delete'
+            ORDER BY UnitNum;
+        """;
+
+        cmd.Parameters.AddWithValue("$parentId", parentId);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new UnitRealEstate
+            {
+                Id         = reader.GetInt64(0),
+                CloudId    = reader.GetInt64(1),
+                OwnerId    = reader.GetInt64(2),
+                UnitName   = reader.GetString(3),
+                City       = reader.GetString(4),
+                District   = reader.GetString(5),
+                UnitState  = reader.GetString(6),
+                UnitType   = reader.GetString(7),
+                UnitsCount = reader.GetInt32(8),
+                UnitNum    = reader.GetInt32(9),
+                ParentId   = reader.GetInt64(10)
+            });
+        }
+
+        return list;
+    }
+
+    // CHANGED: takes parentId (pass 0 to create a building).
     public long Add(
         long ownerId,
+        long parentId,
         string unitName,
         string city,
         string district,
@@ -63,14 +150,15 @@ public class UnitServiceRealEstate
 
         cmd.CommandText = """
             INSERT INTO UnitsRealEstate
-            (OwnerId, UnitName, City, District, UnitType, UnitsCount, UnitNum, IsDirty, SyncAction)
+            (OwnerId, ParentId, UnitName, City, District, UnitType, UnitsCount, UnitNum, IsDirty, SyncAction)
             VALUES
-            ($ownerId, $unitName, $city, $district, $unitType, $unitsCount, $unitNum, 1, 'insert');
+            ($ownerId, $parentId, $unitName, $city, $district, $unitType, $unitsCount, $unitNum, 1, 'insert');
 
             SELECT last_insert_rowid();
         """;
 
         cmd.Parameters.AddWithValue("$ownerId", ownerId);
+        cmd.Parameters.AddWithValue("$parentId", parentId);
         cmd.Parameters.AddWithValue("$unitName", unitName);
         cmd.Parameters.AddWithValue("$city", city);
         cmd.Parameters.AddWithValue("$district", district);
@@ -124,6 +212,7 @@ public class UnitServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    // CHANGED: also returns ParentId.
     public UnitRealEstate? GetById(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -146,7 +235,8 @@ public class UnitServiceRealEstate
                 u.UnitType,
                 u.UnitsCount,
                 u.UnitNum,
-                u.UnitState
+                u.UnitState,
+                u.ParentId
             FROM UnitsRealEstate u
             JOIN OwnersRealEstate o ON o.Id = u.OwnerId
             WHERE u.Id = $id;
@@ -175,9 +265,13 @@ public class UnitServiceRealEstate
             UnitsCount = reader.GetInt32(12),
             UnitNum = reader.GetInt32(13),
             UnitState = reader.GetString(14),
+            ParentId = reader.GetInt64(15),
         };
     }
 
+    // CHANGED: buildings are skipped. Their state is worked out from
+    // their children in GetAll(), so writing it here would only create
+    // pointless dirty rows for the cloud push.
     public void UpdateUnitStates()
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -193,6 +287,7 @@ public class UnitServiceRealEstate
                                       ELSE 'update'
                                   END
                               WHERE SyncAction <> 'delete'
+                                AND ParentId <> 0
                                 AND UnitState <> 'شاغرة'
                                 AND Id NOT IN (
                                   SELECT UnitId
@@ -209,6 +304,7 @@ public class UnitServiceRealEstate
                                       ELSE 'update'
                                   END
                               WHERE SyncAction <> 'delete'
+                                AND ParentId <> 0
                                 AND UnitState <> 'مؤجرة'
                                 AND Id IN (
                                   SELECT UnitId
@@ -221,6 +317,7 @@ public class UnitServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    // CHANGED: buildings excluded, so no one can pick one for a contract.
     public List<UnitRealEstate> GetAvailableUnits()
     {
         var list = new List<UnitRealEstate>();
@@ -233,6 +330,7 @@ public class UnitServiceRealEstate
             SELECT Id, CloudId, UnitName, UnitState
             FROM UnitsRealEstate
             WHERE UnitState = 'شاغرة'
+              AND ParentId <> 0
               AND SyncAction <> 'delete'
             ORDER BY UnitName;
         """;
@@ -290,6 +388,8 @@ public class UnitServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    // CHANGED: ParentId included so the push can send it once the cloud
+    // table has the column. Harmless until then.
     public List<UnitRealEstate> GetDirtyRows()
     {
         var list = new List<UnitRealEstate>();
@@ -310,7 +410,8 @@ public class UnitServiceRealEstate
                 UnitState,
                 UnitsCount,
                 UnitNum,
-                SyncAction
+                SyncAction,
+                ParentId
             FROM UnitsRealEstate
             WHERE IsDirty = 1;
         """;
@@ -331,7 +432,8 @@ public class UnitServiceRealEstate
                 UnitState = reader.GetString(7),
                 UnitsCount = reader.GetInt32(8),
                 UnitNum = reader.GetInt32(9),
-                SyncAction = reader.GetString(10)
+                SyncAction = reader.GetString(10),
+                ParentId = reader.GetInt64(11)
             });
         }
 
@@ -357,9 +459,13 @@ public class UnitServiceRealEstate
         return result == null ? 0 : Convert.ToInt64(result);
     }
 
+    // CHANGED: takes the parent's local id. On update it only overwrites
+    // ParentId when the cloud actually knows the parent, so a locally
+    // grouped row is never un-grouped by a cloud row that has 0.
     public void UpsertFromCloud(
         long cloudId,
         long ownerLocalId,
+        long parentLocalId,
         string unitName,
         string city,
         string district,
@@ -387,6 +493,7 @@ public class UnitServiceRealEstate
             update.CommandText = """
                 UPDATE UnitsRealEstate
                 SET OwnerId = $ownerId,
+                    ParentId = CASE WHEN $parentId > 0 THEN $parentId ELSE ParentId END,
                     UnitName = $unitName,
                     City = $city,
                     District = $district,
@@ -400,6 +507,7 @@ public class UnitServiceRealEstate
 
             update.Parameters.AddWithValue("$cloudId", cloudId);
             update.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            update.Parameters.AddWithValue("$parentId", parentLocalId);
             update.Parameters.AddWithValue("$unitName", unitName);
             update.Parameters.AddWithValue("$city", city);
             update.Parameters.AddWithValue("$district", district);
@@ -415,13 +523,14 @@ public class UnitServiceRealEstate
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO UnitsRealEstate
-                (CloudId, OwnerId, UnitName, City, District, UnitType, UnitState, UnitsCount, UnitNum, IsDirty, SyncAction)
+                (CloudId, OwnerId, ParentId, UnitName, City, District, UnitType, UnitState, UnitsCount, UnitNum, IsDirty, SyncAction)
                 VALUES
-                ($cloudId, $ownerId, $unitName, $city, $district, $unitType, $unitState, $unitsCount, $unitNum, 0, '');
+                ($cloudId, $ownerId, $parentId, $unitName, $city, $district, $unitType, $unitState, $unitsCount, $unitNum, 0, '');
             """;
 
             insert.Parameters.AddWithValue("$cloudId", cloudId);
             insert.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            insert.Parameters.AddWithValue("$parentId", parentLocalId);
             insert.Parameters.AddWithValue("$unitName", unitName);
             insert.Parameters.AddWithValue("$city", city);
             insert.Parameters.AddWithValue("$district", district);
@@ -434,6 +543,7 @@ public class UnitServiceRealEstate
         }
     }
 
+    // CHANGED: buildings excluded here too.
     public List<UnitRealEstate> GetAvailableUnitsIncluding(long? currentUnitId)
     {
         var list = new List<UnitRealEstate>();
@@ -446,6 +556,7 @@ public class UnitServiceRealEstate
             SELECT Id, CloudId, UnitName, UnitState
             FROM UnitsRealEstate
             WHERE SyncAction <> 'delete'
+              AND ParentId <> 0
               AND (UnitState = 'شاغرة' OR Id = $currentId)
             ORDER BY UnitName;
         """;
@@ -466,7 +577,7 @@ public class UnitServiceRealEstate
 
         return list;
     }
-    
+
     public List<ContractRealEstate> GetContractsByUnitId(long unitId)
     {
         var list = new List<ContractRealEstate>();
@@ -515,6 +626,8 @@ public class UnitServiceRealEstate
         return list;
     }
 
+    // CHANGED: deleting a building deletes its units too, but only if
+    // none of them are tied to a contract.
     public void Delete(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -526,8 +639,11 @@ public class UnitServiceRealEstate
                 SELECT EXISTS(
                     SELECT 1
                     FROM ContractsRealEstate
-                    WHERE UnitId = $id
-                      AND SyncAction <> 'delete'
+                    WHERE SyncAction <> 'delete'
+                      AND (
+                            UnitId = $id
+                         OR UnitId IN (SELECT Id FROM UnitsRealEstate WHERE ParentId = $id)
+                      )
                 );
             """;
             check.Parameters.AddWithValue("$id", id);
@@ -542,7 +658,8 @@ public class UnitServiceRealEstate
             UPDATE UnitsRealEstate
             SET IsDirty = 1,
                 SyncAction = 'delete'
-            WHERE Id = $id;
+            WHERE Id = $id
+               OR ParentId = $id;
         """;
 
         cmd.Parameters.AddWithValue("$id", id);

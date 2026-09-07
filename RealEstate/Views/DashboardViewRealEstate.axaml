@@ -3,12 +3,11 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
              x:Class="RealEstateInstallmentsManager.Views.DashboardViewRealEstate"
-             FlowDirection="LeftToRight">
+             FlowDirection="RightToLeft">
 
   <ScrollViewer>
     <StackPanel Spacing="12" Margin="16">
 
-      <!-- Styles عامة (عربي بدون قلب الشارت) -->
       <StackPanel.Styles>
         <Style Selector="TextBlock">
           <Setter Property="TextAlignment" Value="Right"/>
@@ -22,174 +21,207 @@
         <Style Selector="DataGridColumnHeader">
           <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
-
-        <!-- تحسين بسيط للبطاقات -->
-        <Style Selector="Border.card">
-          <Setter Property="CornerRadius" Value="12"/>
-          <Setter Property="Padding" Value="10"/>
+        <Style Selector="Border.board">
+          <Setter Property="CornerRadius" Value="14"/>
+          <Setter Property="Padding" Value="16"/>
+          <Setter Property="Background" Value="#14FFFFFF"/>
+          <Setter Property="BorderBrush" Value="#28FFFFFF"/>
+          <Setter Property="BorderThickness" Value="1"/>
         </Style>
-
+        <Style Selector="Border.card">
+          <Setter Property="CornerRadius" Value="14"/>
+          <Setter Property="Padding" Value="16"/>
+          <Setter Property="Background" Value="#14FFFFFF"/>
+          <Setter Property="BorderBrush" Value="#28FFFFFF"/>
+          <Setter Property="BorderThickness" Value="1"/>
+        </Style>
         <Style Selector="Border.smallcard">
           <Setter Property="CornerRadius" Value="12"/>
           <Setter Property="Padding" Value="8"/>
         </Style>
+        <Style Selector="StackPanel.stat">
+          <Setter Property="Spacing" Value="4"/>
+        </Style>
+        <Style Selector="TextBlock.statLabel">
+          <Setter Property="FontSize" Value="12"/>
+          <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="TextBlock.statValue">
+          <Setter Property="FontSize" Value="20"/>
+          <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="TextBlock.statBig">
+          <Setter Property="FontSize" Value="22"/>
+          <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
       </StackPanel.Styles>
 
-      <!-- Top bar: السنة يمين + زر يسار -->
-      <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10">
-        <TextBlock Grid.Column="0" Text="السنة:" VerticalAlignment="Center"/>
-        <ComboBox Grid.Column="1" x:Name="YearCombo" Width="140"/>
-        <Button Grid.Column="2" x:Name="RefreshBtn" Content="تحديث" HorizontalAlignment="Left"/>
+      <!-- Top bar -->
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+        <TextBlock Grid.Column="0" Text="لوحة المعلومات" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="2" Text="السنة:" VerticalAlignment="Center"/>
+        <ComboBox Grid.Column="3" x:Name="YearCombo" Width="130" VerticalAlignment="Center"/>
+        <Button Grid.Column="4" x:Name="RefreshBtn" Content="تحديث"/>
+        <Button Grid.Column="5" x:Name="ExportPdfBtn" Content="تصدير PDF"/>
+      </Grid>
+      <!-- ===== Board: records ===== -->
+      <Border Classes="board">
+        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="6">
+          <StackPanel Grid.Column="0" Classes="stat">
+            <TextBlock Classes="statLabel" Text="الملاك"/>
+            <TextBlock x:Name="OwnersCountText" Classes="statValue"/>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Classes="stat">
+            <TextBlock Classes="statLabel" Text="الوحدات"/>
+            <TextBlock x:Name="UnitsCountText" Classes="statValue"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Classes="stat">
+            <TextBlock Classes="statLabel" Text="المستأجرين"/>
+            <TextBlock x:Name="TenantsCountText" Classes="statValue"/>
+          </StackPanel>
+          <StackPanel Grid.Column="3" Classes="stat">
+            <TextBlock Classes="statLabel" Text="العقود"/>
+            <TextBlock x:Name="ContractsCountText" Classes="statValue"/>
+          </StackPanel>
+          <StackPanel Grid.Column="4" Classes="stat">
+            <TextBlock Classes="statLabel" Text="سندات القبض"/>
+            <TextBlock x:Name="ReceiptsCountText" Classes="statValue"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ===== Board: money + occupancy ===== -->
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="10">
+        <Border Grid.Column="0" Classes="board">
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+            <StackPanel Grid.Column="0" Classes="stat">
+              <TextBlock Classes="statLabel" Text="إجمالي القبض"/>
+              <TextBlock x:Name="TotalReceiptsText" Classes="statBig" Foreground="#16A34A"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Classes="stat">
+              <TextBlock Classes="statLabel" Text="إجمالي الصرف"/>
+              <TextBlock x:Name="TotalExpensesText" Classes="statBig" Foreground="#DC2626"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Classes="stat">
+              <TextBlock Classes="statLabel" Text="الصافي"/>
+              <TextBlock x:Name="NetText" Classes="statBig"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Grid.Column="1" Classes="board">
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+            <StackPanel Grid.Column="0" Classes="stat">
+              <TextBlock Classes="statLabel" Text="مؤجر"/>
+              <TextBlock x:Name="RentedText" Classes="statBig"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Classes="stat">
+              <TextBlock Classes="statLabel" Text="شاغر"/>
+              <TextBlock x:Name="VacantText" Classes="statBig" Foreground="#D97706"/>
+            </StackPanel>
+          </Grid>
+        </Border>
       </Grid>
 
-      <!-- ✅ شريط العدادات الصغير فوق -->
-      <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="10">
-
-        <Border Classes="smallcard" Grid.Column="0">
-          <StackPanel Spacing="2">
-            <TextBlock Text="الملاك" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="OwnersCountText" FontSize="18" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="smallcard" Grid.Column="1">
-          <StackPanel Spacing="2">
-            <TextBlock Text="الوحدات" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="UnitsCountText" FontSize="18" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="smallcard" Grid.Column="2">
-          <StackPanel Spacing="2">
-            <TextBlock Text="المستأجرين" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="TenantsCountText" FontSize="18" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="smallcard" Grid.Column="3">
-          <StackPanel Spacing="2">
-            <TextBlock Text="العقود" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="ContractsCountText" FontSize="18" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="smallcard" Grid.Column="4">
-          <StackPanel Spacing="2">
-            <TextBlock Text="سندات القبض" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="ReceiptsCountText" FontSize="18" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-      </Grid>
-
-      <!-- KPI cards -->
-      <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="10">
-
-        <Border Classes="card" Grid.Column="0">
-          <StackPanel Spacing="3">
-            <TextBlock Text="إجمالي القبض" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="TotalReceiptsText" FontSize="20" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card" Grid.Column="1">
-          <StackPanel Spacing="3">
-            <TextBlock Text="إجمالي الصرف" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="TotalExpensesText" FontSize="20" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card" Grid.Column="2">
-          <StackPanel Spacing="3">
-            <TextBlock Text="الصافي" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="NetText" FontSize="20" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card" Grid.Column="3">
-          <StackPanel Spacing="3">
-            <TextBlock Text="مؤجر" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="RentedText" FontSize="20" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card" Grid.Column="4">
-          <StackPanel Spacing="3">
-            <TextBlock Text="شاغر" FontSize="12" Opacity="0.85"/>
-            <TextBlock x:Name="VacantText" FontSize="20" FontWeight="Bold"/>
-          </StackPanel>
-        </Border>
-
-      </Grid>
-
-      <!-- ✅ الرسومات أصغر ومناسبة -->
+      <!-- charts -->
       <Grid ColumnDefinitions="2*,*" ColumnSpacing="12">
-
-        <!-- Line (يسار) -->
         <Border Classes="card" Grid.Column="0">
           <StackPanel Spacing="6">
             <TextBlock Text="القبض والصرف (شهريًا)" FontSize="13"/>
-            <lvc:CartesianChart x:Name="MonthlyChart" Height="220"/>
+            <lvc:CartesianChart x:Name="MonthlyChart" Height="220" FlowDirection="LeftToRight"/>
           </StackPanel>
         </Border>
-
-        <!-- Pie (يمين) -->
         <Border Classes="card" Grid.Column="1">
           <StackPanel Spacing="6">
             <TextBlock Text="نسبة الإشغال" FontSize="13"/>
             <lvc:PieChart x:Name="OccupancyChart" Height="220"/>
           </StackPanel>
         </Border>
-
       </Grid>
 
-      <!-- Top 5 units chart أصغر -->
+      <!-- Top 5 buildings -->
       <Border Classes="card">
         <StackPanel Spacing="6">
-          <TextBlock Text="أعلى 5 وحدات دخلاً (حسب السنة)" FontSize="13"/>
-          <lvc:CartesianChart x:Name="TopUnitsChart" Height="210"/>
+          <TextBlock Text="أعلى 5 عمارات دخلاً (حسب السنة)" FontSize="13"/>
+          <lvc:CartesianChart x:Name="TopUnitsChart" Height="210" FlowDirection="LeftToRight"/>
         </StackPanel>
       </Border>
 
-      <!-- Units stats table -->
+      <!-- Buildings stats table -->
       <Border Classes="card">
         <StackPanel Spacing="6">
-          <TextBlock Text="إحصائيات الوحدات حسب السنة" FontSize="13"/>
-
+          <TextBlock Text="إحصائيات العمارات حسب السنة" FontSize="13"/>
           <DataGrid x:Name="UnitsStatsGrid"
                     AutoGenerateColumns="False"
-                    Height="260"
-                    FlowDirection="RightToLeft">
-
+                    IsReadOnly="True"
+                    Height="240"
+                    x:DataType="models:UnitYearStatRowRealEstate">
             <DataGrid.Columns>
-
-              <DataGridTemplateColumn Header="الوحدة" Width="*">
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate x:DataType="models:UnitYearStatRowRealEstate">
-                    <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
-
-              <DataGridTemplateColumn Header="عدد مرات التأجير" Width="170">
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate x:DataType="models:UnitYearStatRowRealEstate">
-                    <TextBlock Text="{Binding ContractsStartedThisYear}" TextAlignment="Right"/>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
-
-              <DataGridTemplateColumn Header="إجمالي المقبوضات" Width="170">
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate x:DataType="models:UnitYearStatRowRealEstate">
-                    <TextBlock Text="{Binding ReceiptsTotalThisYear}" TextAlignment="Right"/>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
-
+              <DataGridTextColumn Header="العمارة" Binding="{Binding UnitName}" Width="*"/>
+              <DataGridTextColumn Header="الإشغال" Binding="{Binding Occupancy}" Width="110"/>
+              <DataGridTextColumn Header="عقود السنة" Binding="{Binding ContractsStartedThisYear}" Width="120"/>
+              <DataGridTextColumn Header="القبض" Binding="{Binding ReceiptsTotalThisYear, StringFormat='{}{0:N2}'}" Width="140"/>
+              <DataGridTextColumn Header="الصرف" Binding="{Binding ExpensesTotalThisYear, StringFormat='{}{0:N2}'}" Width="140"/>
+              <DataGridTextColumn Header="الصافي" Binding="{Binding NetThisYear, StringFormat='{}{0:N2}'}" Width="140"/>
             </DataGrid.Columns>
           </DataGrid>
+        </StackPanel>
+      </Border>
 
+      <!-- Late tenants -->
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="المستأجرون المتأخرون" FontSize="14" FontWeight="Bold"/>
+            <Border Grid.Column="1" Background="#C0392B" CornerRadius="10" Padding="10,2" VerticalAlignment="Center">
+              <TextBlock x:Name="LateCountText" Foreground="White" FontWeight="Bold"/>
+            </Border>
+            <Button Grid.Column="2" Content="طباعة PDF" Click="ExportLate_Click"/>
+          </Grid>
+          <DataGrid x:Name="LateGrid"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    Height="240"
+                    x:DataType="models:LateTenantRowRealEstate"
+                    DoubleTapped="LateGrid_DoubleTapped">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="المستأجر" Binding="{Binding TenantName}" Width="*"/>
+              <DataGridTextColumn Header="الجوال" Binding="{Binding TenantPhone}" Width="120"/>
+              <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitName}" Width="*"/>
+              <DataGridTextColumn Header="طريقة الدفع" Binding="{Binding PayMethod}" Width="110"/>
+              <DataGridTextColumn Header="المستحق" Binding="{Binding ExpectedToDate, StringFormat='{}{0:N2}'}" Width="110"/>
+              <DataGridTextColumn Header="المدفوع" Binding="{Binding PaidToDate, StringFormat='{}{0:N2}'}" Width="110"/>
+              <DataGridTextColumn Header="المتبقي" Binding="{Binding Outstanding, StringFormat='{}{0:N2}'}" Width="110"/>
+              <DataGridTextColumn Header="التأخر" Binding="{Binding BehindText}" Width="120"/>
+              <DataGridTextColumn Header="آخر دفعة" Binding="{Binding LastPaymentText}" Width="120"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
+      <!-- Upcoming payments -->
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="دفعات مستحقة هذا الشهر" FontSize="14" FontWeight="Bold"/>
+            <Border Grid.Column="1" Background="#2C6EAF" CornerRadius="10" Padding="10,2" VerticalAlignment="Center">
+              <TextBlock x:Name="UpcomingCountText" Foreground="White" FontWeight="Bold"/>
+            </Border>
+            <Button Grid.Column="2" Content="طباعة PDF" Click="ExportUpcoming_Click"/>
+          </Grid>
+          <DataGrid x:Name="UpcomingGrid"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    Height="220"
+                    x:DataType="models:UpcomingPaymentRowRealEstate"
+                    DoubleTapped="UpcomingGrid_DoubleTapped">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="المستأجر" Binding="{Binding TenantName}" Width="*"/>
+              <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitName}" Width="*"/>
+              <DataGridTextColumn Header="العمارة" Binding="{Binding BuildingName}" Width="*"/>
+              <DataGridTextColumn Header="تاريخ الاستحقاق" Binding="{Binding DueDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="150"/>
+              <DataGridTextColumn Header="المبلغ" Binding="{Binding Amount, StringFormat='{}{0:N2}'}" Width="130"/>
+            </DataGrid.Columns>
+          </DataGrid>
         </StackPanel>
       </Border>
 

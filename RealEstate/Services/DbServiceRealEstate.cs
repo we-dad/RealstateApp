@@ -160,7 +160,7 @@ SyncAction TEXT NOT NULL DEFAULT ''
         AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureCloudPath", "TEXT NOT NULL DEFAULT ''");
         AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureFileName", "TEXT NOT NULL DEFAULT ''");
         AddColumnIfNotExists(connection, "ContractsRealEstate", "SignatureFileType", "TEXT NOT NULL DEFAULT ''");
-
+        AddColumnIfNotExists(connection, "UnitsRealEstate", "ParentId", "INTEGER NOT NULL DEFAULT 0");
     }
     
     private void AddColumnIfNotExists(

@@ -32,6 +32,7 @@ public partial class OwnersWindowViewRealEstate : Window
         Refresh();
 
     }
+   
     private void Update_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -73,6 +74,16 @@ public partial class OwnersWindowViewRealEstate : Window
         
         UnitsGrid.ItemsSource = _ownersDB.GetUnitsByOwnerId(_ownerRealEstate.Id);
     }
+    
+    private async void UnitsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (UnitsGrid.SelectedItem is not UnitRealEstate unit) return;
+
+        var window = new UnitsWindowViewRealEstate(unit.Id, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
+    }
+    
     private void Delete_Click(object? sender, RoutedEventArgs e)
     {
         try

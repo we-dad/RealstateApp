@@ -2,95 +2,74 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
              x:Class="RealEstateInstallmentsManager.Views.TenantsViewRealEstate"
-             x:DataType="models:TenantRealEstate">
+             x:DataType="models:TenantRealEstate"
+             FlowDirection="RightToLeft">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="12">
 
-        <StackPanel Margin="6" Spacing="10">
+        <Border Grid.Row="0" Padding="12" CornerRadius="12"
+                BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel Spacing="8">
+                <TextBlock Text="المستأجرين" FontSize="18"/>
 
-            <Border Padding="12" CornerRadius="12">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="المستأجرين" FontSize="18" HorizontalAlignment="Right"/>
+                <Grid ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="10"
+                      RowSpacing="8">
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="8">
+                    <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0"/>
+                    <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0"/>
 
-                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1"/>
+                    <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
 
-                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0"/>
+                    <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0"/>
 
-                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1"/>
+                    <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1"/>
 
-                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                    <StackPanel Grid.Row="4"
+                                Grid.ColumnSpan="2"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                HorizontalAlignment="Left">
+                        <Button Content="إضافة" Click="Add_Click"/>
+                        <Button Content="تحديث" Click="Refresh_Click"/>
+                    </StackPanel>
 
-                        <StackPanel Grid.Row="4"
-                                    Grid.ColumnSpan="2"
-                                    Orientation="Horizontal"
-                                    Spacing="8"
-                                    HorizontalAlignment="Right">
+                </Grid>
+            </StackPanel>
+        </Border>
 
-                            <Button Content="تحديث" Click="Refresh_Click"/>
-                            <Button Content="إضافة" Click="Add_Click"/>
+        <!-- List heading + hint -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+            <TextBlock Grid.Column="0" Text="قائمة المستأجرين" FontSize="14" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="1" Text="انقر مرتين على المستأجر لفتح التفاصيل"
+                       FontSize="12" Foreground="Gray" TextAlignment="Left" VerticalAlignment="Center"/>
+        </Grid>
 
-                        </StackPanel>
+        <!-- Table -->
+        <Border Grid.Row="2" CornerRadius="12" Padding="4"
+                BorderBrush="#DDD" BorderThickness="1">
+            <DataGrid x:Name="TenantsGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      x:DataType="models:TenantRealEstate"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      DoubleTapped="TenantsGrid_DoubleTapped">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60"/>
+                    <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="1.5*"/>
+                    <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="*"/>
+                    <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="*"/>
+                    <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="2*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
 
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <Border CornerRadius="12"
-                    Padding="12">
-
-                <StackPanel Spacing="8">
-
-                    <TextBlock Text="قائمة المستأجرين"
-                               HorizontalAlignment="Right"/>
-
-                    <DataGrid x:Name="TenantsGrid"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              x:DataType="models:TenantRealEstate"
-                              FlowDirection="RightToLeft"
-                              HorizontalAlignment="Stretch"
-                              Height="420"
-                              DoubleTapped="TenantsGrid_DoubleTapped">
-
-                        <DataGrid.Columns>
-
-                            <DataGridTextColumn Header="#"
-                                                Binding="{Binding Id}"
-                                                Width="80"/>
-
-                            <DataGridTextColumn Header="الاسم"
-                                                Binding="{Binding Name}"
-                                                Width="*"/>
-
-                            <DataGridTextColumn Header="رقم الهوية"
-                                                Binding="{Binding IdentityNumber}"
-                                                Width="200"/>
-
-                            <DataGridTextColumn Header="الجوال"
-                                                Binding="{Binding Phone}"
-                                                Width="200"/>
-
-                            <DataGridTextColumn Header="العنوان"
-                                                Binding="{Binding Address}"
-                                                Width="*"/>
-
-                        </DataGrid.Columns>
-
-                    </DataGrid>
-
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
-    </ScrollViewer>
+    </Grid>
 </UserControl>

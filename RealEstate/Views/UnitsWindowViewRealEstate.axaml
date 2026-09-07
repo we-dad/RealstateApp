@@ -5,196 +5,210 @@
         x:DataType="models:UnitRealEstate"
         Title="معلومات الوحدة"
         Width="800"
-        Height="850">
+        Height="850"
+        FlowDirection="RightToLeft">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="6" Spacing="10">
+        <StackPanel Margin="16" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="الوحدات السكنية" FontSize="18" TextAlignment="Right"/>
-
-                    <Border Background="{Binding StateColor}"
-                            Padding="6,2"
-                            MinWidth="60"
-                            CornerRadius="4"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding UnitState}"
-                                   Foreground="White"
-                                   TextAlignment="Center"/>
-                    </Border>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="الوحدة السكنية" FontSize="18" FontWeight="SemiBold"/>
+                        <Border Grid.Column="1" Background="{Binding StateColor}"
+                                Padding="8,3" MinWidth="60" CornerRadius="4" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding UnitState}" Foreground="White" TextAlignment="Center"/>
+                        </Border>
+                    </Grid>
 
                     <Grid ColumnDefinitions="*,*"
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="10"
                           RowSpacing="8">
 
-                        <TextBlock Text="اسم الوحدة" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="UnitNameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="اسم الوحدة" Grid.Row="0" Grid.Column="0"/>
+                        <TextBox x:Name="UnitNameBox" Grid.Row="1" Grid.Column="0"/>
 
-                        <TextBlock Text="المالك" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="المالك" Grid.Row="0" Grid.Column="1"/>
                         <ComboBox x:Name="OwnerBox"
                                   Grid.Row="1"
                                   Grid.Column="1"
                                   HorizontalAlignment="Stretch"
-                                  HorizontalContentAlignment="Right">
+                                  HorizontalContentAlignment="Left">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:OwnerRealEstate">
-                                    <TextBlock Text="{Binding Name}" TextAlignment="Right"/>
+                                    <TextBlock Text="{Binding Name}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Text="الحي" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="DistrictBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="الحي" Grid.Row="2" Grid.Column="0"/>
+                        <TextBox x:Name="DistrictBox" Grid.Row="3" Grid.Column="0"/>
 
-                        <TextBlock Text="المدينة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="CityBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="المدينة" Grid.Row="2" Grid.Column="1"/>
+                        <TextBox x:Name="CityBox" Grid.Row="3" Grid.Column="1"/>
 
-                        <TextBlock Text="نوع الوحدة" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="نوع الوحدة" Grid.Row="4" Grid.Column="0"/>
                         <ComboBox x:Name="UnitTypeBox"
                                   Grid.Row="5"
                                   Grid.Column="0"
                                   HorizontalAlignment="Stretch"
-                                  HorizontalContentAlignment="Right">
+                                  HorizontalContentAlignment="Left">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}" TextAlignment="Right"/>
+                                    <TextBlock Text="{Binding}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Text="رقم الوحدة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="رقم الوحدة" Grid.Row="4" Grid.Column="1"/>
                         <StackPanel Grid.Row="5"
                                     Grid.Column="1"
                                     Orientation="Horizontal"
-                                    HorizontalAlignment="Right"
                                     Spacing="6">
-                            <TextBox x:Name="UnitsCountBox" Width="60" Text="1" TextAlignment="Right"/>
+                            <TextBox x:Name="UnitsCountBox" Width="60" Text="1"/>
                             <TextBlock Text="/" VerticalAlignment="Center"/>
-                            <TextBox x:Name="UnitNumBox" Width="60" Text="1" TextAlignment="Right"/>
+                            <TextBox x:Name="UnitNumBox" Width="60" Text="1"/>
                         </StackPanel>
 
                     </Grid>
 
-                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
                         <Button Content="حذف البيانات" Click="Delete_Click"/>
                         <Button Content="تحديث البيانات" Click="Update_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12" Padding="12">
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="بيانات الوحدة"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Right"/>
+                    <TextBlock Text="بيانات الوحدة" FontSize="16" FontWeight="SemiBold"/>
 
-                    <Grid ColumnDefinitions="*,*"
+                    <Grid ColumnDefinitions="Auto,*,Auto,*"
                           RowDefinitions="Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="10"
-                          FlowDirection="RightToLeft">
+                          ColumnSpacing="16" RowSpacing="8">
 
-                        <Border Grid.Row="0" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="اسم الوحدة" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitNameBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="اسم الوحدة" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultUnitNameBox" Grid.Row="0" Grid.Column="1"/>
+                        <TextBlock Text="الحالة" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
+                        <TextBlock Text="{Binding UnitState}" Grid.Row="0" Grid.Column="3"/>
 
-                        <Border Grid.Row="0" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الحالة" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock Text="{Binding UnitState}" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="الحي" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultDistrictBox" Grid.Row="1" Grid.Column="1"/>
+                        <TextBlock Text="المدينة" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultCityBox" Grid.Row="1" Grid.Column="3"/>
 
-                        <Border Grid.Row="1" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الحي" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultDistrictBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="1" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="المدينة" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultCityBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="2" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="نوع الوحدة" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitTypeBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Row="2" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="رقم الوحدة" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultUnitNumBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
-
+                        <TextBlock Text="نوع الوحدة" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultUnitTypeBox" Grid.Row="2" Grid.Column="1"/>
+                        <TextBlock Text="رقم الوحدة" Grid.Row="2" Grid.Column="2" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultUnitNumBox" Grid.Row="2" Grid.Column="3"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12" Padding="12">
+            <!-- NEW: all the units of this building, with their state -->
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="بيانات المالك"
-                               FontSize="16"
-                               HorizontalAlignment="Right"/>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="وحدات العمارة" FontSize="16"/>
+                        <TextBlock x:Name="UnitsSummaryText"
+                                   Grid.Column="1"
+                                   FontSize="11" Foreground="Gray"
+                                   TextAlignment="Left" VerticalAlignment="Center"/>
+                    </Grid>
 
-                    <DataGrid x:Name="OwnerDataGrid"
+                    <DataGrid x:Name="UnitsListGrid"
+                              x:DataType="models:UnitRealEstate"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
-                              GridLinesVisibility="All"
-                              FlowDirection="RightToLeft"
-                              Height="120"
-                              DoubleTapped="OwnerDataGrid_DoubleTapped">
-
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              Height="200"
+                              DoubleTapped="UnitsListGrid_DoubleTapped">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="الاسم" Binding="{ReflectionBinding OwnerName}" Width="160"/>
-                            <DataGridTextColumn Header="رقم الهوية" Binding="{ReflectionBinding OwnerIdentityNumber}" Width="160"/>
-                            <DataGridTextColumn Header="الجوال" Binding="{ReflectionBinding OwnerPhone}" Width="140"/>
-                            <DataGridTextColumn Header="العنوان" Binding="{ReflectionBinding OwnerAddress}" Width="*"/>
-                        </DataGrid.Columns>
+                            <DataGridTextColumn Header="رقم الوحدة" Binding="{Binding UnitNum}" Width="100"/>
+                            <DataGridTextColumn Header="اسم الوحدة" Binding="{Binding UnitName}" Width="2*"/>
+                            <DataGridTextColumn Header="النوع" Binding="{Binding UnitType}" Width="*"/>
 
+                            <DataGridTemplateColumn Header="الحالة" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="models:UnitRealEstate">
+                                        <Border Background="{Binding StateColor}"
+                                                Padding="6,2"
+                                                MinWidth="50"
+                                                CornerRadius="4"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding UnitState}"
+                                                       Foreground="White"
+                                                       TextAlignment="Center"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12" Padding="12">
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="العقود"
-                               FontSize="16"
-                               HorizontalAlignment="Right"/>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="بيانات المالك" FontSize="16"/>
+                        <TextBlock Grid.Column="1" Text="انقر مرتين لفتح المالك"
+                                   FontSize="11" Foreground="Gray" TextAlignment="Left" VerticalAlignment="Center"/>
+                    </Grid>
 
-                    <DataGrid x:Name="ContractsGrid"
+                    <DataGrid x:Name="OwnerDataGrid"
+                              x:DataType="models:UnitRealEstate"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
-                              GridLinesVisibility="All"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              Height="90"
+                              DoubleTapped="OwnerDataGrid_DoubleTapped">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الاسم" Binding="{Binding OwnerName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding OwnerIdentityNumber}" Width="*"/>
+                            <DataGridTextColumn Header="الجوال" Binding="{Binding OwnerPhone}" Width="*"/>
+                            <DataGridTextColumn Header="العنوان" Binding="{Binding OwnerAddress}" Width="2*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="العقود" FontSize="16"/>
+                        <TextBlock Grid.Column="1" Text="انقر مرتين على العقد لفتح التفاصيل"
+                                   FontSize="11" Foreground="Gray" TextAlignment="Left" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <DataGrid x:Name="ContractsGrid"
+                              x:DataType="models:ContractRealEstate"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
                               CanUserSortColumns="True"
-                              FlowDirection="RightToLeft"
                               Height="220"
                               DoubleTapped="ContractsGrid_DoubleTapped">
-
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="رقم العقد" Binding="{ReflectionBinding ContractNumber}" />
-                            <DataGridTextColumn Header="المستأجر" Binding="{ReflectionBinding TenantName}" />
-                            <DataGridTextColumn Header="بداية العقد" Binding="{ReflectionBinding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="160" />
-                            <DataGridTextColumn Header="نهاية العقد" Binding="{ReflectionBinding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="160" />
-                            <DataGridTextColumn Header="الإيجار" Binding="{ReflectionBinding RentAmount}" />
-                            <DataGridTextColumn Header="طريقة الدفع" Binding="{ReflectionBinding ContractPayMethod}" />
-                            <DataGridTextColumn Header="الحالة" Binding="{ReflectionBinding ContractState}" />
+                            <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="1.5*"/>
+                            <DataGridTextColumn Header="المستأجر" Binding="{Binding TenantName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="البداية" Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                            <DataGridTextColumn Header="النهاية" Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                            <DataGridTextColumn Header="الإيجار" Binding="{Binding RentAmount, StringFormat='{}{0:N2}'}" Width="*"/>
+                            <DataGridTextColumn Header="الحالة" Binding="{Binding ContractState}" Width="*"/>
                         </DataGrid.Columns>
-
                     </DataGrid>
                 </StackPanel>
             </Border>

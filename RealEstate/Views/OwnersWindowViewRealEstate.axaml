@@ -1,41 +1,45 @@
 <Window x:Class="RealEstateInstallmentsManager.Views.OwnersWindowViewRealEstate"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
+        x:DataType="models:UnitRealEstate"
         Title="معلومات المالك"
         Width="800"
-        Height="700">
+        Height="700"
+        FlowDirection="RightToLeft">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="16" Spacing="10">
+        <StackPanel Margin="16" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="المالك" FontSize="18" HorizontalAlignment="Right"/>
+                    <TextBlock Text="المالك" FontSize="18"/>
 
                     <Grid ColumnDefinitions="*,*"
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="10"
                           RowSpacing="8">
 
-                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0"/>
+                        <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0"/>
 
-                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1"/>
+                        <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
 
-                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0"/>
+                        <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0"/>
 
-                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1"/>
+                        <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1"/>
 
                         <StackPanel Grid.Row="4"
                                     Grid.ColumnSpan="2"
                                     Orientation="Horizontal"
                                     Spacing="8"
-                                    HorizontalAlignment="Right">
+                                    HorizontalAlignment="Left">
                             <Button Content="حذف البيانات" Click="Delete_Click"/>
                             <Button Content="تحديث البيانات" Click="Update_Click"/>
                         </StackPanel>
@@ -44,73 +48,55 @@
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12" Padding="12">
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="بيانات المالك"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Right"/>
+                    <TextBlock Text="بيانات المالك" FontSize="16" FontWeight="SemiBold"/>
 
-                    <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="10"
-                          FlowDirection="RightToLeft">
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="16" RowSpacing="8">
 
-                        <Border Grid.Row="0" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الاسم" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultNameBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="1"/>
 
-                        <Border Grid.Row="0" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="رقم الهوية" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultIdentityNumberBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
 
-                        <Border Grid.Row="1" Grid.Column="0" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="الجوال" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultPhoneBox" TextAlignment="Right"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="1"/>
 
-                        <Border Grid.Row="1" Grid.Column="1" Padding="10" CornerRadius="8">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="العنوان" FontWeight="Bold" TextAlignment="Right"/>
-                                <TextBlock x:Name="ResultAddressBox"
-                                           TextAlignment="Right"
-                                           TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
+                        <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="0" Foreground="Gray"/>
+                        <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="1" TextWrapping="Wrap"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <Border CornerRadius="12" Padding="12">
+            <Border CornerRadius="12" Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="وحدات المالك" FontSize="16" HorizontalAlignment="Right"/>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="وحدات المالك" FontSize="16"/>
+                        <TextBlock Grid.Column="1" Text="انقر مرتين على الوحدة لفتح التفاصيل"
+                                   FontSize="12" Foreground="Gray" TextAlignment="Left" VerticalAlignment="Center"/>
+                    </Grid>
 
                     <DataGrid x:Name="UnitsGrid"
+                              x:DataType="models:UnitRealEstate"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
-                              GridLinesVisibility="All"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
                               CanUserSortColumns="True"
-                              FlowDirection="RightToLeft"
-                              Height="250">
-
+                              Height="250"
+                              DoubleTapped="UnitsGrid_DoubleTapped">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="اسم الوحدة" Binding="{ReflectionBinding UnitName}" />
-                            <DataGridTextColumn Header="المدينة" Binding="{ReflectionBinding City}" />
-                            <DataGridTextColumn Header="الحي" Binding="{ReflectionBinding District}" />
-                            <DataGridTextColumn Header="الحالة" Binding="{ReflectionBinding UnitState}" />
-                            <DataGridTextColumn Header="النوع" Binding="{ReflectionBinding UnitType}" />
+                            <DataGridTextColumn Header="اسم الوحدة" Binding="{Binding UnitName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="المدينة" Binding="{Binding City}" Width="*"/>
+                            <DataGridTextColumn Header="الحي" Binding="{Binding District}" Width="*"/>
+                            <DataGridTextColumn Header="الحالة" Binding="{Binding UnitState}" Width="*"/>
+                            <DataGridTextColumn Header="النوع" Binding="{Binding UnitType}" Width="*"/>
                         </DataGrid.Columns>
-
                     </DataGrid>
                 </StackPanel>
             </Border>

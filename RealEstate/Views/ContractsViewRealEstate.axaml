@@ -7,9 +7,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
 
-        <StackPanel Margin="6" Spacing="10">
+        <StackPanel Margin="12" Spacing="12">
 
-            <Border Padding="12" CornerRadius="12">
+            <Border Padding="12" CornerRadius="12"
+                    BorderBrush="#DDD" BorderThickness="1">
                 <StackPanel Spacing="8">
                     <TextBlock Text="عقد الإيجار" FontSize="18" TextAlignment="Right"/>
 
@@ -28,7 +29,9 @@
                         <DatePicker x:Name="ContractDateEndPicker" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right"/>
 
                         <TextBlock Text="اسم الوحدة" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
-                        <ComboBox x:Name="UnitsBox" Grid.Row="5" Grid.Column="0" HorizontalAlignment="Stretch">
+                        <ComboBox x:Name="UnitsBox" Grid.Row="5" Grid.Column="0"
+                                  HorizontalAlignment="Stretch"
+                                  HorizontalContentAlignment="Right">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:UnitRealEstate">
                                     <TextBlock Text="{Binding UnitName}" TextAlignment="Right"/>
@@ -65,11 +68,13 @@
                                        Grid.Column="0"
                                        Grid.ColumnSpan="2"
                                        TextAlignment="Right"
+                                       TextWrapping="Wrap"
                                        Foreground="Green"/>
                         </Grid>
 
                         <TextBlock Text="مبلغ الإيجار" Grid.Row="6" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="RentAmountBox" Grid.Row="7" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBox x:Name="RentAmountBox" Grid.Row="7" Grid.Column="1"
+                                 TextAlignment="Right" VerticalAlignment="Top"/>
 
                         <TextBlock Text="طريقة الدفع"
                                    Grid.Row="6"
@@ -80,6 +85,7 @@
                         <ComboBox x:Name="ContractPayMethodBox"
                                   Grid.Row="7"
                                   Grid.Column="0"
+                                  VerticalAlignment="Top"
                                   HorizontalAlignment="Stretch"
                                   FlowDirection="RightToLeft">
                             <ComboBox.ItemTemplate>
@@ -174,29 +180,35 @@
             </Border>
 
             <Border CornerRadius="12"
-                    Padding="12">
+                    Padding="12"
+                    BorderBrush="#DDD" BorderThickness="1">
 
                 <StackPanel Spacing="8">
 
-                    <TextBlock Text="قائمة العقود"
-                               TextAlignment="Right"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="انقر مرتين على العقد لفتح التفاصيل"
+                                   FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="قائمة العقود" TextAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
 
                     <DataGrid x:Name="ContractGrid"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               x:DataType="models:ContractRealEstate"
                               FlowDirection="RightToLeft"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
                               HorizontalAlignment="Stretch"
                               Height="430"
                               DoubleTapped="ContractGrid_DoubleTapped">
 
                         <DataGrid.Columns>
 
-                            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="70"/>
-                            <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="*"/>
-                            <DataGridTextColumn Header="اسم الوحدة" Binding="{Binding UnitName}" Width="160"/>
-                            <DataGridTextColumn Header="تاريخ بدء العقد" Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="160"/>
-                            <DataGridTextColumn Header="تاريخ انتهاء العقد" Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="160"/>
+                            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60"/>
+                            <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="1.5*"/>
+                            <DataGridTextColumn Header="اسم الوحدة" Binding="{Binding UnitName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="تاريخ بدء العقد" Binding="{Binding ContractStartDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
+                            <DataGridTextColumn Header="تاريخ انتهاء العقد" Binding="{Binding ContractEndDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="*"/>
 
                             <DataGridTemplateColumn Header="حالة العقد" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>

@@ -100,22 +100,24 @@ public partial class TenantsWindowViewRealEstate : Window
     }
   
     
-    private void TenantContractsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    private async void TenantContractsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (TenantContractsGrid.SelectedItem is not ContractRealEstate contract)
-            return;
+        if (TenantContractsGrid.SelectedItem is not TenantRealEstate row) return;
+        if (row.ContractId <= 0) return;
 
-        var window = new ContractsWindowViewRealEstate(contract.Id, _supabaseService);
-        window.Show();
+        var window = new ContractsWindowViewRealEstate(row.ContractId, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
     }
 
-    private void TenantReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    private async void TenantReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (TenantReceiptsGrid.SelectedItem is not ReceiptRealEstate receipt)
-            return;
+        if (TenantReceiptsGrid.SelectedItem is not TenantRealEstate row) return;
+        if (row.ReceiptId <= 0) return;
 
-        var window = new ReceiptsWindowViewRealEstate(receipt.Id, _supabaseService);
-        window.Show();
+        var window = new ReceiptsWindowViewRealEstate(row.ReceiptId, _supabaseService);
+        await window.ShowDialog(this);
+        Refresh();
     }
     
     private async Task<string?> PickSavePdfPathAsync(string receiptNumber)

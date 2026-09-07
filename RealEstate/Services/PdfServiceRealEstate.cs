@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -131,6 +132,7 @@ public class PdfServiceRealEstate
         })
         .GeneratePdf(filePath);
     }
+
     static string FixRtlPunctuation(string s)//for arabic marker
     {
         const string RLM = "\u200F";
@@ -169,6 +171,7 @@ public class PdfServiceRealEstate
             col.Item().PaddingTop(16);
         });
     }
+
     public string CalculateContractPeriod(DateTime start, DateTime end)
     {
         if (end < start) (start, end) = (end, start);
@@ -211,7 +214,7 @@ public class PdfServiceRealEstate
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4.Landscape());
+                page.Size(PageSizes.A4);
                 page.Margin(30);
                 page.DefaultTextStyle(x =>
     x.FontFamily("Arial")
@@ -250,7 +253,7 @@ public class PdfServiceRealEstate
                             s.Item().Text("سند قبض").FontSize(18).Bold().AlignCenter();
 
                             s.Item().ExtendHorizontal();
-                            
+
                             s.Item().ContentFromRightToLeft().Row(row =>
                             {
                                 row.RelativeItem()
@@ -346,7 +349,7 @@ public class PdfServiceRealEstate
                                 .Height(24);
                             });
                             });
-                            
+
                             s.Item()
                                 .AlignRight()
                                 .PaddingTop(10)
@@ -366,7 +369,7 @@ public class PdfServiceRealEstate
         {
             container.Page(page =>
             {
-                page.Size(PageSizes.A4.Landscape());
+                page.Size(PageSizes.A4);
                 page.Margin(30);
                 page.DefaultTextStyle(x =>
                     x.FontFamily("Arial")
@@ -478,112 +481,426 @@ public class PdfServiceRealEstate
         })
         .GeneratePdf(filePath);
     }
-    
- public void GenerateTenantReceiptsRecordPdf(
-    TenantRealEstate tenant,
-    List<TenantRealEstate> receipts,
-    string path)
-{
-    QuestPDF.Settings.License = LicenseType.Community;
 
-    var orderedReceipts = receipts
-        .OrderBy(x => x.ReceiptDate)
-        .ThenBy(x => x.ReceiptId)
-        .ToList();
-
-    var totalPaid = orderedReceipts.Sum(x => x.ReceiptAmount);
-
-    Document.Create(container =>
+    public void GenerateTenantReceiptsRecordPdf(
+        TenantRealEstate tenant,
+        List<TenantRealEstate> receipts,
+        string path)
     {
-        container.Page(page =>
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        var orderedReceipts = receipts
+            .OrderBy(x => x.ReceiptDate)
+            .ThenBy(x => x.ReceiptId)
+            .ToList();
+
+        var totalPaid = orderedReceipts.Sum(x => x.ReceiptAmount);
+
+        Document.Create(container =>
         {
-            page.Size(PageSizes.A4);
-            page.Margin(30);
-
-            page.DefaultTextStyle(x =>
-                x.FontFamily("Arial")
-                 .FontSize(11));
-
-            page.Header().Column(col =>
+            container.Page(page =>
             {
-                col.Item()
-                    .AlignRight()
-                    .Text("السجل المالي للمستأجر")
-                    .FontSize(22)
-                    .Bold();
+                page.Size(PageSizes.A4);
+                page.Margin(30);
 
-                col.Item()
-                    .PaddingTop(10)
-                    .Border(1)
-                    .Padding(10)
-                    .Column(info =>
+                page.DefaultTextStyle(x =>
+                    x.FontFamily("Arial")
+                     .FontSize(11));
+
+                page.Header().Column(col =>
+                {
+                    col.Item()
+                        .AlignRight()
+                        .Text("السجل المالي للمستأجر")
+                        .FontSize(22)
+                        .Bold();
+
+                    col.Item()
+                        .PaddingTop(10)
+                        .Border(1)
+                        .Padding(10)
+                        .Column(info =>
+                        {
+                            info.Item().AlignRight().Text($"اسم المستأجر : {tenant.Name}");
+                            info.Item().AlignRight().Text($"رقم الهوية : {tenant.IdentityNumber}");
+                            info.Item().AlignRight().Text($"الجوال : {tenant.Phone}");
+                            info.Item().AlignRight().Text($"العنوان : {tenant.Address}");
+                        });
+                });
+
+                page.Content().PaddingTop(15).Column(col =>
+                {
+                    col.Item()
+                        .AlignRight()
+                        .Text($"إجمالي المدفوع : {totalPaid:N2}")
+                        .FontSize(14)
+                        .Bold();
+
+                    col.Item().PaddingTop(10).Table(table =>
                     {
-                        info.Item().AlignRight().Text($"اسم المستأجر : {tenant.Name}");
-                        info.Item().AlignRight().Text($"رقم الهوية : {tenant.IdentityNumber}");
-                        info.Item().AlignRight().Text($"الجوال : {tenant.Phone}");
-                        info.Item().AlignRight().Text($"العنوان : {tenant.Address}");
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn();      // المبلغ
+                            columns.RelativeColumn();      // رقم العقد
+                            columns.RelativeColumn();      // التاريخ
+                            columns.RelativeColumn();      // رقم السند
+                            columns.ConstantColumn(45);    // الترتيب
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Border(1).Padding(5).AlignCenter().Text("المبلغ").Bold();
+                            header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم العقد").Bold();
+                            header.Cell().Border(1).Padding(5).AlignCenter().Text("التاريخ").Bold();
+                            header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم السند").Bold();
+                            header.Cell().Border(1).Padding(5).AlignCenter().Text("#").Bold();
+                        });
+
+                        var order = 1;
+
+                        foreach (var r in orderedReceipts)
+                        {
+                            table.Cell().Border(1).Padding(5).AlignCenter()
+                                .Text(r.ReceiptAmount.ToString("N2"));
+
+                            table.Cell().Border(1).Padding(5).AlignCenter()
+                                .Text(r.ContractNumber);
+
+                            table.Cell().Border(1).Padding(5).AlignCenter()
+                                .Text(r.ReceiptDate.ToString("yyyy-MM-dd"));
+
+                            table.Cell().Border(1).Padding(5).AlignCenter()
+                                .Text(r.ReceiptNumber);
+
+                            table.Cell().Border(1).Padding(5).AlignCenter()
+                                .Text(order++.ToString());
+                        }
+                    });
+                });
+
+                page.Footer()
+                    .AlignCenter()
+                    .Text(x =>
+                    {
+                        x.Span("صفحة ");
+                        x.CurrentPageNumber();
                     });
             });
+        })
+        .GeneratePdf(path);
+    }
 
-            page.Content().PaddingTop(15).Column(col =>
+    // =====================================================================
+    // Dashboard analysis report. A normal method of this class now,
+    // not a nested class. Call it as:
+    //   new PdfServiceRealEstate().ExportDashboard(path, year, ...);
+    // =====================================================================
+    private static string N(decimal v) => v.ToString("N2", CultureInfo.InvariantCulture);
+
+    public void ExportDashboard(
+        string path,
+        int year,
+        decimal totalReceipts,
+        decimal totalExpenses,
+        int rented,
+        int vacant,
+        List<UnitYearStatRowRealEstate> buildings,
+        List<(string month, decimal receipts, decimal expenses)> monthly,
+        string ownersCount,
+        string unitsCount,
+        string tenantsCount,
+        string contractsCount,
+        string receiptsCount)
+    {
+        var net = totalReceipts - totalExpenses;
+        var totalUnits = rented + vacant;
+        var occupancy = totalUnits == 0 ? 0 : (rented * 100.0 / totalUnits);
+
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
             {
-                col.Item()
-                    .AlignRight()
-                    .Text($"إجمالي المدفوع : {totalPaid:N2}")
-                    .FontSize(14)
-                    .Bold();
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
 
-                col.Item().PaddingTop(10).Table(table =>
+                page.Header().Column(col =>
                 {
-                    table.ColumnsDefinition(columns =>
+                    col.Item().Text(year == 0
+                            ? "تقرير التحليل العقاري — كل السنوات"
+                            : $"تقرير التحليل العقاري — سنة {year}")
+                        .FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                });
+
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    col.Spacing(14);
+
+                    // ---- Records ----
+                    col.Item().Text("السجلات").FontSize(13).Bold();
+                    col.Item().Row(row =>
                     {
-                        columns.RelativeColumn();      // المبلغ
-                        columns.RelativeColumn();      // رقم العقد
-                        columns.RelativeColumn();      // التاريخ
-                        columns.RelativeColumn();      // رقم السند
-                        columns.ConstantColumn(45);    // الترتيب
+                        void Count(string label, string value)
+                        {
+                            row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2)
+                               .Padding(6).Column(c =>
+                               {
+                                   c.Item().Text(label).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                   c.Item().Text(value).FontSize(12).Bold();
+                               });
+                        }
+
+                        Count("الملاك", ownersCount);
+                        Count("الوحدات", unitsCount);
+                        Count("المستأجرين", tenantsCount);
+                        Count("العقود", contractsCount);
+                        Count("سندات القبض", receiptsCount);
                     });
 
-                    table.Header(header =>
+                    // ---- KPI summary ----
+                    col.Item().PaddingTop(4).Text("الملخص المالي").FontSize(13).Bold();
+                    col.Item().Row(row =>
                     {
-                        header.Cell().Border(1).Padding(5).AlignCenter().Text("المبلغ").Bold();
-                        header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم العقد").Bold();
-                        header.Cell().Border(1).Padding(5).AlignCenter().Text("التاريخ").Bold();
-                        header.Cell().Border(1).Padding(5).AlignCenter().Text("رقم السند").Bold();
-                        header.Cell().Border(1).Padding(5).AlignCenter().Text("#").Bold();
+                        void Kpi(string label, string value)
+                        {
+                            row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2)
+                               .Padding(8).Column(c =>
+                               {
+                                   c.Item().Text(label).FontSize(9).FontColor(Colors.Grey.Darken1);
+                                   c.Item().Text(value).FontSize(13).Bold();
+                               });
+                        }
+
+                        Kpi("إجمالي القبض", N(totalReceipts));
+                        Kpi("إجمالي الصرف", N(totalExpenses));
+                        Kpi("الصافي", N(net));
+                        Kpi("نسبة الإشغال", $"{occupancy:0.#}%");
                     });
 
-                    var order = 1;
-
-                    foreach (var r in orderedReceipts)
+                    col.Item().Row(row =>
                     {
-                        table.Cell().Border(1).Padding(5).AlignCenter()
-                            .Text(r.ReceiptAmount.ToString("N2"));
+                        row.RelativeItem().Text($"عدد الوحدات: {totalUnits}   |   مؤجرة: {rented}   |   شاغرة: {vacant}")
+                           .FontSize(10);
+                    });
 
-                        table.Cell().Border(1).Padding(5).AlignCenter()
-                            .Text(r.ContractNumber);
+                    // ---- Monthly income vs expenses ----
+                    if (monthly.Count > 0)
+                    {
+                        col.Item().PaddingTop(6).Text("القبض والصرف (شهريًا)").FontSize(13).Bold();
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2);
+                            });
 
-                        table.Cell().Border(1).Padding(5).AlignCenter()
-                            .Text(r.ReceiptDate.ToString("yyyy-MM-dd"));
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
 
-                        table.Cell().Border(1).Padding(5).AlignCenter()
-                            .Text(r.ReceiptNumber);
+                            H("الشهر"); H("القبض"); H("الصرف"); H("الصافي");
 
-                        table.Cell().Border(1).Padding(5).AlignCenter()
-                            .Text(order++.ToString());
+                            foreach (var m in monthly)
+                            {
+                                var mNet = m.receipts - m.expenses;
+                                table.Cell().Padding(4).Text(m.month).FontSize(9);
+                                table.Cell().Padding(4).Text(N(m.receipts)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(m.expenses)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(mNet)).FontSize(9)
+                                     .FontColor(mNet < 0 ? Colors.Red.Medium : Colors.Black);
+                            }
+                        });
                     }
+
+                    // ---- Buildings ranking ----
+                    col.Item().PaddingTop(6).Text("ترتيب العمارات حسب الدخل").FontSize(13).Bold();
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(c =>
+                        {
+                            c.RelativeColumn(3);
+                            c.RelativeColumn(2);
+                            c.RelativeColumn(2);
+                            c.RelativeColumn(2);
+                            c.RelativeColumn(2);
+                            c.RelativeColumn(2);
+                        });
+
+                        void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                            .Padding(4).Text(t).Bold().FontSize(9);
+
+                        H("العمارة"); H("الإشغال"); H("عقود السنة");
+                        H("القبض"); H("الصرف"); H("الصافي");
+
+                        foreach (var b in buildings)
+                        {
+                            table.Cell().Padding(4).Text(b.UnitName).FontSize(9);
+                            table.Cell().Padding(4).Text(b.Occupancy).FontSize(9);
+                            table.Cell().Padding(4).Text(b.ContractsStartedThisYear.ToString()).FontSize(9);
+                            table.Cell().Padding(4).Text(N(b.ReceiptsTotalThisYear)).FontSize(9);
+                            table.Cell().Padding(4).Text(N(b.ExpensesTotalThisYear)).FontSize(9);
+                            table.Cell().Padding(4).Text(N(b.NetThisYear)).FontSize(9)
+                                 .FontColor(b.NetThisYear < 0 ? Colors.Red.Medium : Colors.Black);
+                        }
+                    });
+                });
+
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
                 });
             });
+        })
+        .GeneratePdf(path);
+    }
 
-            page.Footer()
-                .AlignCenter()
-                .Text(x =>
+    // ---- dedicated report: late tenants only ----
+    public void ExportLateTenants(string path, string yearLabel, List<LateTenantRowRealEstate> late)
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
+
+                page.Header().Column(col =>
                 {
-                    x.Span("صفحة ");
-                    x.CurrentPageNumber();
+                    col.Item().Text($"تقرير المستأجرين المتأخرين للعقار — {yearLabel}").FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                 });
-        });
-    })
-    .GeneratePdf(path);
-}
+
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    var totalOutstanding = late.Sum(x => x.Outstanding);
+                    col.Item().PaddingBottom(8)
+                        .Text($"عدد المتأخرين: {late.Count}    |    إجمالي المتأخرات: {N(totalOutstanding)}")
+                        .FontSize(11).Bold();
+
+                    if (late.Count == 0)
+                        col.Item().Text("لا يوجد متأخرات.").FontSize(11).FontColor(Colors.Grey.Medium);
+                    else
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(3); c.RelativeColumn(2); c.RelativeColumn(3);
+                                c.RelativeColumn(2); c.RelativeColumn(2); c.RelativeColumn(2);
+                                c.RelativeColumn(2); c.RelativeColumn(2); c.RelativeColumn(2);
+                            });
+
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
+
+                            H("المستأجر"); H("الجوال"); H("الوحدة"); H("طريقة الدفع");
+                            H("المستحق"); H("المدفوع"); H("المتبقي"); H("التأخر"); H("آخر دفعة");
+
+                            foreach (var l in late)
+                            {
+                                table.Cell().Padding(4).Text(l.TenantName).FontSize(9);
+                                table.Cell().Padding(4).Text(l.TenantPhone).FontSize(9);
+                                table.Cell().Padding(4).Text(l.UnitName).FontSize(9);
+                                table.Cell().Padding(4).Text(l.PayMethod).FontSize(9);
+                                table.Cell().Padding(4).Text(N(l.ExpectedToDate)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(l.PaidToDate)).FontSize(9);
+                                table.Cell().Padding(4).Text(N(l.Outstanding)).FontSize(9)
+                                     .FontColor(Colors.Red.Medium).Bold();
+                                table.Cell().Padding(4).Text(l.BehindText).FontSize(9);
+                                table.Cell().Padding(4).Text(l.LastPaymentText).FontSize(9);
+                            }
+                        });
+                });
+
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
+                });
+            });
+        })
+        .GeneratePdf(path);
+    }
+
+    // ---- dedicated report: upcoming payments only ----
+    public void ExportUpcoming(string path, string yearLabel, List<UpcomingPaymentRowRealEstate> upcoming)
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        Document.Create(doc =>
+        {
+            doc.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10));
+                page.ContentFromRightToLeft();
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text($"تقرير الدفعات المستحقة للعقار هذا الشهر — {yearLabel}").FontSize(18).Bold();
+                    col.Item().Text($"تاريخ الإصدار: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                    col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                });
+
+                page.Content().PaddingVertical(8).Column(col =>
+                {
+                    var totalDue = upcoming.Sum(x => x.Amount);
+                    col.Item().PaddingBottom(8)
+                        .Text($"عدد الدفعات: {upcoming.Count}    |    إجمالي المبالغ: {N(totalDue)}")
+                        .FontSize(11).Bold();
+
+                    if (upcoming.Count == 0)
+                        col.Item().Text("لا توجد دفعات مستحقة هذا الشهر.").FontSize(11).FontColor(Colors.Grey.Medium);
+                    else
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(3); c.RelativeColumn(3);
+                                c.RelativeColumn(3); c.RelativeColumn(2); c.RelativeColumn(2);
+                            });
+
+                            void H(string t) => table.Cell().Background(Colors.Grey.Lighten3)
+                                .Padding(4).Text(t).Bold().FontSize(9);
+
+                            H("المستأجر"); H("الوحدة"); H("العمارة"); H("تاريخ الاستحقاق"); H("المبلغ");
+
+                            foreach (var u in upcoming)
+                            {
+                                table.Cell().Padding(4).Text(u.TenantName).FontSize(9);
+                                table.Cell().Padding(4).Text(u.UnitName).FontSize(9);
+                                table.Cell().Padding(4).Text(u.BuildingName).FontSize(9);
+                                table.Cell().Padding(4).Text(u.DueDate.ToString("yyyy-MM-dd")).FontSize(9);
+                                table.Cell().Padding(4).Text(N(u.Amount)).FontSize(9);
+                            }
+                        });
+                });
+
+                page.Footer().AlignCenter().Text(t =>
+                {
+                    t.Span("صفحة ");
+                    t.CurrentPageNumber();
+                    t.Span(" من ");
+                    t.TotalPages();
+                });
+            });
+        })
+        .GeneratePdf(path);
+    }
 }
