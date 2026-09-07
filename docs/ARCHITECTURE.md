@@ -1,8 +1,5 @@
 # Data Model
 
-What a developer needs before changing anything in **المسار الذهبي**. Sync behaviour is covered in [CHALLENGES.md](CHALLENGES.md); this document is the shape of the data.
-
----
 
 ## Entity graph
 
