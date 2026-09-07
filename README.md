@@ -20,7 +20,7 @@
 
 المسار الذهبي is a production desktop application, in daily use, that manages two related but distinct lines of business under one program. The interface is entirely in Arabic and right-to-left, including generated PDF documents.
 
-It is **offline-first**: every feature works with no network connection, writing to a local SQLite database, and synchronises to Supabase when a connection is available. For a business where a dropped connection must never stop a contract from being written or a receipt from being issued.
+It is **offline-first**: every feature works with no network connection, writing to a local SQLite database, and synchronises to Supabase when a connection is available. For a business where a dropped connection must never stop a contract from being written or a receipt from being issued, that isn't a convenience — it's the requirement the architecture is built around.
 
 <img src="images/dashboard-realestate.png" width="760" alt="Real estate dashboard"/>
 
@@ -74,8 +74,6 @@ SyncAction TEXT    NOT NULL DEFAULT ''
 
 Local writes mark the row dirty with the action that caused it. When a connection is available, dirty rows are pushed and the flags cleared. Rows whose parent record hasn't reached the cloud yet are skipped and retried on the next pass rather than pushed with a dangling reference.
 
-Full write-up: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
-
 ## Updates
 
 Releases ship through **Velopack**, which builds the Windows installer and handles in-place updates, so machines already in the field move to a new version without a manual reinstall or losing local data.
@@ -84,7 +82,7 @@ Releases ship through **Velopack**, which builds the Windows installer and handl
 
 Offline-first sync and why the dirty-flag model was chosen over the alternatives, Arabic right-to-left in generated PDF, and shipping updates to machines holding live business data:
 
-**[docs/CHALLENGES.md](docs/CHALLENGES.md)**
+**[CHALLENGES.md](CHALLENGES.md)**
 
 ## Built with
 
@@ -108,3 +106,5 @@ dotnet run
 ```
 
 Requires the .NET 10 SDK. The local database is created on first run under the user's local application data folder. Cloud sync requires a Supabase project URL and publishable key in `Cloud/Services/SupabaseService.cs`, with row-level security policies configured on every table.
+
+> **Note on the Supabase key.** Supabase publishable keys are designed to ship inside client applications and are not secrets; access is controlled by row-level security policies on the database, not by key secrecy.
