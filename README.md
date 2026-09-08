@@ -25,6 +25,7 @@
 المسار الذهبي is a production desktop application, in daily use, that manages two related but distinct lines of business under one program. The interface is entirely in Arabic and right-to-left, including generated PDF documents.
 
 It is **offline-first**: every feature works with no network connection, writing to a local SQLite database, and synchronises to Supabase when a connection is available. For a business where a dropped connection must never stop a contract from being written or a receipt from being issued.
+
 <img src="images/dashboard-realestate.png" width="760" alt="Real estate dashboard"/>
 
 ## The two modules
