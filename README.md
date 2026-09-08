@@ -112,5 +112,3 @@ dotnet run
 ```
 
 Requires the .NET 10 SDK. The local database is created on first run under the user's local application data folder. Cloud sync requires a Supabase project URL and publishable key in `Cloud/Services/SupabaseService.cs`, with row-level security policies configured on every table.
-
-> **Note on the Supabase key.** Supabase publishable keys are designed to ship inside client applications and are not secrets; access is controlled by row-level security policies on the database, not by key secrecy.
