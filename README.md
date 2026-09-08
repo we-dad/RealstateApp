@@ -66,23 +66,15 @@ Four roles — `admin`, `editor`, `viewer`, `tester` — separate read access fr
 
 ## Sync model
 
-Every local table carries three sync columns:
+Local writes are flagged as pending. When a connection is available the pending rows are pushed and the flags cleared; a row whose parent record hasn't reached the cloud yet is held back and retried on the next pass rather than pushed with a broken reference.
 
-```sql
-CloudId    INTEGER NOT NULL DEFAULT 0,
-IsDirty    INTEGER NOT NULL DEFAULT 0,
-SyncAction TEXT    NOT NULL DEFAULT ''
-```
-
-Local writes mark the row dirty with the action that caused it. When a connection is available, dirty rows are pushed and the flags cleared. Rows whose parent record hasn't reached the cloud yet are skipped and retried on the next pass rather than pushed with a dangling reference.
-
-Both schemas, the mapping between them, and the modelling decisions behind them: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
+The schema on both sides, the mapping between them, and the modelling decisions behind them: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
 
 ## Updates
 
 Releases ship through **Velopack**, which builds the Windows installer and handles in-place updates, so machines already in the field move to a new version without a manual reinstall or losing local data.
 
-Installers are published under [Releases](../../releases/latest), which is also the update feed the application checks. The local database lives outside the install directory, so an update replaces the program and leaves contracts and receipts untouched.
+Installers are published under [Releases](../../releases/latest), which is also the update feed the application checks. An update replaces the program and leaves the local database untouched.
 
 ## Problems worth reading about
 
