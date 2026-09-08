@@ -167,13 +167,13 @@ Tables are created with `CREATE TABLE IF NOT EXISTS` on every application start,
 | Add a validation rule | The entity service, so it holds for every caller |
 | Add an entity | All of the above, plus a branch in `*SyncService.PushAllDirtyAsync` |
 
-## Known limitations
+## Known limitations of the schema
+
+Sync behaviour and its limits are covered in [CHALLENGES.md](../CHALLENGES.md).
 
 | Area | Current state | Better approach |
 |---|---|---|
 | Schema changes | New tables only | A migration path for altered tables |
-| Sync direction | Push-only from the client | Pull, to reconcile edits made elsewhere |
-| Conflicts | Last write wins | Timestamps or version columns to detect divergence |
 | Product types | One table, unused columns per type | Type-specific tables, or a JSON attributes column |
 | Sponsor | Five columns on the customer | Its own entity, once sponsors can repeat |
 | Mapping | Hand-written on both sides | Generated from a single schema definition |
