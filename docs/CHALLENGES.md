@@ -18,7 +18,7 @@ The program is used to write contracts and issue receipts. A dropped connection 
 | Local-first with per-row sync flags | ✅ Chosen |
 
 **Implementation**
-SQLite is the working database; the cloud is a replica the client pushes to. Every table carries three sync columns — `CloudId`, `IsDirty` and `SyncAction` — described in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+SQLite is the working database; the cloud is a replica the client pushes to. Every table carries three sync columns — `CloudId`, `IsDirty` and `SyncAction` — described in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 **The failure mode this had to avoid**
 The dangerous case is a row that pushes successfully but stays flagged dirty: the next sync inserts it again, and the cloud accumulates duplicate receipts against a customer's balance. Both completion paths clear the flags in the same statement that records the result:
@@ -97,7 +97,7 @@ Assembly.GetExecutingAssembly().GetName().Version?.ToString()
 rather than from a second constant that could be forgotten during a release. The number shown in the interface is therefore the number that was actually built.
 
 **Why the local database survives**
-The SQLite file lives in the user's local application data folder, outside the installation directory. An update replaces the program and never touches the data. Schema creation, and the limits of the strategy, are covered in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The SQLite file lives in the user's local application data folder, outside the installation directory. An update replaces the program and never touches the data. Schema creation, and the limits of the strategy, are covered in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 **Lesson**
 Shipping to machines that already hold data changes what a release is. The version number, the install location and the schema strategy all become part of the update contract, and the safe boundary is keeping data outside the directory the installer replaces.
