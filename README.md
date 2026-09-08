@@ -8,7 +8,9 @@
 ![.NET](https://img.shields.io/badge/.NET-10-512bd4)
 ![SQLite](https://img.shields.io/badge/local-SQLite-003b57?logo=sqlite&logoColor=white)
 ![Supabase](https://img.shields.io/badge/cloud-Supabase-3ecf8e?logo=supabase&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.0.31-lightgrey)
+![Version](https://img.shields.io/badge/version-1.0.32-lightgrey)
+
+[![Download for Windows](https://img.shields.io/badge/⬇%20Download-Windows%20installer-0078d4?logo=windows&logoColor=white)](../../releases/latest)
 
 <img src="images/main-menu.png" width="620" alt="Main menu"/>
 
@@ -74,9 +76,13 @@ SyncAction TEXT    NOT NULL DEFAULT ''
 
 Local writes mark the row dirty with the action that caused it. When a connection is available, dirty rows are pushed and the flags cleared. Rows whose parent record hasn't reached the cloud yet are skipped and retried on the next pass rather than pushed with a dangling reference.
 
+Both schemas, the mapping between them, and the modelling decisions behind them: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
+
 ## Updates
 
 Releases ship through **Velopack**, which builds the Windows installer and handles in-place updates, so machines already in the field move to a new version without a manual reinstall or losing local data.
+
+Installers are published under [Releases](../../releases/latest), which is also the update feed the application checks. The local database lives outside the install directory, so an update replaces the program and leaves contracts and receipts untouched.
 
 ## Problems worth reading about
 
@@ -96,7 +102,11 @@ Offline-first sync and why the dirty-flag model was chosen over the alternatives
 | **LiveChartsCore** | Dashboard charts |
 | **Velopack** | Installer and auto-update |
 
-## Building
+## Installing
+
+Download the latest Windows installer from [Releases](../../releases/latest). The application updates itself from there afterwards.
+
+## Building from source
 
 ```bash
 git clone https://github.com/we-dad/RealstateApp.git
