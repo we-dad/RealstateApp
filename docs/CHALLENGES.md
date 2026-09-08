@@ -18,15 +18,7 @@ The program is used to write contracts and issue receipts. A dropped connection 
 | Local-first with per-row sync flags | ✅ Chosen |
 
 **Implementation**
-SQLite is the working database; the cloud is a replica the client pushes to. Three columns on every table carry the sync state:
-
-```sql
-CloudId    INTEGER NOT NULL DEFAULT 0,
-IsDirty    INTEGER NOT NULL DEFAULT 0,
-SyncAction TEXT    NOT NULL DEFAULT ''
-```
-
-Separating the local id from `CloudId` is what makes full offline operation possible. A record can be created, referenced by children, edited and even deleted before the cloud has ever seen it — because nothing in the local graph depends on a remote key existing.
+SQLite is the working database; the cloud is a replica the client pushes to. Every table carries three sync columns — `CloudId`, `IsDirty` and `SyncAction` — described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **The failure mode this had to avoid**
 The dangerous case is a row that pushes successfully but stays flagged dirty: the next sync inserts it again, and the cloud accumulates duplicate receipts against a customer's balance. Both completion paths clear the flags in the same statement that records the result:
@@ -105,10 +97,7 @@ Assembly.GetExecutingAssembly().GetName().Version?.ToString()
 rather than from a second constant that could be forgotten during a release. The number shown in the interface is therefore the number that was actually built.
 
 **Why the local database survives**
-The SQLite file lives in the user's local application data folder, outside the installation directory, and the schema is created with `CREATE TABLE IF NOT EXISTS` on every start. An update replaces the program; it does not touch the data, and a new table added in a later version is created on first run without a migration step.
-
-**Accepted trade-off**
-`CREATE TABLE IF NOT EXISTS` handles new tables but not changed ones. Adding a column to an existing table is silently a no-op on an installed machine, so a schema change of that kind needs a migration path that does not currently exist.
+The SQLite file lives in the user's local application data folder, outside the installation directory. An update replaces the program and never touches the data. Schema creation, and the limits of the strategy, are covered in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **Lesson**
 Shipping to machines that already hold data changes what a release is. The version number, the install location and the schema strategy all become part of the update contract, and the safe boundary is keeping data outside the directory the installer replaces.
@@ -123,5 +112,4 @@ Shipping to machines that already hold data changes what a release is. The versi
 | Conflicts | Last write wins | Timestamps or version columns |
 | Push order | Children before parents | Parents first — one pass instead of two |
 | Failed pushes | Silent skip and retry | Visible sync status for stuck rows |
-| Schema changes | New tables only | A migration path for altered tables |
 | Module duplication | Receipt, expense and PDF services written twice | Shared base for the identical parts |
