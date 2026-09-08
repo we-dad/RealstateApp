@@ -169,7 +169,7 @@ Tables are created with `CREATE TABLE IF NOT EXISTS` on every application start,
 
 ## Known limitations of the schema
 
-Sync behaviour and its limits are covered in [CHALLENGES.md](../CHALLENGES.md).
+Sync behaviour and its limits are covered in [docs/CHALLENGES.md](docs/CHALLENGES.md).
 
 | Area | Current state | Better approach |
 |---|---|---|
