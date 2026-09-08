@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="images/app-icon.png" width="120" alt="المسار الذهبي app icon"/>
+
 # المسار الذهبي
 
 **A Windows desktop application for managing real estate leases and installment sales contracts.**
@@ -10,7 +12,7 @@
 ![Supabase](https://img.shields.io/badge/cloud-Supabase-3ecf8e?logo=supabase&logoColor=white)
 ![Version](https://img.shields.io/badge/version-1.0.32-lightgrey)
 
-[![Download for Windows](https://img.shields.io/badge/⬇%20Download-Windows%20installer-0078d4?logo=windows&logoColor=white)](../../releases/latest)
+[![Download for Windows](https://img.shields.io/badge/⬇%20Download-Windows%20installer-0078d4?logo=windows&logoColor=white)](../../releases/latest/download/com.wedad.realestate.installmentmanager-win-Setup.exe)
 
 <img src="images/main-menu.png" width="620" alt="Main menu"/>
 
@@ -22,7 +24,7 @@
 
 المسار الذهبي is a production desktop application, in daily use, that manages two related but distinct lines of business under one program. The interface is entirely in Arabic and right-to-left, including generated PDF documents.
 
-It is **offline-first**: every feature works with no network connection, writing to a local SQLite database, and synchronises to Supabase when a connection is available. For a business where a dropped connection must never stop a contract from being written or a receipt from being issued.
+It is **offline-first**: every feature works with no network connection, writing to a local SQLite database, and synchronises to Supabase when a connection is available. For a business where a dropped connection must never stop a contract from being written or a receipt from being issued, that isn't a convenience — it's the requirement the architecture is built around.
 
 <img src="images/dashboard-realestate.png" width="760" alt="Real estate dashboard"/>
 
@@ -96,7 +98,9 @@ Offline-first sync and why the dirty-flag model was chosen over the alternatives
 
 ## Installing
 
-Download the latest Windows installer from [Releases](../../releases/latest). The application updates itself from there afterwards.
+**[⬇ Download the Windows installer](../../releases/latest/download/com.wedad.realestate.installmentmanager-win-Setup.exe)** — run it once, and the application updates itself from then on.
+
+The other files on the [Releases](../../releases/latest) page (`.nupkg`, `RELEASES`, `releases.win.json`) are the update feed Velopack reads. They are not meant to be downloaded by hand.
 
 ## Building from source
 
@@ -108,3 +112,5 @@ dotnet run
 ```
 
 Requires the .NET 10 SDK. The local database is created on first run under the user's local application data folder. Cloud sync requires a Supabase project URL and publishable key in `Cloud/Services/SupabaseService.cs`, with row-level security policies configured on every table.
+
+> **Note on the Supabase key.** Supabase publishable keys are designed to ship inside client applications and are not secrets; access is controlled by row-level security policies on the database, not by key secrecy.
