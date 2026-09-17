@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
 
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>Main/app.manifest</ApplicationManifest>
 
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 
@@ -39,16 +39,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="RealState\Views\ContractsViewRealEstate.axaml.cs">
+    <Compile Update="RealEstate\Views\ContractsViewRealEstate.axaml.cs">
       <DependentUpon>InstallmentContractsView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="RealState\Views\OwnersViewRealEstate.axaml.cs">
+    <Compile Update="RealEstate\Views\OwnersViewRealEstate.axaml.cs">
       <DependentUpon>InstallmentOwnersView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="RealState\Views\DashboardViewRealEstate.axaml.cs">
+    <Compile Update="RealEstate\Views\DashboardViewRealEstate.axaml.cs">
       <DependentUpon>InstallmentDashboardView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="RealState\Views\OwnersWindowViewRealEstate.axaml.cs">
+    <Compile Update="RealEstate\Views\OwnersWindowViewRealEstate.axaml.cs">
       <DependentUpon>InstallmentOwnersWindowView.axaml</DependentUpon>
     </Compile>
     <Compile Update="Installment\Views\ReceiptWindowViewInstallment.axaml.cs">
