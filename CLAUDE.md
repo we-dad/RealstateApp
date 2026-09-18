@@ -44,6 +44,11 @@ The .csproj is at the repo root and automatically includes every folder below it
 - SQLite path: `LocalApplicationData/RealEstateInstallmentsManager/realEstateInstallments.db` (outside the repo).
 - The Supabase key is a publishable key, RLS is enabled, and public sign-up is disabled.
 
+## Answering
+- For any analysis, review, report, plan, or long answer: write it to `answer.md` at the repo root (overwrite it each time) instead of printing it in the terminal, then print one short line telling the developer it's ready.
+- Short confirmations and questions stay in the terminal.
+- `answer.md` is scratch output and must stay in `.gitignore`.
+
 ## Rules
 - Never write secrets (Supabase keys, passwords, tokens) in code, README, or this file.
 - Do not add, remove, or update NuGet packages without permission.

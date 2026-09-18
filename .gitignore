@@ -67,3 +67,8 @@ temp/
 # Test Results
 # =========================
 TestResults/
+
+# =========================
+# Scratch output
+# =========================
+answer.md
