@@ -45,8 +45,8 @@ The .csproj is at the repo root and automatically includes every folder below it
 - The Supabase key is a publishable key, RLS is enabled, and public sign-up is disabled.
 
 ## Answering
-- For any analysis, review, report, plan, or long answer: write it to `answer.md` at the repo root (overwrite it each time) instead of printing it in the terminal, then print one short line telling the developer it's ready.
-- Short confirmations and questions stay in the terminal.
+- Always write every answer to `answer.md` at the repo root (overwrite it each time), including short ones, so the developer can read it in the editor. Then print one short line in the terminal telling the developer it's ready.
+- Exception: a question that needs the developer's choice (AskUserQuestion) stays in the terminal.
 - `answer.md` is scratch output and must stay in `.gitignore`.
 
 ## Rules
