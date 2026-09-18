@@ -9,8 +9,8 @@ RealEstateInstallmentsManager: a desktop app for managing real-estate rentals an
 
 ## Build and run
 - Build: `dotnet build RealEstateInstallmentsManager.sln` (the root has both a .sln and a .csproj; naming the file is not strictly required — `dotnet build`/`dotnet run` with no arguments also resolves fine since there's only one project — but naming it keeps intent explicit).
-- Run: `dotnet run --project RealEstateInstallmentsManager.csproj`
-- Build after every change and fix all errors before finishing a task.
+- Run: `dotnet run --project RealEstateInstallmentsManager.csproj` (developer only — Claude must never run the app).
+- Build after every change and fix all errors before finishing a task. `dotnet build` is allowed because it neither runs the app nor connects to Supabase.
 - There are no automated tests yet.
 - Development machine is macOS. The app also targets Windows (`app.ico`, `app.manifest`); `Assets/app.icns` is the macOS/Avalonia icon.
 
@@ -25,10 +25,24 @@ The .csproj is at the repo root and automatically includes every folder below it
 ## Architecture
 - Data is stored locally in SQLite and synced with Supabase.
 - **SQLite connection**: `DbServiceRealEstate` and `DbServiceInstallment` are separate classes, but by default they both resolve to the *same physical file* — `realEstateInstallments.db` under `%LocalApplicationData%/RealEstateInstallmentsManager/` — so the local database is one SQLite file holding both modules' tables (12 tables total, 6 per module), not two separate files. The connection string is built with `SqliteConnectionStringBuilder { DataSource = <path>, ForeignKeys = true }`. `Initialize()` runs `CREATE TABLE IF NOT EXISTS` for that module's own tables; it's called once at startup for `DbServiceRealEstate` (`Main/Program.cs`) and again from the constructor/load of every individual view in both modules, which is safe only because table creation is idempotent. There's no shared/pooled connection object — every read/write method in the entity services opens its own short-lived `new SqliteConnection(_db.ConnectionString)`, uses it, and disposes it.
+- **Sync is two-way.** Upload: `PushAllDirtyAsync`. Download: per-screen `Sync<X>FromCloudAsync` + `UpsertFromCloud` (matched by `CloudId`).
+- Download never overwrites rows with `IsDirty = 1` and never deletes local rows.
+- Each of the 12 tables syncs only when its screen opens or its "تحديث" button is pressed. There is no full restore.
+- Child tables (contracts, receipts, expenses) are skipped silently if parent rows are missing locally.
+- Roles come from Supabase at login (`RoleService.GetMyRoleAsync`); the default role `tester` syncs nothing.
+- Full analysis: `docs/sync-analysis.md`.
 - Views use code-behind (`.axaml.cs`). Do not convert to MVVM unless asked.
 - Naming: every type ends with its module name (for example `CustomerInstallment`, `ContractRealEstate`). Follow this for new files.
 - Each entity usually has a list view (`XView`) and an add/edit window (`XWindowView`) — the dashboard views are the exception, with no window counterpart.
 - Keep the right-to-left layout and Arabic text intact.
+
+## Safety rules (production data)
+- Supabase holds real production data. Never run the app, scripts, SQL, curl, or the Supabase CLI. Only the developer runs the app.
+- Never connect to Supabase directly and never add a Supabase MCP server.
+- Any change to sync code needs a plan and the developer's approval first.
+- Never delete, move, or overwrite the local SQLite database, and never restore an old backup without asking.
+- SQLite path: `LocalApplicationData/RealEstateInstallmentsManager/realEstateInstallments.db` (outside the repo).
+- The Supabase key is a publishable key, RLS is enabled, and public sign-up is disabled.
 
 ## Rules
 - Never write secrets (Supabase keys, passwords, tokens) in code, README, or this file.
@@ -42,5 +56,6 @@ The .csproj is at the repo root and automatically includes every folder below it
 - NuGet warnings for vulnerable versions of: Microsoft.IdentityModel.JsonWebTokens, System.IdentityModel.Tokens.Jwt, SQLitePCLRaw.lib.e_sqlite3, Tmds.DBus.Protocol. These are tracked as a separate task.
 
 ## Planning files
-- `ROADMAP.md`: project plan (to be created)
-- `PROGRESS.md`: progress log (to be created)
+- `ROADMAP.md`: project plan, prioritized, with checkboxes for small tasks
+- `PROGRESS.md`: progress log
+- `docs/sync-analysis.md`: analysis of how sync works
