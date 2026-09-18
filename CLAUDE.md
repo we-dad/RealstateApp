@@ -44,12 +44,6 @@ The .csproj is at the repo root and automatically includes every folder below it
 - SQLite path: `LocalApplicationData/RealEstateInstallmentsManager/realEstateInstallments.db` (outside the repo).
 - The Supabase key is a publishable key, RLS is enabled, and public sign-up is disabled.
 
-## Answering
-- Write every answer that is more than a very short reply to `answer.md` at the repo root, so the developer can read it in the editor. Then print one short line in the terminal telling the developer it's ready.
-- Do not overwrite `answer.md`. Add the new answer at the top of the file under a heading that contains the date and time (get the real time with `date '+%Y-%m-%d %H:%M'`), and keep the previous answers below it.
-- Very short replies (a confirmation or a short question) stay in the terminal only. A question that needs the developer's choice (AskUserQuestion) also stays in the terminal.
-- `answer.md` is scratch output and must stay in `.gitignore`.
-
 ## Rules
 - Never write secrets (Supabase keys, passwords, tokens) in code, README, or this file.
 - Do not add, remove, or update NuGet packages without permission.
