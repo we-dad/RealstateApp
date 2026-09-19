@@ -128,6 +128,8 @@ public class ReceiptServiceInstallment
                 cmd.ExecuteNonQuery();
             }
 
+            ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
+
             tran.Commit();
             return receiptLocalId;
         }
@@ -279,6 +281,10 @@ public class ReceiptServiceInstallment
 
                 cmd.ExecuteNonQuery();
             }
+
+            ContractServiceInstallment.RecalculateBalance(con, tran, oldContractId);
+            if (contractId != oldContractId)
+                ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
 
             tran.Commit();
         }
@@ -455,6 +461,24 @@ public class ReceiptServiceInstallment
     }
 
     public void UpsertFromCloud(
+        long cloudId,
+        string receiptNumber,
+        DateTime receiptDate,
+        long contractLocalId,
+        string paymentMethod,
+        double amount,
+        double currentTotalAmount)
+    {
+        UpsertFromCloudCore(cloudId, receiptNumber, receiptDate, contractLocalId, paymentMethod, amount, currentTotalAmount);
+
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        ContractServiceInstallment.RecalculateBalance(con, null, contractLocalId);
+    }
+
+    private void UpsertFromCloudCore(
         long cloudId,
         string receiptNumber,
         DateTime receiptDate,
@@ -718,6 +742,8 @@ public class ReceiptServiceInstallment
                 cmd.Parameters.AddWithValue("$contractId", contractId);
                 cmd.ExecuteNonQuery();
             }
+
+            ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
 
             tran.Commit();
         }
