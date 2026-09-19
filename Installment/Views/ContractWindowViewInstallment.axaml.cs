@@ -44,6 +44,7 @@ public partial class ContractWindowViewInstallment : Window
         _contractID = contract;
 
         _db.Initialize();
+        _sync = new InstallmentSyncService(_db, _supabaseService);
 
         _contractsDB = new ContractServiceInstallment(_db);
         _customersDB = new CustomerServiceInstallment(_db);
@@ -69,82 +70,6 @@ public partial class ContractWindowViewInstallment : Window
 
         ProductsBox.ItemsSource = products;
         ProductsBox.SelectedItem = products.FirstOrDefault(p => p.Id == _contract.ProductId);
-    }
-
-    private async Task PushDirtyContractsAsync()
-    {
-        try
-        {
-            var cloudContracts = new CloudContractsInstallmentService(_supabaseService);
-            var dirtyRows = _contractsDB.GetDirtyRows();
-
-            foreach (var contract in dirtyRows)
-            {
-                if (contract.SyncAction == "delete")
-                {
-                    if (contract.CloudId > 0)
-                        await cloudContracts.DeleteContractAsync(contract.CloudId);
-
-                    _contractsDB.DeleteLocalPermanent(contract.Id);
-                }
-                else if (contract.SyncAction == "insert")
-                {
-                    if (contract.ProductCloudId <= 0 || contract.CustomerCloudId <= 0)
-                        continue;
-
-                    var cloudId = await cloudContracts.AddContractAsync(new ContractInstallmentRow
-                    {
-                        ContractNumber = contract.ContractNumber,
-                        ContractStartDate = contract.ContractStartDate,
-                        ContractEndDate = contract.ContractEndDate,
-                        MainTotalAmount = contract.MainTotalAmount,
-                        CurrentTotalAmount = contract.CurrentTotalAmount,
-                        ContractPeriod = contract.ContractPeriod,
-                        DownPayment = contract.DownPayment,
-                        MonthlyInstallment = contract.MonthlyInstallment,
-                        ManagementFee = contract.ManagementFee,
-                        InterestPercent = contract.InterestPercent,
-                        ContractState = contract.ContractState,
-                        ProductId = contract.ProductCloudId,
-                        CustomerId = contract.CustomerCloudId
-                    });
-
-                    _contractsDB.UpdateCloudId(contract.Id, cloudId);
-                }
-                else if (contract.SyncAction == "update")
-                {
-                    if (contract.CloudId <= 0 || contract.ProductCloudId <= 0 || contract.CustomerCloudId <= 0)
-                        continue;
-
-                    await cloudContracts.UpdateContractAsync(contract.CloudId, new ContractInstallmentRow
-                    {
-                        ContractNumber = contract.ContractNumber,
-                        ContractStartDate = contract.ContractStartDate,
-                        ContractEndDate = contract.ContractEndDate,
-                        MainTotalAmount = contract.MainTotalAmount,
-                        CurrentTotalAmount = contract.CurrentTotalAmount,
-                        ContractPeriod = contract.ContractPeriod,
-                        DownPayment = contract.DownPayment,
-                        MonthlyInstallment = contract.MonthlyInstallment,
-                        ManagementFee = contract.ManagementFee,
-                        InterestPercent = contract.InterestPercent,
-                        ContractState = contract.ContractState,
-                        ProductId = contract.ProductCloudId,
-                        CustomerId = contract.CustomerCloudId
-                    });
-
-                    _contractsDB.MarkSynced(contract.Id);
-                }
-            }
-        }
-        catch (System.Net.Http.HttpRequestException)
-        {
-            Console.WriteLine("Offline: dirty installment contracts will sync later.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
     }
 
     private void ProductsBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -201,7 +126,7 @@ public partial class ContractWindowViewInstallment : Window
 
             Refresh();
 
-            _ = PushDirtyContractsAsync();
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
@@ -370,7 +295,7 @@ public partial class ContractWindowViewInstallment : Window
         {
             _contractsDB.Delete(_contractID);
 
-            _ = PushDirtyContractsAsync();
+            _ = _sync.PushAllDirtyAsync();
 
             Close();
         }
