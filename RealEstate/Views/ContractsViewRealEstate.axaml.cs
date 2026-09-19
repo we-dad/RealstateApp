@@ -46,8 +46,7 @@ public partial class ContractsViewRealEstate : UserControl
 
         _tenantIdSearchBox = this.FindControl<TextBox>("TenantIdSearchBox");
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncContractsFromCloudAsync();
+        _ = SyncAsync();
 
     }
 
@@ -190,6 +189,14 @@ public partial class ContractsViewRealEstate : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncContractsFromCloudAsync();
+    }
+
     private async Task SyncContractsFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -271,8 +278,7 @@ public partial class ContractsViewRealEstate : UserControl
     {
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncContractsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void Refresh()

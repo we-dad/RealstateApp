@@ -35,8 +35,7 @@ public partial class ExpensesViewRealEstate : UserControl
 
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncExpensesFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void LoadUnits()
@@ -118,6 +117,14 @@ public partial class ExpensesViewRealEstate : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncExpensesFromCloudAsync();
+    }
+
     private async Task SyncExpensesFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -163,8 +170,7 @@ public partial class ExpensesViewRealEstate : UserControl
     {
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncExpensesFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void Refresh()

@@ -34,10 +34,10 @@ public class RealEstateSyncService
         if (!AppSession.CanWriteOnline)
             return;
 
-        // a push is already running - drop this one instead of queuing,
-        // it would only re-read the same rows
-        if (!await _pushGate.WaitAsync(0))
-            return;
+        // a push is already running - wait for it instead of dropping this one,
+        // so "await PushAllDirtyAsync()" really means the push has finished
+        // (views pull right after it). The queued push finds no dirty rows.
+        await _pushGate.WaitAsync();
 
         try
         {

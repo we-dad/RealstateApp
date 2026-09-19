@@ -33,8 +33,7 @@ public partial class ProductViewInstallment : UserControl
         LoadProduct();
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncProductsFromCloudAsync();
+        _ = SyncAsync();
         
         ProductGrid.DoubleTapped += ProductGrid_DoubleTapped;
     }
@@ -119,6 +118,14 @@ public partial class ProductViewInstallment : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncProductsFromCloudAsync();
+    }
+
     private async Task SyncProductsFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -168,8 +175,7 @@ public partial class ProductViewInstallment : UserControl
         LoadOwners();
         LoadProduct();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncProductsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void ProductGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
