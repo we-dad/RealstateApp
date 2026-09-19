@@ -196,9 +196,11 @@
                                 Grid.Row="9"
                                 Grid.Column="0">
 
-                        <CheckBox Content="بدفعة مقدمة"
+                        <CheckBox x:Name="DownPaymentCheck"
+                                  Content="بدفعة مقدمة"
                                   VerticalAlignment="Center"
-                                  IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
+                                  IsChecked="{Binding BoolDownPayment, Mode=TwoWay}"
+                                  IsCheckedChanged="DownPaymentCheck_Changed" />
 
                         <StackPanel Spacing="4">
                             <TextBox x:Name="DownPaymentBox"

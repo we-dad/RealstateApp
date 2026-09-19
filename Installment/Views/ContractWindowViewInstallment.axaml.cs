@@ -80,8 +80,8 @@ public partial class ContractWindowViewInstallment : Window
         {
             _contract.ProductId = product.Id;
             _contract.ProductName = product.ProductName;
-            _contract.ProductMainPrice = product.ProductMainPrice;
             realMainPrice = product.ProductMainPrice;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - _contract.DownPayment);
 
             UpdateProductTotalAmount();
         }
@@ -193,7 +193,13 @@ public partial class ContractWindowViewInstallment : Window
 
             LoadProducts();
 
-            realMainPrice = _contract.ProductMainPrice + _contract.DownPayment;
+            // GetById reads ProductMainPrice from the product row: it is the FULL price.
+            // (It used to add the down payment on top of it, which counted the down
+            // payment twice.) Like the add screen, keep the price after the down
+            // payment in _contract.ProductMainPrice, so any later recalculation
+            // (period, interest, fee) still deducts the down payment.
+            realMainPrice = _contract.ProductMainPrice;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - _contract.DownPayment);
 
             ContractNumBox.Text = _contract.ContractNumber;
             ContractDateStartPicker.SelectedDate = _contract.ContractStartDate;
@@ -438,6 +444,38 @@ public partial class ContractWindowViewInstallment : Window
         }
     }
 
+    // No down payment: the calculation goes back to the full product price.
+    // (Setting DownPayment = 0 alone left the price reduced, so the total kept
+    // the old deduction and was saved that way.)
+    private void RemoveDownPayment()
+    {
+        _contract.DownPayment = 0;
+        _contract.ProductMainPrice = realMainPrice;
+
+        UpdateProductTotalAmount();
+    }
+
+    private void DownPaymentCheck_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_isRefreshing) return;
+
+        if (DownPaymentCheck.IsChecked != true)
+        {
+            DownPaymentErrorText.Text = "";
+            RemoveDownPayment();
+            return;
+        }
+
+        // Ticked again: the box still shows the last value, apply it.
+        if (double.TryParse(DownPaymentBox.Text?.Trim(), out double value))
+        {
+            _contract.DownPayment = value;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - value);
+
+            UpdateProductTotalAmount();
+        }
+    }
+
     private void DownPaymentBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -447,14 +485,14 @@ public partial class ContractWindowViewInstallment : Window
         if (!_contract.BoolDownPayment)
         {
             DownPaymentErrorText.Text = "";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 
         if (string.IsNullOrWhiteSpace(text))
         {
             DownPaymentErrorText.Text = "عليك وضع قيمة هنا";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 
