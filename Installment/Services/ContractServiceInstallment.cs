@@ -251,6 +251,77 @@ public class ContractServiceInstallment
         return list;
     }
 
+    public const string NoDownPaymentDeducted = "بدون خصم الدفعة";
+    public const string DoesNotMatch = "لا يطابق المعادلة";
+
+    // Read-only check: compares each saved total with the contract formula
+    // (price after the down payment + fee + interest). Returns the contract count
+    // and only the contracts that do not match.
+    public (int Total, List<ContractCheckRowInstallment> Mismatches) GetCalculationCheckRows()
+    {
+        var mismatches = new List<ContractCheckRowInstallment>();
+        var total = 0;
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.Id,
+                   c.ContractNumber,
+                   COALESCE(cust.Name, ''),
+                   c.MainTotalAmount,
+                   c.DownPayment,
+                   c.ManagementFee,
+                   c.InterestPercent,
+                   c.ContractPeriod,
+                   COALESCE(p.ProductMainPrice, 0)
+            FROM ContractsInstallment c
+            LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
+            LEFT JOIN CustomersInstallment cust ON cust.Id = c.CustomerId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            total++;
+
+            var saved = reader.GetDouble(3);
+            var down = reader.GetDouble(4);
+            var fee = reader.GetDouble(5);
+            var interest = reader.GetDouble(6);
+            var period = reader.GetDouble(7);
+            var price = reader.GetDouble(8);
+
+            var reduced = Math.Max(0, price - down);
+            var expected = Math.Round(reduced + fee + (reduced * interest / 100.0 / 12) * period, 2);
+            var expectedWithoutDown = Math.Round(price + fee + (price * interest / 100.0 / 12) * period, 2);
+
+            if (Math.Abs(saved - expected) <= 0.01)
+                continue;
+
+            var status = down > 0 && Math.Abs(saved - expectedWithoutDown) <= 0.01
+                ? NoDownPaymentDeducted
+                : DoesNotMatch;
+
+            mismatches.Add(new ContractCheckRowInstallment
+            {
+                Id = reader.GetInt64(0),
+                ContractNumber = reader.GetString(1),
+                CustomerName = reader.GetString(2),
+                MainTotalAmount = saved,
+                DownPayment = down,
+                ExpectedTotal = expected,
+                Status = status
+            });
+        }
+
+        return (total, mismatches);
+    }
+
     public ContractInstallment? GetById(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);

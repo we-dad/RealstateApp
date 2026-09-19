@@ -299,6 +299,12 @@ public partial class ContractViewInstallment : UserControl
         }
     }
 
+    private async void CheckCalculations_Click(object? sender, RoutedEventArgs e)
+    {
+        var window = new ContractCheckWindowViewInstallment();
+        await window.ShowDialog(TopLevel.GetTopLevel(this) as Window);
+    }
+
     private async void ContractGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         if (ContractGrid.SelectedItem is not ContractInstallment contract) return;

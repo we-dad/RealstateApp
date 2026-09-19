@@ -222,6 +222,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                         <Button Content="تحديث" Click="Refresh_Click"/>
                         <Button Content="إضافة" Click="Add_Click"/>
+                        <Button Content="فحص الحسابات" Click="CheckCalculations_Click"/>
                     </StackPanel>
 
                 </StackPanel>
