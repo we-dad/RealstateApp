@@ -67,3 +67,8 @@ temp/
 # Test Results
 # =========================
 TestResults/
+
+# =========================
+# Daily planning (local)
+# =========================
+TODAY.md

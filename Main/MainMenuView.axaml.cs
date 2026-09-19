@@ -10,6 +10,7 @@ public partial class MainMenuView : UserControl
 {
     private readonly MainWindow _mainWindow;
     public string AppVersion => $"Version {AppVersionService.GetVersion()}";
+    public bool IsTester => AppSession.IsTester;
 
     public MainMenuView(MainWindow mainWindow)
     {

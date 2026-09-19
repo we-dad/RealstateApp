@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)"
+    ],
+    "deny": [
+      "Bash(dotnet run:*)",
+      "Bash(dotnet watch:*)",
+      "Bash(supabase:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(sqlite3:*)",
+      "Bash(*realEstateInstallments.db*)",
+      "Bash(git diff --output:*)",
+      "Bash(git show --output:*)"
+    ]
+  }
+}
