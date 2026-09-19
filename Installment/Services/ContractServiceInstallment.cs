@@ -611,6 +611,43 @@ public class ContractServiceInstallment
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // The number alone is not enough (two users can pick the same one),
+            // so the other fields and the parent row must match too.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE ContractsInstallment
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM ContractsInstallment
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM(ContractNumber) = TRIM($contractNumber)
+                      AND date(ContractStartDate) = date($contractStartDate)
+                      AND ABS(MainTotalAmount - $mainTotalAmount) < 0.005
+                      AND ProductId = $productLocalId
+                      AND CustomerId = $customerLocalId
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$contractNumber", contractNumber);
+            adopt.Parameters.AddWithValue("$contractStartDate", contractStartDate);
+            adopt.Parameters.AddWithValue("$mainTotalAmount", mainTotalAmount);
+            adopt.Parameters.AddWithValue("$productLocalId", productLocalId);
+            adopt.Parameters.AddWithValue("$customerLocalId", customerLocalId);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO ContractsInstallment
@@ -677,7 +714,16 @@ public class ContractServiceInstallment
             insert.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
             insert.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
-            insert.ExecuteNonQuery();
+            try
+            {
+                insert.ExecuteNonQuery();
+            }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067)
+            {
+                // SQLITE_CONSTRAINT_UNIQUE: a different local row already uses this
+                // number. Skip this row and keep pulling the rest.
+                Console.WriteLine($"Skipped cloud row {cloudId} in ContractsInstallment: number already used locally.");
+            }
         }
     }
 
