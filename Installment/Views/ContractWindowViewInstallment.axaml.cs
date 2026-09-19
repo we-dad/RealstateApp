@@ -62,6 +62,11 @@ public partial class ContractWindowViewInstallment : Window
         Refresh();
 
         _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
+
+        // Wired here, not in the XAML: events set in the XAML can fire while
+        // InitializeComponent is still building the window, before the controls
+        // and services this handler uses exist.
+        DownPaymentCheck.IsCheckedChanged += DownPaymentCheck_Changed;
     }
 
     private void LoadProducts()
