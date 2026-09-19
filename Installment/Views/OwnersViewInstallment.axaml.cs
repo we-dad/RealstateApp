@@ -26,8 +26,7 @@ public partial class OwnersViewInstallment : UserControl
         LoadOwners();
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncOwnersFromCloudAsync();
+        _ = SyncAsync();
         
         OwnersGrid.DoubleTapped += OwnersGrid_DoubleTapped;
     }
@@ -69,6 +68,14 @@ public partial class OwnersViewInstallment : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncOwnersFromCloudAsync();
+    }
+
     private async Task SyncOwnersFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -106,8 +113,7 @@ public partial class OwnersViewInstallment : UserControl
     {
         LoadOwners();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncOwnersFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void OwnersGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)

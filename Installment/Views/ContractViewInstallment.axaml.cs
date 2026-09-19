@@ -56,8 +56,7 @@ public partial class ContractViewInstallment : UserControl
         _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncContractsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void LoadProducts()
@@ -177,6 +176,14 @@ public partial class ContractViewInstallment : UserControl
         CustomerInfoText.Foreground = Brushes.Green;
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncContractsFromCloudAsync();
+    }
+
     private async Task SyncContractsFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -233,8 +240,7 @@ public partial class ContractViewInstallment : UserControl
     {
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncContractsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void Refresh()

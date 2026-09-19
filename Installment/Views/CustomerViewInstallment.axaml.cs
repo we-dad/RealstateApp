@@ -29,8 +29,7 @@ public partial class CustomerViewInstallment : UserControl
         LoadCustomer();
 
     _sync = new InstallmentSyncService(_db, _supabaseService);
-    _ = _sync.PushAllDirtyAsync();
-    _ = SyncCustomersFromCloudAsync();
+    _ = SyncAsync();
     
     CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
     
@@ -100,6 +99,14 @@ public partial class CustomerViewInstallment : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncCustomersFromCloudAsync();
+    }
+
     private async Task SyncCustomersFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -143,8 +150,7 @@ public partial class CustomerViewInstallment : UserControl
     {
         LoadCustomer();
 
-    _ = _sync.PushAllDirtyAsync();
-    _ = SyncCustomersFromCloudAsync();
+    _ = SyncAsync();
     
     }
 

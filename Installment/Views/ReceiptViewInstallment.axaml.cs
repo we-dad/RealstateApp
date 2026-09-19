@@ -43,8 +43,7 @@ public partial class ReceiptViewInstallment : UserControl
         _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncReceiptsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void LoadPaymentMethod()
@@ -112,6 +111,14 @@ public partial class ReceiptViewInstallment : UserControl
         {
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncReceiptsFromCloudAsync();
     }
 
     private async Task SyncReceiptsFromCloudAsync()
@@ -191,8 +198,7 @@ public partial class ReceiptViewInstallment : UserControl
     {
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncReceiptsFromCloudAsync();
+        _ = SyncAsync();
 
     }
 
