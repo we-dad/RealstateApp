@@ -26,8 +26,7 @@ public partial class TenantsViewRealEstate : UserControl
 
         LoadTenants();
         
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncTenantsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void LoadTenants()
@@ -70,6 +69,14 @@ public partial class TenantsViewRealEstate : UserControl
         }
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncTenantsFromCloudAsync();
+    }
+
     private async Task SyncTenantsFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -107,8 +114,7 @@ public partial class TenantsViewRealEstate : UserControl
     {
         LoadTenants();
         
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncTenantsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void TenantsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)

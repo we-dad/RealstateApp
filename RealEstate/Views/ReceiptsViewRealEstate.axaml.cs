@@ -41,8 +41,7 @@ public partial class ReceiptsViewRealEstate : UserControl
 
         _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncReceiptsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void LoadPaymentMethod()
@@ -141,6 +140,14 @@ public partial class ReceiptsViewRealEstate : UserControl
         ContractInfoText.Foreground = Brushes.Green;
     }
 
+    // push must finish before the pull, or the pull re-reads rows the
+    // push has not written CloudIds for yet and duplicates them
+    private async Task SyncAsync()
+    {
+        await _sync.PushAllDirtyAsync();
+        await SyncReceiptsFromCloudAsync();
+    }
+
     private async Task SyncReceiptsFromCloudAsync()
     {
         if (!AppSession.CanReadOnline)
@@ -184,8 +191,7 @@ public partial class ReceiptsViewRealEstate : UserControl
     {
         Refresh();
 
-        _ = _sync.PushAllDirtyAsync();
-        _ = SyncReceiptsFromCloudAsync();
+        _ = SyncAsync();
     }
 
     private void Refresh()
