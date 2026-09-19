@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models.Cloud;
 
@@ -9,6 +10,11 @@ public class InstallmentSyncService
     private readonly DbServiceInstallment _db;
     private readonly SupabaseService _supabaseService;
 
+    // One gate for the whole app (static => shared by every instance).
+    // Two overlapping pushes both read IsDirty = 1 on the same rows and
+    // both INSERT. A second caller waits, so awaiting a push means it is done.
+    private static readonly SemaphoreSlim _pushGate = new SemaphoreSlim(1, 1);
+
     public InstallmentSyncService(DbServiceInstallment db, SupabaseService supabaseService)
     {
         _db = db;
@@ -17,6 +23,8 @@ public class InstallmentSyncService
 
     public async Task PushAllDirtyAsync()
     {
+        await _pushGate.WaitAsync();
+
         try
         {
             await PushDirtyReceiptsAsync();
@@ -33,6 +41,10 @@ public class InstallmentSyncService
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            _pushGate.Release();
         }
     }
 
