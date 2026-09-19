@@ -520,6 +520,44 @@ public class UnitServiceRealEstate
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // There is no unique number for this table, so several fields must match.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE UnitsRealEstate
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM UnitsRealEstate
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND OwnerId = $ownerId
+                      AND TRIM(UnitName) = TRIM($unitName)
+                      AND TRIM(City) = TRIM($city)
+                      AND TRIM(District) = TRIM($district)
+                      AND TRIM(UnitType) = TRIM($unitType)
+                      AND UnitNum = $unitNum
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            adopt.Parameters.AddWithValue("$unitName", unitName ?? "");
+            adopt.Parameters.AddWithValue("$city", city ?? "");
+            adopt.Parameters.AddWithValue("$district", district ?? "");
+            adopt.Parameters.AddWithValue("$unitType", unitType ?? "");
+            adopt.Parameters.AddWithValue("$unitNum", unitNum);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO UnitsRealEstate
