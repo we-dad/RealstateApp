@@ -29,7 +29,7 @@ public class ReceiptServiceRealEstate
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Rr-" + next;
+        return "Rr-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(string receiptNo, DateTime date, long contractId, string paymentMethod, double amount)

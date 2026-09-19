@@ -29,7 +29,7 @@ public class ExpensesServiceInstallment
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Ie-" + next;
+        return "Ie-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(

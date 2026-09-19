@@ -29,7 +29,7 @@ public class ExpensesServiceRealEstate
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Re-" + next;
+        return "Re-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(

@@ -29,7 +29,7 @@ public class ReceiptServiceInstallment
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Ir-" + next;
+        return "Ir-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(
