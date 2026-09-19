@@ -32,6 +32,48 @@ public class ContractServiceInstallment
         return "Ic-" + next;
     }
 
+    // The remaining balance is derived from the receipts, never trusted as a
+    // stored number: Main total minus the sum of the live receipts (not below 0).
+    // Every device computes the same value from the same receipts, so a balance
+    // changed on one device cannot be lost or overwritten by another. The
+    // contract is not marked dirty: nobody needs to push a derived value.
+    internal static void RecalculateBalance(
+        SqliteConnection con,
+        SqliteTransaction? tran,
+        long contractId,
+        bool onlyIfHasReceipts = false)
+    {
+        using var cmd = con.CreateCommand();
+        cmd.Transaction = tran;
+        cmd.CommandText = """
+            UPDATE ContractsInstallment
+            SET CurrentTotalAmount = ROUND(MAX(0, MainTotalAmount - (
+                    SELECT COALESCE(SUM(Amount), 0)
+                    FROM ReceiptsInstallment
+                    WHERE ContractId = $id
+                      AND SyncAction <> 'delete')), 2),
+                ContractState = CASE
+                    WHEN ROUND(MainTotalAmount - (
+                        SELECT COALESCE(SUM(Amount), 0)
+                        FROM ReceiptsInstallment
+                        WHERE ContractId = $id
+                          AND SyncAction <> 'delete'), 2) <= 0
+                    THEN 'منتهي'
+                    ELSE ContractState
+                END
+            WHERE Id = $id
+              AND ($onlyIfHasReceipts = 0
+                   OR EXISTS (
+                        SELECT 1
+                        FROM ReceiptsInstallment
+                        WHERE ContractId = $id
+                          AND SyncAction <> 'delete'));
+        """;
+        cmd.Parameters.AddWithValue("$id", contractId);
+        cmd.Parameters.AddWithValue("$onlyIfHasReceipts", onlyIfHasReceipts ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
     public long Add(
         string contractNumber,
         DateTime contractStartDate,
@@ -168,6 +210,8 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$customerId", customerId);
 
         cmd.ExecuteNonQuery();
+
+        RecalculateBalance(con, null, id);
     }
 
     public void UpdateSignatureCloudInfo(
@@ -532,6 +576,43 @@ public class ContractServiceInstallment
     }
 
     public void UpsertFromCloud(
+        long cloudId,
+        string contractNumber,
+        DateTime contractStartDate,
+        DateTime contractEndDate,
+        double mainTotalAmount,
+        double currentTotalAmount,
+        double contractPeriod,
+        double downPayment,
+        double monthlyInstallment,
+        double managementFee,
+        double interestPercent,
+        string contractState,
+        long productLocalId,
+        long customerLocalId,
+        string signatureCloudPath,
+        string signatureFileName,
+        string signatureFileType)
+    {
+        UpsertFromCloudCore(cloudId, contractNumber, contractStartDate, contractEndDate, mainTotalAmount, currentTotalAmount, contractPeriod, downPayment, monthlyInstallment, managementFee, interestPercent, contractState, productLocalId, customerLocalId, signatureCloudPath, signatureFileName, signatureFileType);
+
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var find = con.CreateCommand();
+        find.CommandText = "SELECT Id FROM ContractsInstallment WHERE CloudId = $cloudId;";
+        find.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var localId = find.ExecuteScalar();
+        if (localId != null)
+            // Only when this device already has receipts for the contract. If they
+            // have not been pulled yet, a recalculation would show the full amount
+            // as remaining; keep the cloud value until the receipts arrive.
+            RecalculateBalance(con, null, Convert.ToInt64(localId), onlyIfHasReceipts: true);
+    }
+
+    private void UpsertFromCloudCore(
         long cloudId,
         string contractNumber,
         DateTime contractStartDate,
