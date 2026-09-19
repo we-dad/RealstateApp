@@ -313,7 +313,11 @@ public class ContractServiceInstallment
                 ContractNumber = reader.GetString(1),
                 CustomerName = reader.GetString(2),
                 MainTotalAmount = saved,
+                ProductPrice = price,
                 DownPayment = down,
+                ManagementFee = fee,
+                InterestPercent = interest,
+                ContractPeriod = period,
                 ExpectedTotal = expected,
                 Status = status
             });

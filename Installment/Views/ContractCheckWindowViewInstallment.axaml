@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
         Title="فحص حسابات العقود"
-        Width="960"
+        Width="1180"
         Height="620"
         FlowDirection="RightToLeft">
 
@@ -28,7 +28,11 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="*"/>
                 <DataGridTextColumn Header="العميل" Binding="{Binding CustomerName}" Width="1.5*"/>
+                <DataGridTextColumn Header="سعر المنتج" Binding="{Binding ProductPrice, StringFormat='{}{0:N2}'}" Width="*"/>
                 <DataGridTextColumn Header="الدفعة المقدمة" Binding="{Binding DownPayment, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الرسوم" Binding="{Binding ManagementFee, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الفائدة %" Binding="{Binding InterestPercent, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="المدة" Binding="{Binding ContractPeriod, StringFormat='{}{0:N2}'}" Width="*"/>
                 <DataGridTextColumn Header="الإجمالي المحفوظ" Binding="{Binding MainTotalAmount, StringFormat='{}{0:N2}'}" Width="*"/>
                 <DataGridTextColumn Header="المتوقع" Binding="{Binding ExpectedTotal, StringFormat='{}{0:N2}'}" Width="*"/>
                 <DataGridTextColumn Header="الفرق" Binding="{Binding Difference, StringFormat='{}{0:N2}'}" Width="*"/>
