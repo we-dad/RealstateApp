@@ -276,7 +276,8 @@ public partial class ContractViewInstallment : UserControl
     {
         if (ContractNumBox is null) return;   // fires during InitializeComponent
 
-        ContractNumBox.IsReadOnly = !IsManualMode;
+        // The contract number is generated and never editable, in manual mode too:
+        // manual mode only unlocks the total amount.
         MainTotalAmountBox.IsReadOnly = !IsManualMode;
 
         if (!IsManualMode)

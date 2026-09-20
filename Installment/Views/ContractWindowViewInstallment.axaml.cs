@@ -278,7 +278,8 @@ public partial class ContractWindowViewInstallment : Window
     {
         if (ContractNumBox is null) return;
 
-        ContractNumBox.IsReadOnly = !IsManualMode;
+        // The contract number is generated and never editable, in manual mode too:
+        // manual mode only unlocks the total amount.
         MainTotalAmountBox.IsReadOnly = !IsManualMode;
 
         if (!IsManualMode)
