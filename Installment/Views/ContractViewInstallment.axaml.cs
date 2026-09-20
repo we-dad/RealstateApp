@@ -24,7 +24,7 @@ public partial class ContractViewInstallment : UserControl
 
     private ContractInstallment _contract;
     private CustomerInstallment? _selectedCutomer;
-    private TextBox? _customerIdSearchBox;
+    private AutoCompleteBox? _customerIdSearchBox;
     private string? ContractNumber;
     private bool _isRefreshing;
     private double realMainPrice;
@@ -51,9 +51,24 @@ public partial class ContractViewInstallment : UserControl
         InterestPercentBox.SelectedItem = "12.5";
         ContractGrid.DoubleTapped += ContractGrid_DoubleTapped;
 
+        // The suggestions list matches the identity number or the name. Wired here
+        // (not in the XAML) so nothing fires while the window is being built.
+        CustomerIdSearchBox.ItemFilter = (search, item) =>
+            item is CustomerPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        CustomerIdSearchBox.ItemSelector = (search, item) =>
+            (item as CustomerPickRowInstallment)?.IdentityNumber ?? search;
+        CustomerIdSearchBox.SelectionChanged += CustomerIdSearchBox_SelectionChanged;
+        CustomerIdSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                CustomerIdSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
+        _customerIdSearchBox = this.FindControl<AutoCompleteBox>("CustomerIdSearchBox");
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
@@ -151,11 +166,64 @@ public partial class ContractViewInstallment : UserControl
         }
     }
 
+    // Picking a line from the suggestions selects that exact customer (by id: two
+    // people could share an identity number).
+    private void CustomerIdSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (CustomerIdSearchBox.SelectedItem is not CustomerPickRowInstallment row)
+            return;
+
+        CustomerIdSearchBox.Text = row.IdentityNumber;
+
+        var customer = _customersDB.GetById(row.Id);
+
+        if (customer is null)
+        {
+            _selectedCutomer = null;
+            CustomerInfoText.Text = "لم يتم العثور على عميل بهذا الرقم";
+            CustomerInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedCustomer(customer);
+    }
+
+    // If the text no longer points at the chosen customer, forget it, so a contract
+    // can never be saved for a person the box does not show.
+    private void CustomerIdSearchBox_TextChanged()
+    {
+        if (_selectedCutomer is null)
+            return;
+
+        var typed = CustomerIdSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedCutomer.IdentityNumber?.Trim() ?? "", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedCutomer = null;
+        CustomerInfoText.Text = "";
+    }
+
+    private void ShowSelectedCustomer(CustomerInstallment customer)
+    {
+        _selectedCutomer = customer;
+
+        CustomerInfoText.Text =
+            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
+
+        CustomerInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchCustomer_Click(object? sender, RoutedEventArgs e)
     {
         var id = _customerIdSearchBox?.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        // Already chosen (from the suggestions or loaded with the contract): keep that
+        // exact person, a search by identity could return another one with the same number.
+        if (_selectedCutomer is not null && (_selectedCutomer.IdentityNumber ?? "").Trim() == id)
             return;
 
         var customer = _customersDB.FindByIdentity(id);
@@ -168,12 +236,7 @@ public partial class ContractViewInstallment : UserControl
             return;
         }
 
-        _selectedCutomer = customer;
-
-        CustomerInfoText.Text =
-            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
-
-        CustomerInfoText.Foreground = Brushes.Green;
+        ShowSelectedCustomer(customer);
     }
 
     // push must finish before the pull, or the pull re-reads rows the
@@ -255,7 +318,9 @@ public partial class ContractViewInstallment : UserControl
             ManagementFeeBox.Text = "0";
             ContractPeriodBox.Text = "1";
             DownPaymentBox.Text = "0";
+            CustomerIdSearchBox.SelectedItem = null;
             CustomerIdSearchBox.Text = "";
+            CustomerIdSearchBox.ItemsSource = _customersDB.GetPickRows();
             CustomerInfoText.Text = "";
             CustomerInfoText.Foreground = Brushes.Black;
 

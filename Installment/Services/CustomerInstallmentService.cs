@@ -189,6 +189,37 @@ public class CustomerServiceInstallment
         return customer;
     }
 
+    // Every live customer (identity number and name), for the picker of the contract
+    // screens. Read-only.
+    public List<CustomerPickRowInstallment> GetPickRows()
+    {
+        var rows = new List<CustomerPickRowInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, IdentityNumber, Name
+            FROM CustomersInstallment
+            WHERE SyncAction <> 'delete'
+            ORDER BY Name;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new CustomerPickRowInstallment
+            {
+                Id = reader.GetInt64(0),
+                IdentityNumber = reader.GetString(1),
+                Name = reader.GetString(2)
+            });
+        }
+
+        return rows;
+    }
+
     public CustomerInstallment? FindByIdentity(string identityNumber)
     {
         using var con = new SqliteConnection(_db.ConnectionString);

@@ -128,6 +128,37 @@ public class TenantServiceRealEstate
         };
     }
 
+    // Every live tenant (identity number and name), for the picker of the contract
+    // screens. Read-only.
+    public List<TenantPickRowRealEstate> GetPickRows()
+    {
+        var rows = new List<TenantPickRowRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, IdentityNumber, Name
+            FROM TenantsRealEstate
+            WHERE SyncAction <> 'delete'
+            ORDER BY Name;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new TenantPickRowRealEstate
+            {
+                Id = reader.GetInt64(0),
+                IdentityNumber = reader.GetString(1),
+                Name = reader.GetString(2)
+            });
+        }
+
+        return rows;
+    }
+
     public TenantRealEstate? FindByIdentity(string identityNumber)
     {
         using var con = new SqliteConnection(_db.ConnectionString);

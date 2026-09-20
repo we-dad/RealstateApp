@@ -65,12 +65,17 @@
                                 Grid.Column="0"
                                 Click="SearchCustomer_Click"/>
 
-                        <TextBox x:Name="CustomerIdSearchBox"
-                                 Grid.Row="0"
-                                 Grid.Column="1"
-                                 HorizontalAlignment="Stretch"
-                                 TextAlignment="Right"
-                                 Watermark="اكتب رقم الهوية"/>
+                        <AutoCompleteBox x:Name="CustomerIdSearchBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                                     MinimumPrefixLength="1"
+                                     MaxDropDownHeight="300"
+                                     FilterMode="Custom"
+                                     Watermark="اكتب رقم الهوية أو الاسم">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:CustomerPickRowInstallment">
+                                    <TextBlock Text="{Binding Display}"/>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
 
                         <TextBlock x:Name="CustomerInfoText"
                                    Grid.Row="1"
