@@ -45,7 +45,13 @@ public partial class DashboardViewInstallment : UserControl
         YearCombo.SelectionChanged += (_, __) => LoadDashboard();
 
         LoadDashboard();
+
+        // The figures follow the data: recalculated after any add, edit or delete
+        // (also from the customer window opened from this screen).
+        _autoRefresh = new ScreenAutoRefresh(this, LoadDashboard);
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e) => LoadDashboard();
 
