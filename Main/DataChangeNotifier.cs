@@ -9,5 +9,17 @@ public static class DataChangeNotifier
 {
     public static event Action? Changed;
 
-    public static void Notify() => Changed?.Invoke();
+    // Never throws: a failing listener must not break the save that raised the event
+    // (it is often called right after a transaction commit).
+    public static void Notify()
+    {
+        try
+        {
+            Changed?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
 }

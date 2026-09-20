@@ -107,7 +107,11 @@ public class ProductServiceInstallment
         cmd.Parameters.AddWithValue("$mobileStorage", mobileStorage);
         cmd.Parameters.AddWithValue("$mobileColor", mobileColor);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -160,6 +164,8 @@ public class ProductServiceInstallment
         cmd.Parameters.AddWithValue("$mobileColor", mobileColor);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public ProductInstallment? GetById(long id)
@@ -535,6 +541,8 @@ public class ProductServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

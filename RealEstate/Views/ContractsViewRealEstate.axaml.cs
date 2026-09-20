@@ -40,6 +40,11 @@ public partial class ContractsViewRealEstate : UserControl
         _tenantsDB = new TenantServiceRealEstate(_db);
         _unitsDB = new UnitServiceRealEstate(_db);
         _pdfServiceRealEstate = new PdfServiceRealEstate();
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(this, () =>
+            ScreenAutoRefresh.ReloadKeepingSelection<ContractRealEstate>(ContractGrid, r => r.Id, LoadContract));
+
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
         // The suggestions list matches the identity number or the name. Wired here
@@ -336,6 +341,8 @@ public partial class ContractsViewRealEstate : UserControl
 
         ShowSelectedTenant(tenant);
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

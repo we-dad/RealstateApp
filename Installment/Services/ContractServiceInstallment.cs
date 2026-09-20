@@ -147,7 +147,11 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$productId", productId);
         cmd.Parameters.AddWithValue("$customerId", customerId);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -212,6 +216,8 @@ public class ContractServiceInstallment
         cmd.ExecuteNonQuery();
 
         RecalculateBalance(con, null, id);
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpdateSignatureCloudInfo(
@@ -244,6 +250,8 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$id", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public List<ContractInstallment> GetAll()
@@ -1067,6 +1075,8 @@ public class ContractServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

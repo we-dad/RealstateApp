@@ -35,6 +35,11 @@ public partial class ReceiptsViewRealEstate : UserControl
         _receiptsDB = new ReceiptServiceRealEstate(_db);
         _contractsDB = new ContractServiceRealEstate(_db);
         _pdfServiceRealEstate = new PdfServiceRealEstate();
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(this, () =>
+            ScreenAutoRefresh.ReloadKeepingSelection<ReceiptRealEstate>(ReceiptsGrid, r => r.Id, LoadReceipt));
+
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
         // The suggestions list matches the number and the names. Wired here (not in
@@ -246,6 +251,8 @@ public partial class ReceiptsViewRealEstate : UserControl
             Console.WriteLine(ex.ToString());
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

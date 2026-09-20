@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Threading;
 
@@ -55,6 +57,25 @@ public sealed class ScreenAutoRefresh : IDisposable
         {
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    // Reloads a data grid and keeps the same row selected (by id) and in view.
+    public static void ReloadKeepingSelection<T>(DataGrid grid, Func<T, long> getId, Action load)
+        where T : class
+    {
+        long? selectedId = grid.SelectedItem is T selected ? getId(selected) : null;
+
+        load();
+
+        if (selectedId is not long id || grid.ItemsSource is not IEnumerable<T> rows)
+            return;
+
+        var row = rows.FirstOrDefault(r => getId(r) == id);
+        grid.SelectedItem = row;
+
+        // A new list scrolls the grid to the top: keep the chosen row in view.
+        if (row is not null)
+            grid.ScrollIntoView(row, null);
     }
 
     public void Dispose()

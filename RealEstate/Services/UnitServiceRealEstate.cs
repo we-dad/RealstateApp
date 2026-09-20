@@ -166,7 +166,11 @@ public class UnitServiceRealEstate
         cmd.Parameters.AddWithValue("$unitsCount", unitsCount);
         cmd.Parameters.AddWithValue("$unitNum", unitNum);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -210,6 +214,8 @@ public class UnitServiceRealEstate
         cmd.Parameters.AddWithValue("$unitNum", unitNum);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     // CHANGED: also returns ParentId.
@@ -702,6 +708,8 @@ public class UnitServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

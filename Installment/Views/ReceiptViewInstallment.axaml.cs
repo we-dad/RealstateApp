@@ -57,6 +57,11 @@ public partial class ReceiptViewInstallment : UserControl
 
         _contractIdSearchBox = this.FindControl<AutoCompleteBox>("ContractNumSearchBox");
 
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(this, () =>
+            ScreenAutoRefresh.ReloadKeepingSelection<ReceiptInstallment>(ReceiptsGrid, r => r.Id, LoadReceipt));
+
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
     }
@@ -253,6 +258,8 @@ public partial class ReceiptViewInstallment : UserControl
 
         ShowSelectedContract(contract);
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

@@ -131,6 +131,7 @@ public class ReceiptServiceInstallment
             ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
 
             tran.Commit();
+            DataChangeNotifier.Notify();
             return receiptLocalId;
         }
         catch
@@ -287,6 +288,7 @@ public class ReceiptServiceInstallment
                 ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
 
             tran.Commit();
+            DataChangeNotifier.Notify();
         }
         catch
         {
@@ -746,6 +748,7 @@ public class ReceiptServiceInstallment
             ContractServiceInstallment.RecalculateBalance(con, tran, contractId);
 
             tran.Commit();
+            DataChangeNotifier.Notify();
         }
         catch
         {

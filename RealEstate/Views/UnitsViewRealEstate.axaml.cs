@@ -27,6 +27,11 @@ public partial class UnitsViewRealEstate : UserControl
 
         _owners = new OwnerServiceRealEstate(_db);
         _units = new UnitServiceRealEstate(_db);
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(this, () =>
+            ScreenAutoRefresh.ReloadKeepingSelection<UnitRealEstate>(UnitsGrid, r => r.Id, LoadUnits));
+
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
         LoadOwners();
@@ -199,6 +204,8 @@ public partial class UnitsViewRealEstate : UserControl
             Console.WriteLine(ex.ToString());
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

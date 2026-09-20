@@ -67,7 +67,11 @@ public class TenantServiceRealEstate
         cmd.Parameters.AddWithValue("$phone", phone);
         cmd.Parameters.AddWithValue("$address", address);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(long id, string name, string identityNumber, string phone, string address)
@@ -97,6 +101,8 @@ public class TenantServiceRealEstate
         cmd.Parameters.AddWithValue("$address", address);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public TenantRealEstate? GetById(long id)
@@ -401,6 +407,8 @@ public class TenantServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
     
     public List<TenantRealEstate> GetTenantRelatedData(long tenantId)

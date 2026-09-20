@@ -66,7 +66,11 @@ public class OwnerInstallmentService
         cmd.Parameters.AddWithValue("$phone", phone);
         cmd.Parameters.AddWithValue("$address", address);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(long id, string name, string identityNumber, string phone, string address)
@@ -96,6 +100,8 @@ public class OwnerInstallmentService
         cmd.Parameters.AddWithValue("$address", address);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public OwnerInstallment? GetById(long id)
@@ -343,6 +349,8 @@ public class OwnerInstallmentService
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
     
     public List<ProductInstallment> GetProductsByOwnerId(long ownerId)

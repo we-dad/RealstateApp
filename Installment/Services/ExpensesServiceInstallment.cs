@@ -78,7 +78,11 @@ public class ExpensesServiceInstallment
         cmd.Parameters.AddWithValue("$expensesAmount", expensesAmount);
         cmd.Parameters.AddWithValue("$expensesNote", expensesNote);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -119,6 +123,8 @@ public class ExpensesServiceInstallment
         cmd.Parameters.AddWithValue("$expensesNote", expensesNote);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public List<ExpensesInstallment> GetAll()
@@ -476,6 +482,8 @@ public class ExpensesServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

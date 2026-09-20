@@ -128,7 +128,11 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$contractOpligation", contractOpligation);
         cmd.Parameters.AddWithValue("$contractState", contractState);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -187,6 +191,8 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$contractState", contractState);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpdateSignatureCloudInfo(
@@ -219,6 +225,8 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$id", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public List<ContractRealEstate> GetAll()
@@ -984,6 +992,8 @@ public class ContractServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

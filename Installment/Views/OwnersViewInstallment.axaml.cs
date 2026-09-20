@@ -25,6 +25,11 @@ public partial class OwnersViewInstallment : UserControl
         
         LoadOwners();
 
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(this, () =>
+            ScreenAutoRefresh.ReloadKeepingSelection<OwnerInstallment>(OwnersGrid, r => r.Id, LoadOwners));
+
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
         
@@ -108,6 +113,8 @@ public partial class OwnersViewInstallment : UserControl
             Console.WriteLine(ex.ToString());
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

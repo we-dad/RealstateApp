@@ -69,7 +69,11 @@ public class ReceiptServiceRealEstate
         cmd.Parameters.AddWithValue("$method", paymentMethod);
         cmd.Parameters.AddWithValue("$amount", amount);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(long id, DateTime date, long contractId, string paymentMethod, double amount)
@@ -99,6 +103,8 @@ public class ReceiptServiceRealEstate
         cmd.Parameters.AddWithValue("$amount", amount);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpsertFromCloud(
@@ -458,6 +464,8 @@ public class ReceiptServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)
