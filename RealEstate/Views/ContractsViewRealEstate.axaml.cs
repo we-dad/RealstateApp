@@ -3,10 +3,12 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -42,8 +44,11 @@ public partial class ContractsViewRealEstate : UserControl
         _pdfServiceRealEstate = new PdfServiceRealEstate();
         // Reload the grid (only) when data changes: an add, an edit or a delete, also
         // from the details window, so there is no need to press "تحديث".
-        _autoRefresh = new ScreenAutoRefresh(this, () =>
-            ScreenAutoRefresh.ReloadKeepingSelection<ContractRealEstate>(ContractGrid, r => r.Id, LoadContract));
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadContract,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
 
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
@@ -70,11 +75,22 @@ public partial class ContractsViewRealEstate : UserControl
 
     }
 
-    private void LoadUnits()
+    // keepSelection is true only for the periodic sync, which reloads this list while
+    // the user may be filling the form: the chosen item stays chosen, or nothing is
+    // selected if it is gone (never a silent jump to another item). Everything else
+    // (open, the refresh button, after an add) keeps the old behaviour: first item selected.
+    private void LoadUnits(bool keepSelection = false)
     {
+        var selectedId = (UnitsBox.SelectedItem as UnitRealEstate)?.Id;
         var units = _unitsDB.GetAvailableUnits();
 
         UnitsBox.ItemsSource = units;
+
+        if (keepSelection && selectedId is long id)
+        {
+            UnitsBox.SelectedItem = units.FirstOrDefault(x => x.Id == id);
+            return;
+        }
 
         if (units.Count > 0)
             UnitsBox.SelectedIndex = 0;
@@ -116,7 +132,12 @@ public partial class ContractsViewRealEstate : UserControl
         ContractObligationsBox.SelectedIndex = 0;
     }
 
-    private void LoadContract()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadContract() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<ContractRealEstate>(ContractGrid, r => r.Id, LoadContractCore);
+
+    private void LoadContractCore()
     {
         try
         {
@@ -211,11 +232,31 @@ public partial class ContractsViewRealEstate : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncContractsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncContractsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncContractsFromCloudAsync()
     {
@@ -256,15 +297,19 @@ public partial class ContractsViewRealEstate : UserControl
             }
 
             LoadContract();
-            LoadUnits();
+            LoadUnits(keepSelection: true);
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping contracts cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
 

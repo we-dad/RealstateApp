@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -24,8 +25,11 @@ public partial class TenantsViewRealEstate : UserControl
         _tenants = new TenantServiceRealEstate(_db);
         // Reload the grid (only) when data changes: an add, an edit or a delete, also
         // from the details window, so there is no need to press "تحديث".
-        _autoRefresh = new ScreenAutoRefresh(this, () =>
-            ScreenAutoRefresh.ReloadKeepingSelection<TenantRealEstate>(TenantsGrid, r => r.Id, LoadTenants));
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadTenants,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
 
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
@@ -34,7 +38,12 @@ public partial class TenantsViewRealEstate : UserControl
         _ = SyncAsync();
     }
 
-    private void LoadTenants()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadTenants() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<TenantRealEstate>(TenantsGrid, r => r.Id, LoadTenantsCore);
+
+    private void LoadTenantsCore()
     {
         var data = _tenants.GetAll();
 
@@ -76,11 +85,31 @@ public partial class TenantsViewRealEstate : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncTenantsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncTenantsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncTenantsFromCloudAsync()
     {
@@ -104,14 +133,18 @@ public partial class TenantsViewRealEstate : UserControl
             }
 
             LoadTenants();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping tenants cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
 

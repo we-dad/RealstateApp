@@ -15,6 +15,10 @@ public partial class MainWindowInstallment : UserControl
         _supabaseService = supabaseService;
 
         _mainWindow = mainWindow;
+
+        // Shows whether the last sync with the cloud worked.
+        SyncStatusService.Bind(this, SyncStatusText);
+
         // صفحة البداية
         ContentHost.Content = new DashboardViewInstallment();
     }

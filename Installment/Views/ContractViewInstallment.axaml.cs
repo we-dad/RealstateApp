@@ -2,9 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using RealEstateInstallmentsManager.Models;
@@ -72,16 +74,45 @@ public partial class ContractViewInstallment : UserControl
 
         // Reload the grid (only) when data changes: an add, an edit or a delete, also
         // from the details window, so there is no need to press "تحديث".
-        _autoRefresh = new ScreenAutoRefresh(this, () =>
-            ScreenAutoRefresh.ReloadKeepingSelection<ContractInstallment>(ContractGrid, r => r.Id, LoadContract));
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadContract,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
     }
 
-    private void LoadProducts()
+    private bool _suppressProductChange;
+
+    // keepSelection is true only for the periodic sync, which reloads this list while
+    // the user may be filling the form: the chosen product stays chosen, put back
+    // WITHOUT running the selection handler (it recalculates the total and would drop the
+    // down payment). If that product no longer exists nothing is selected, so the contract
+    // cannot be saved on a product the user did not choose. Everything else (open, the
+    // refresh button, after an add) keeps the old behaviour: first product selected.
+    private void LoadProducts(bool keepSelection = false)
     {
+        var selectedId = (ProductsBox.SelectedItem as ProductInstallment)?.Id;
         var products = _productDB.GetAll();
+
+        if (keepSelection && selectedId is long id)
+        {
+            _suppressProductChange = true;
+
+            try
+            {
+                ProductsBox.ItemsSource = products;
+                ProductsBox.SelectedItem = products.FirstOrDefault(p => p.Id == id);
+            }
+            finally
+            {
+                _suppressProductChange = false;
+            }
+
+            return;
+        }
 
         ProductsBox.ItemsSource = products;
 
@@ -89,7 +120,12 @@ public partial class ContractViewInstallment : UserControl
             ProductsBox.SelectedIndex = 0;
     }
 
-    private void LoadContract()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadContract() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<ContractInstallment>(ContractGrid, r => r.Id, LoadContractCore);
+
+    private void LoadContractCore()
     {
         try
         {
@@ -108,6 +144,9 @@ public partial class ContractViewInstallment : UserControl
     
     private void ProductsBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        if (_suppressProductChange)
+            return;
+
         if (ProductsBox.SelectedItem is ProductInstallment product)
         {
             _contract.ProductId = product.Id;
@@ -246,11 +285,31 @@ public partial class ContractViewInstallment : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncContractsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncContractsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncContractsFromCloudAsync()
     {
@@ -292,15 +351,19 @@ public partial class ContractViewInstallment : UserControl
             }
 
             LoadContract();
-            LoadProducts();
+            LoadProducts(keepSelection: true);
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment contracts cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
 
