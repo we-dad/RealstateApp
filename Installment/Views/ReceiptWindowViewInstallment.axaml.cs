@@ -127,12 +127,14 @@ public partial class ReceiptWindowViewInstallment : Window
             ? raw
             : "Ic-" + raw;
 
-        var contract = _contractsDB.FindByContractNum(contractNum);
+        var contract = _contractsDB.FindByTypedNumber(contractNum, out var candidates);
 
         if (contract is null)
         {
             _selectedContract = null;
-            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Text = candidates.Count > 1
+                ? "يوجد أكثر من عقد بهذا الرقم، اكتب الرقم كاملًا: " + string.Join("، ", candidates)
+                : "لم يتم العثور على عقد بهذا الرقم";
             ContractInfoText.Foreground = Brushes.Red;
             return;
         }

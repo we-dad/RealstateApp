@@ -29,7 +29,7 @@ public class ContractServiceInstallment
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Ic-" + next;
+        return "Ic-" + next + UserCodeService.GetSuffix();
     }
 
     // The remaining balance is derived from the receipts, never trusted as a
@@ -536,6 +536,43 @@ public class ContractServiceInstallment
         """;
 
         cmd.ExecuteNonQuery();
+    }
+
+    // The stored numbers a typed contract number refers to. Typing the short form
+    // ("Ic-1051" or "1051") finds "Ic-1051" (old numbers) and every "Ic-1051-XXX"
+    // (numbers with the user code); typing the full number finds just that one.
+    public List<string> FindContractNumbers(string typed)
+    {
+        var numbers = new List<string>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT ContractNumber
+            FROM ContractsInstallment
+            WHERE SyncAction <> 'delete'
+              AND (ContractNumber = $n COLLATE NOCASE
+                   OR SUBSTR(ContractNumber, 1, LENGTH($n) + 1) = $n || '-' COLLATE NOCASE)
+            ORDER BY ContractNumber;
+        """;
+        cmd.Parameters.AddWithValue("$n", typed.Trim());
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            numbers.Add(reader.GetString(0));
+
+        return numbers;
+    }
+
+    // Returns the contract only when the typed number points to exactly one;
+    // when several match, the candidates are returned so the caller can show them.
+    public ContractInstallment? FindByTypedNumber(string typed, out List<string> candidates)
+    {
+        candidates = FindContractNumbers(typed);
+
+        return candidates.Count == 1 ? FindByContractNum(candidates[0]) : null;
     }
 
     public ContractInstallment? FindByContractNum(string contractNum)
