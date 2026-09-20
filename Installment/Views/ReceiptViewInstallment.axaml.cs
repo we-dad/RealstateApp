@@ -22,7 +22,7 @@ public partial class ReceiptViewInstallment : UserControl
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
 
-    private TextBox? _contractIdSearchBox;
+    private AutoCompleteBox? _contractIdSearchBox;
     private ContractInstallment? _selectedContract;
 
     public ReceiptViewInstallment(SupabaseService supabaseService)
@@ -38,9 +38,24 @@ public partial class ReceiptViewInstallment : UserControl
         
         ReceiptsGrid.DoubleTapped += ReceiptsGrid_DoubleTapped;
 
+        // The suggestions list matches the number, the customer name or the product.
+        // Wired here (not in the XAML) so nothing fires while the window is being built.
+        ContractNumSearchBox.ItemFilter = (search, item) =>
+            item is ContractPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        ContractNumSearchBox.ItemSelector = (search, item) =>
+            (item as ContractPickRowInstallment)?.ContractNumber ?? search;
+        ContractNumSearchBox.SelectionChanged += ContractNumSearchBox_SelectionChanged;
+        ContractNumSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                ContractNumSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
+        _contractIdSearchBox = this.FindControl<AutoCompleteBox>("ContractNumSearchBox");
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
@@ -161,6 +176,58 @@ public partial class ReceiptViewInstallment : UserControl
         }
     }
 
+    // Picking a line from the suggestions selects that exact contract, looked up by
+    // its full stored number (a short search could match several contracts).
+    private void ContractNumSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ContractNumSearchBox.SelectedItem is not ContractPickRowInstallment row)
+            return;
+
+        ContractNumSearchBox.Text = row.ContractNumber;
+
+        var contract = _contractsDB.FindByContractNum(row.ContractNumber);
+
+        if (contract is null)
+        {
+            _selectedContract = null;
+            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedContract(contract);
+    }
+
+    // If the text no longer points at the chosen contract, forget that contract,
+    // so a receipt can never be saved on a contract the box does not show.
+    private void ContractNumSearchBox_TextChanged()
+    {
+        if (_selectedContract is null)
+            return;
+
+        var typed = ContractNumSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedContract.ContractNumber, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedContract = null;
+        ContractInfoText.Text = "";
+    }
+
+    private void ShowSelectedContract(ContractInstallment contract)
+    {
+        _selectedContract = contract;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+
+        ContractInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
     {
         var raw = _contractIdSearchBox?.Text?.Trim() ?? "";
@@ -184,16 +251,7 @@ public partial class ReceiptViewInstallment : UserControl
             return;
         }
 
-        _selectedContract = contract;
-
-        ContractInfoText.Text =
-            $"اسم العميل : {contract.CustomerName} | " +
-            $"اسم المنتج : {contract.ProductName} | " +
-            $"القسط الأساسي : {contract.MainTotalAmount} | " +
-            $"المتبقي : {contract.CurrentTotalAmount} | " +
-            $"القسط الشهري : {contract.MonthlyInstallment}";
-
-        ContractInfoText.Foreground = Brushes.Green;
+        ShowSelectedContract(contract);
     }
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
@@ -214,7 +272,9 @@ public partial class ReceiptViewInstallment : UserControl
         ContractInfoText.Text = "";
         ContractInfoText.Foreground = Brushes.Black;
 
+        ContractNumSearchBox.SelectedItem = null;
         ContractNumSearchBox.Text = "";
+        ContractNumSearchBox.ItemsSource = _contractsDB.GetPickRows();
         AmountBox.Text = "";
 
         _selectedContract = null;

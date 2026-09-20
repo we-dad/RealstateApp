@@ -295,6 +295,43 @@ public class ContractServiceInstallment
         return list;
     }
 
+    // Every live contract with its customer and product, newest first, for the
+    // contract picker of the receipt screen. Read-only.
+    public List<ContractPickRowInstallment> GetPickRows()
+    {
+        var rows = new List<ContractPickRowInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.ContractNumber,
+                   COALESCE(cust.Name, ''),
+                   COALESCE(p.ProductName, ''),
+                   c.ContractState
+            FROM ContractsInstallment c
+            LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
+            LEFT JOIN CustomersInstallment cust ON cust.Id = c.CustomerId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new ContractPickRowInstallment
+            {
+                ContractNumber = reader.GetString(0),
+                CustomerName = reader.GetString(1),
+                ProductName = reader.GetString(2),
+                ContractState = reader.GetString(3)
+            });
+        }
+
+        return rows;
+    }
+
     public const string NoDownPaymentDeducted = "بدون خصم الدفعة";
     public const string DoesNotMatch = "لا يطابق المعادلة";
 
