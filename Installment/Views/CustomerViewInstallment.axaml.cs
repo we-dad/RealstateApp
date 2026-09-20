@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -28,11 +29,35 @@ public partial class CustomerViewInstallment : UserControl
 
         LoadCustomer();
 
+        // Reload the grid (only) whenever a customer is added, edited or deleted,
+        // also from the details window.
+        _autoRefresh = new ScreenAutoRefresh(this, ReloadCustomersKeepingSelection);
+
     _sync = new InstallmentSyncService(_db, _supabaseService);
     _ = SyncAsync();
     
     CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
     
+    }
+
+    private ScreenAutoRefresh? _autoRefresh;
+
+    private void ReloadCustomersKeepingSelection()
+    {
+        var selectedId = (CustomerGrid.SelectedItem as CustomerInstallment)?.Id;
+
+        var data = _customerService.GetAll();
+        CustomerGrid.ItemsSource = data;
+
+        if (selectedId is long id)
+        {
+            var row = data.FirstOrDefault(c => c.Id == id);
+            CustomerGrid.SelectedItem = row;
+
+            // A new list scrolls the grid to the top: keep the chosen row in view.
+            if (row is not null)
+                CustomerGrid.ScrollIntoView(row, null);
+        }
     }
 
     private void LoadCustomer()

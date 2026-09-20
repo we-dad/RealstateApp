@@ -91,7 +91,11 @@ public class CustomerServiceInstallment
         cmd.Parameters.AddWithValue("$sponserAddress", sponserAddress);
         cmd.Parameters.AddWithValue("$sponserJob", sponserJob);
 
-        return (long)cmd.ExecuteScalar()!;
+        var id = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return id;
     }
 
     public void Update(
@@ -144,6 +148,8 @@ public class CustomerServiceInstallment
         cmd.Parameters.AddWithValue("$customerId", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public CustomerInstallment? GetById(long id)
@@ -607,6 +613,8 @@ public class CustomerServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)
