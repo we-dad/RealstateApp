@@ -652,6 +652,7 @@ public class ContractServiceInstallment
         return new ContractInstallment
         {
             Id = reader.GetInt64(0),
+            ContractNumber = contractNum, // the SELECT matched it exactly; callers compare against it
             CloudId = reader.GetInt64(1),
             ProductId = reader.GetInt64(2),
             CustomerId = reader.GetInt64(3),

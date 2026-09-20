@@ -406,6 +406,43 @@ public class ContractServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    // Every live contract with its tenant and unit, newest first, for the contract
+    // picker of the receipt screens. Read-only.
+    public List<ContractPickRowRealEstate> GetPickRows()
+    {
+        var rows = new List<ContractPickRowRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.ContractNumber,
+                   COALESCE(t.Name, ''),
+                   COALESCE(u.UnitName, ''),
+                   c.ContractState
+            FROM ContractsRealEstate c
+            LEFT JOIN TenantsRealEstate t ON t.Id = c.TenantId
+            LEFT JOIN UnitsRealEstate u ON u.Id = c.UnitId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new ContractPickRowRealEstate
+            {
+                ContractNumber = reader.GetString(0),
+                TenantName = reader.GetString(1),
+                UnitName = reader.GetString(2),
+                ContractState = reader.GetString(3)
+            });
+        }
+
+        return rows;
+    }
+
     // The stored numbers a typed contract number refers to. Typing the short form
     // ("Ic-1051" or "1051") finds "Ic-1051" (old numbers) and every "Ic-1051-XXX"
     // (numbers with the user code); typing the full number finds just that one.
@@ -478,6 +515,7 @@ public class ContractServiceRealEstate
         return new ContractRealEstate
         {
             Id = reader.GetInt64(0),
+            ContractNumber = contractNum, // the SELECT matched it exactly; callers compare against it
             CloudId = reader.GetInt64(1),
             UnitId = reader.GetInt64(2),
             TenantId = reader.GetInt64(3),
