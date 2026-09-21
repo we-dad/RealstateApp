@@ -248,7 +248,10 @@
 
                     <!-- SelectionMode + ClipboardCopyMode give whole-row Ctrl+C copy, no code-behind.
                          The SelectableTextBlock cells give per-cell select + copy (right-click / Ctrl+C). -->
-                    <DataGrid x:Name="ContractGrid"
+                    <DockPanel>
+<TextBox x:Name="ContractGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="ContractGrid"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               x:DataType="models:ContractInstallment"
@@ -384,6 +387,7 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+</DockPanel>
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -19,6 +19,8 @@ public partial class TenantsViewRealEstate : UserControl
     public TenantsViewRealEstate(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<TenantRealEstate>(TenantsGrid, TenantsGridSearchBox);
         _supabaseService = supabaseService;
 
         _db.Initialize();
@@ -41,7 +43,7 @@ public partial class TenantsViewRealEstate : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadTenants() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<TenantRealEstate>(TenantsGrid, r => r.Id, LoadTenantsCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<TenantRealEstate>(TenantsGrid, r => r.Id, LoadTenantsCore, () => _gridSearch?.AfterLoad());
 
     private void LoadTenantsCore()
     {
@@ -149,6 +151,7 @@ public partial class TenantsViewRealEstate : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<TenantRealEstate>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

@@ -74,7 +74,10 @@
                 Padding="4"
                 BorderBrush="#DDD" BorderThickness="1">
 
-            <DataGrid x:Name="ExpensesGrid"
+            <DockPanel>
+<TextBox x:Name="ExpensesGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="ExpensesGrid"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       x:DataType="models:ExpensesInstallment"
@@ -109,6 +112,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+</DockPanel>
         </Border>
 
     </Grid>

@@ -26,6 +26,8 @@ public partial class ExpensesViewRealEstate : UserControl
     public ExpensesViewRealEstate(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<ExpensesRealEstate>(ExpensesGrid, ExpensesGridSearchBox);
         _supabaseService = supabaseService;
 
         _db.Initialize();
@@ -87,7 +89,7 @@ public partial class ExpensesViewRealEstate : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadExpenses() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<ExpensesRealEstate>(ExpensesGrid, r => r.Id, LoadExpensesCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<ExpensesRealEstate>(ExpensesGrid, r => r.Id, LoadExpensesCore, () => _gridSearch?.AfterLoad());
 
     private void LoadExpensesCore()
     {
@@ -217,6 +219,7 @@ public partial class ExpensesViewRealEstate : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<ExpensesRealEstate>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

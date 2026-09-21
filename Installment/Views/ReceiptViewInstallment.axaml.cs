@@ -29,6 +29,8 @@ public partial class ReceiptViewInstallment : UserControl
     public ReceiptViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<ReceiptInstallment>(ReceiptsGrid, ReceiptsGridSearchBox);
         _supabaseService = supabaseService;
 
         _db.Initialize();
@@ -84,7 +86,7 @@ public partial class ReceiptViewInstallment : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadReceipt() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<ReceiptInstallment>(ReceiptsGrid, r => r.Id, LoadReceiptCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<ReceiptInstallment>(ReceiptsGrid, r => r.Id, LoadReceiptCore, () => _gridSearch?.AfterLoad());
 
     private void LoadReceiptCore()
     {
@@ -293,6 +295,7 @@ public partial class ReceiptViewInstallment : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<ReceiptInstallment>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

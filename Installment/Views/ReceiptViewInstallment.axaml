@@ -113,7 +113,10 @@
                 Padding="4"
                 BorderBrush="#DDD" BorderThickness="1">
 
-            <DataGrid x:Name="ReceiptsGrid"
+            <DockPanel>
+<TextBox x:Name="ReceiptsGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="ReceiptsGrid"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       x:DataType="models:ReceiptInstallment"
@@ -148,6 +151,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+</DockPanel>
         </Border>
 
     </Grid>

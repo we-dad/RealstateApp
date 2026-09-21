@@ -196,7 +196,10 @@
                         <TextBlock Grid.Column="1" Text="قائمة العقود" TextAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <DataGrid x:Name="ContractGrid"
+                    <DockPanel>
+<TextBox x:Name="ContractGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="ContractGrid"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               x:DataType="models:ContractRealEstate"
@@ -285,6 +288,7 @@
 
                         </DataGrid.Columns>
                     </DataGrid>
+</DockPanel>
 
                 </StackPanel>
             </Border>

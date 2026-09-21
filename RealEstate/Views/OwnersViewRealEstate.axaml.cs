@@ -21,6 +21,8 @@ public partial class OwnersViewRealEstate : UserControl
     public OwnersViewRealEstate(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<OwnerRealEstate>(OwnersGrid, OwnersGridSearchBox);
 
         _supabaseService = supabaseService;
 
@@ -44,7 +46,7 @@ public partial class OwnersViewRealEstate : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadOwners() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<OwnerRealEstate>(OwnersGrid, r => r.Id, LoadOwnersCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<OwnerRealEstate>(OwnersGrid, r => r.Id, LoadOwnersCore, () => _gridSearch?.AfterLoad());
 
     private void LoadOwnersCore()
     {
@@ -157,6 +159,7 @@ public partial class OwnersViewRealEstate : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<OwnerRealEstate>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

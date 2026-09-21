@@ -78,7 +78,10 @@
         <!-- Table -->
         <Border Grid.Row="2" CornerRadius="12" Padding="4"
                 BorderBrush="#DDD" BorderThickness="1">
-            <DataGrid x:Name="UnitsGrid"
+            <DockPanel>
+<TextBox x:Name="UnitsGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="UnitsGrid"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       x:DataType="models:UnitRealEstate"
@@ -119,6 +122,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+</DockPanel>
         </Border>
 
     </Grid>

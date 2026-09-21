@@ -21,6 +21,8 @@ public partial class ProductViewInstallment : UserControl
     public ProductViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<ProductInstallment>(ProductGrid, ProductGridSearchBox);
         _supabaseService = supabaseService;
 
         DataContext = _product;
@@ -60,7 +62,7 @@ public partial class ProductViewInstallment : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadProduct() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<ProductInstallment>(ProductGrid, r => r.Id, LoadProductCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<ProductInstallment>(ProductGrid, r => r.Id, LoadProductCore, () => _gridSearch?.AfterLoad());
 
     private void LoadProductCore()
     {
@@ -209,6 +211,7 @@ public partial class ProductViewInstallment : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<ProductInstallment>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

@@ -94,12 +94,13 @@ public sealed class ScreenAutoRefresh : IDisposable
     }
 
     // Reloads a data grid and keeps the same row selected (by id) and in view.
-    public static void ReloadKeepingSelection<T>(DataGrid grid, Func<T, long> getId, Action load)
+    public static void ReloadKeepingSelection<T>(DataGrid grid, Func<T, long> getId, Action load, Action? afterLoad = null)
         where T : class
     {
         long? selectedId = grid.SelectedItem is T selected ? getId(selected) : null;
 
         load();
+        afterLoad?.Invoke();
 
         RestoreSelection(grid, getId, selectedId);
     }

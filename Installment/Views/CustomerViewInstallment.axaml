@@ -72,7 +72,10 @@
     <!-- Table -->
     <Border Grid.Row="2" CornerRadius="12" Padding="4"
             BorderBrush="#DDD" BorderThickness="1">
-      <DataGrid x:Name="CustomerGrid"
+      <DockPanel>
+<TextBox x:Name="CustomerGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+<DataGrid x:Name="CustomerGrid"
                 AutoGenerateColumns="False"
                 IsReadOnly="True"
                 x:DataType="models:CustomerInstallment"
@@ -88,6 +91,7 @@
           <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
         </DataGrid.Columns>
       </DataGrid>
+</DockPanel>
     </Border>
 
   </Grid>

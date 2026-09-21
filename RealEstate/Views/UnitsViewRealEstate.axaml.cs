@@ -22,6 +22,8 @@ public partial class UnitsViewRealEstate : UserControl
     public UnitsViewRealEstate(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<UnitRealEstate>(UnitsGrid, UnitsGridSearchBox);
         _supabaseService = supabaseService;
 
         _db.Initialize();
@@ -98,7 +100,7 @@ public partial class UnitsViewRealEstate : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadUnits() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<UnitRealEstate>(UnitsGrid, r => r.Id, LoadUnitsCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<UnitRealEstate>(UnitsGrid, r => r.Id, LoadUnitsCore, () => _gridSearch?.AfterLoad());
 
     private void LoadUnitsCore()
     {
@@ -242,6 +244,7 @@ public partial class UnitsViewRealEstate : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<UnitRealEstate>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

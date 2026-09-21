@@ -36,6 +36,8 @@ public partial class ContractViewInstallment : UserControl
     public ContractViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<ContractInstallment>(ContractGrid, ContractGridSearchBox);
 
         _supabaseService = supabaseService;
 
@@ -123,7 +125,7 @@ public partial class ContractViewInstallment : UserControl
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadContract() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<ContractInstallment>(ContractGrid, r => r.Id, LoadContractCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<ContractInstallment>(ContractGrid, r => r.Id, LoadContractCore, () => _gridSearch?.AfterLoad());
 
     private void LoadContractCore()
     {
@@ -368,6 +370,7 @@ public partial class ContractViewInstallment : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<ContractInstallment>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

@@ -21,6 +21,8 @@ public partial class CustomerViewInstallment : UserControl
     public CustomerViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<CustomerInstallment>(CustomerGrid, CustomerGridSearchBox);
         _supabaseService = supabaseService;
 
         DataContext = _customer;
@@ -46,11 +48,12 @@ public partial class CustomerViewInstallment : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<CustomerInstallment>? _gridSearch;
 
     // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
     // the moment the grid is replaced, so a row picked while a sync runs is not undone.
     private void LoadCustomer() =>
-        ScreenAutoRefresh.ReloadKeepingSelection<CustomerInstallment>(CustomerGrid, r => r.Id, LoadCustomerCore);
+        ScreenAutoRefresh.ReloadKeepingSelection<CustomerInstallment>(CustomerGrid, r => r.Id, LoadCustomerCore, () => _gridSearch?.AfterLoad());
 
     private void LoadCustomerCore()
     {

@@ -19,6 +19,8 @@ public partial class OwnersViewInstallment : UserControl
     public OwnersViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
+        // Search box above the grid: shows the rows that contain every word typed.
+        _gridSearch = new GridSearch<OwnerInstallment>(OwnersGrid, OwnersGridSearchBox);
         _supabaseService = supabaseService;
 
         _db.Initialize();
@@ -51,7 +53,7 @@ public partial class OwnersViewInstallment : UserControl
 
             OwnersGrid.ItemsSource = null;
             OwnersGrid.ItemsSource = data;
-        });
+        }, () => _gridSearch?.AfterLoad());
     
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
@@ -148,6 +150,7 @@ public partial class OwnersViewInstallment : UserControl
     }
 
     private ScreenAutoRefresh? _autoRefresh;
+    private GridSearch<OwnerInstallment>? _gridSearch;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
