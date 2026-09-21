@@ -25,6 +25,7 @@ public sealed class GridSearch<T> where T : class
     private readonly TextBox _box;
     private List<(T Item, string Text)> _rows = new();
     private List<T> _full = new();
+    private object? _shown;   // the list this class put in the grid last
 
     public GridSearch(DataGrid grid, TextBox box)
     {
@@ -36,8 +37,13 @@ public sealed class GridSearch<T> where T : class
     // Call right after the loader put the FULL list into the grid.
     public void AfterLoad()
     {
-        _full = (_grid.ItemsSource as IEnumerable<T>)?.ToList() ?? new List<T>();
-        _rows = _full.Select(item => (item, Normalize(RowText(item)))).ToList();
+        // If the grid still holds the list WE put there (the load failed and did not
+        // replace it), it is the filtered list, not the full one: keep what we have.
+        if (!ReferenceEquals(_grid.ItemsSource, _shown))
+        {
+            _full = (_grid.ItemsSource as IEnumerable<T>)?.ToList() ?? new List<T>();
+            _rows = _full.Select(item => (item, Normalize(RowText(item)))).ToList();
+        }
 
         Apply();
     }
@@ -47,9 +53,21 @@ public sealed class GridSearch<T> where T : class
         var words = Normalize(_box.Text ?? "")
             .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        _grid.ItemsSource = words.Length == 0
+        var selected = _grid.SelectedItem as T;
+
+        var shown = words.Length == 0
             ? _full
             : _rows.Where(r => words.All(w => r.Text.Contains(w))).Select(r => r.Item).ToList();
+
+        _shown = shown;
+        _grid.ItemsSource = shown;
+
+        // Typing must not drop the chosen row (or send the grid back to the top).
+        if (selected is not null && shown.Contains(selected))
+        {
+            _grid.SelectedItem = selected;
+            _grid.ScrollIntoView(selected, null);
+        }
     }
 
     // Text properties only: ids, sync flags and signature paths are not searchable.
@@ -82,9 +100,10 @@ public sealed class GridSearch<T> where T : class
             sb.Append(value switch
             {
                 DateTime d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                double d => d.ToString("0.##", CultureInfo.InvariantCulture),
-                float f => f.ToString("0.##", CultureInfo.InvariantCulture),
-                decimal m => m.ToString("0.##", CultureInfo.InvariantCulture),
+                // both "1500" and "1500.00" (the grid shows N2, "1,500.00")
+                double d => d.ToString("0.##", CultureInfo.InvariantCulture) + " " + d.ToString("0.00", CultureInfo.InvariantCulture),
+                float f => f.ToString("0.##", CultureInfo.InvariantCulture) + " " + f.ToString("0.00", CultureInfo.InvariantCulture),
+                decimal m => m.ToString("0.##", CultureInfo.InvariantCulture) + " " + m.ToString("0.00", CultureInfo.InvariantCulture),
                 _ => value.ToString()
             }).Append(' ');
         }
@@ -99,7 +118,8 @@ public sealed class GridSearch<T> where T : class
 
         foreach (var ch in text.ToLowerInvariant())
         {
-            if (ch >= 'ً' && ch <= 'ْ' || ch == 'ـ')
+            // diacritics, tatweel and the thousands comma ("1,500" finds 1500)
+            if (ch >= 'ً' && ch <= 'ْ' || ch == 'ـ' || ch == ',' || ch == '،')
                 continue;
 
             sb.Append(ch switch
