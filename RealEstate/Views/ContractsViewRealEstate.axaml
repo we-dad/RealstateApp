@@ -20,7 +20,7 @@
                           RowSpacing="8">
 
                         <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ بدء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                         <DatePicker x:Name="ContractDateStartPicker" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
@@ -68,7 +68,7 @@
                             </AutoCompleteBox.ItemTemplate>
                         </AutoCompleteBox>
 
-                            <TextBlock x:Name="TenantInfoText"
+                            <SelectableTextBlock x:Name="TenantInfoText"
                                        Grid.Row="1"
                                        Grid.Column="0"
                                        Grid.ColumnSpan="2"

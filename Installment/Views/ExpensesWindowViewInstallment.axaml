@@ -32,7 +32,7 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                     <DatePicker x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -91,19 +91,19 @@
                       ColumnSpacing="10" RowSpacing="8">
 
                     <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ السند" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultExpensesDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultExpensesDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="نوع الخدمة" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultExpensesServiceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultExpensesServiceBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="مبلغ الصرف" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultExpensesAmountBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultExpensesAmountBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="الملاحظات" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultExpensesNoteBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultExpensesNoteBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
                 </Grid>
             </StackPanel>
         </Border>

@@ -20,7 +20,7 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                     <DatePicker x:Name="ReceiptDate" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -86,7 +86,7 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock x:Name="ContractInfoText"
+                    <SelectableTextBlock x:Name="ContractInfoText"
                                Grid.Row="5"
                                Grid.Column="0"
                                TextAlignment="Right"
@@ -119,19 +119,19 @@
                       ColumnSpacing="10" RowSpacing="8">
 
                     <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultReceiptNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultReceiptNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ السند" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultReceiptDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultReceiptDateBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="مبلغ السند" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultAmountBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultAmountBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="طريقة الدفع" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultPaymentMethodBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultPaymentMethodBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="المتبقي" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultCurrentTotalAmountBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultCurrentTotalAmountBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
                 </Grid>
             </StackPanel>
         </Border>

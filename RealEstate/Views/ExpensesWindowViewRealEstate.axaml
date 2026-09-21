@@ -38,7 +38,7 @@
                           RowSpacing="8">
 
                         <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                         <DatePicker x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -101,19 +101,19 @@
                           FlowDirection="RightToLeft">
 
                         <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultExpensesNumBox" Grid.Row="0" Grid.Column="1"/>
                         <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultExpensesDateBox" Grid.Row="0" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultExpensesDateBox" Grid.Row="0" Grid.Column="3"/>
 
                         <TextBlock Text="نوع الخدمة" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultExpensesServiceBox" Grid.Row="1" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultExpensesServiceBox" Grid.Row="1" Grid.Column="1"/>
                         <TextBlock Text="مبلغ الصرف" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultExpensesAmountBox" Grid.Row="1" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultExpensesAmountBox" Grid.Row="1" Grid.Column="3"/>
                     </Grid>
 
                     <StackPanel Spacing="4">
                         <TextBlock Text="الملاحظات" FontWeight="Bold" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultExpensesNoteBox"
+                        <SelectableTextBlock x:Name="ResultExpensesNoteBox"
                                    TextAlignment="Right"
                                    TextWrapping="Wrap"/>
                     </StackPanel>

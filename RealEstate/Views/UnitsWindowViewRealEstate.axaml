@@ -93,19 +93,19 @@
                           ColumnSpacing="16" RowSpacing="8">
 
                         <TextBlock Text="اسم الوحدة" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultUnitNameBox" Grid.Row="0" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultUnitNameBox" Grid.Row="0" Grid.Column="1"/>
                         <TextBlock Text="الحالة" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
                         <TextBlock Text="{Binding UnitState}" Grid.Row="0" Grid.Column="3"/>
 
                         <TextBlock Text="الحي" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultDistrictBox" Grid.Row="1" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultDistrictBox" Grid.Row="1" Grid.Column="1"/>
                         <TextBlock Text="المدينة" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultCityBox" Grid.Row="1" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultCityBox" Grid.Row="1" Grid.Column="3"/>
 
                         <TextBlock Text="نوع الوحدة" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultUnitTypeBox" Grid.Row="2" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultUnitTypeBox" Grid.Row="2" Grid.Column="1"/>
                         <TextBlock Text="رقم الوحدة" Grid.Row="2" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultUnitNumBox" Grid.Row="2" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultUnitNumBox" Grid.Row="2" Grid.Column="3"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -116,7 +116,7 @@
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="Auto,*">
                         <TextBlock Grid.Column="0" Text="وحدات العمارة" FontSize="16"/>
-                        <TextBlock x:Name="UnitsSummaryText"
+                        <SelectableTextBlock x:Name="UnitsSummaryText"
                                    Grid.Column="1"
                                    FontSize="11" Foreground="Gray"
                                    TextAlignment="Left" VerticalAlignment="Center"/>

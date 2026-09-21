@@ -86,34 +86,34 @@
                               ColumnSpacing="10" RowSpacing="8">
 
                             <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                            <SelectableTextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
                             <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                            <SelectableTextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
                             <TextBlock Text="رقم الجوال" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                            <SelectableTextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
                             <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                            <SelectableTextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
                             <TextBlock Text="الوظيفة" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                            <TextBlock x:Name="ResultJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                            <SelectableTextBlock x:Name="ResultJobBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
 
                             <TextBlock Text="اسم الكفيل" Grid.Row="5" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-                            <TextBlock x:Name="ResultSponserNameBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                            <SelectableTextBlock x:Name="ResultSponserNameBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
                             <TextBlock Text="رقم هوية الكفيل" Grid.Row="6" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-                            <TextBlock x:Name="ResultSponserIdentityNumberBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                            <SelectableTextBlock x:Name="ResultSponserIdentityNumberBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
                             <TextBlock Text="رقم جوال الكفيل" Grid.Row="7" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-                            <TextBlock x:Name="ResultSponserPhoneBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                            <SelectableTextBlock x:Name="ResultSponserPhoneBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
                             <TextBlock Text="عنوان الكفيل" Grid.Row="8" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-                            <TextBlock x:Name="ResultSponserAddressBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                            <SelectableTextBlock x:Name="ResultSponserAddressBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
                             <TextBlock Text="وظيفة الكفيل" Grid.Row="9" Grid.Column="1" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
-                            <TextBlock x:Name="ResultSponserJobBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
+                            <SelectableTextBlock x:Name="ResultSponserJobBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right" IsVisible="{Binding BoolSponser}"/>
 
                         </Grid>
                     </StackPanel>
@@ -133,28 +133,28 @@
                             <Border Grid.Column="3" CornerRadius="10" Padding="12" BorderBrush="#DDD" BorderThickness="1">
                                 <StackPanel>
                                     <TextBlock Text="إجمالي العقود" TextAlignment="Center"/>
-                                    <TextBlock x:Name="TotalAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    <SelectableTextBlock x:Name="TotalAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
                             <Border Grid.Column="2" CornerRadius="10" Padding="12" BorderBrush="#DDD" BorderThickness="1">
                                 <StackPanel>
                                     <TextBlock Text="المدفوع" TextAlignment="Center"/>
-                                    <TextBlock x:Name="PaidAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    <SelectableTextBlock x:Name="PaidAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
                             <Border Grid.Column="1" CornerRadius="10" Padding="12" BorderBrush="#DDD" BorderThickness="1">
                                 <StackPanel>
                                     <TextBlock Text="المتبقي" TextAlignment="Center"/>
-                                    <TextBlock x:Name="LeftAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    <SelectableTextBlock x:Name="LeftAmountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
                             <Border Grid.Column="0" CornerRadius="10" Padding="12" BorderBrush="#DDD" BorderThickness="1">
                                 <StackPanel>
                                     <TextBlock Text="عدد السندات" TextAlignment="Center"/>
-                                    <TextBlock x:Name="ReceiptsCountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                                    <SelectableTextBlock x:Name="ReceiptsCountText" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -175,7 +175,7 @@
                                      Maximum="100"
                                      Height="18"/>
 
-                        <TextBlock x:Name="PaymentProgressText"
+                        <SelectableTextBlock x:Name="PaymentProgressText"
                                    TextAlignment="Center"/>
 
                     </StackPanel>

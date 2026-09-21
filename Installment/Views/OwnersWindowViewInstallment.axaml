@@ -39,13 +39,13 @@
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
                       ColumnSpacing="16" RowSpacing="6">
                     <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
-                    <TextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultNameBox" Grid.Row="0" Grid.Column="1"/>
                     <TextBlock Text="رقم الهوية" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
-                    <TextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultIdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
                     <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
-                    <TextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultPhoneBox" Grid.Row="2" Grid.Column="1"/>
                     <TextBlock Text="العنوان" Grid.Row="3" Grid.Column="0" Foreground="Gray"/>
-                    <TextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultAddressBox" Grid.Row="3" Grid.Column="1"/>
                 </Grid>
             </StackPanel>
         </Border>

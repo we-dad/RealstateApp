@@ -12,6 +12,9 @@
         <Style Selector="TextBlock">
           <Setter Property="TextAlignment" Value="Right"/>
         </Style>
+        <Style Selector="SelectableTextBlock">
+          <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
         <Style Selector="ComboBox">
           <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
@@ -39,11 +42,23 @@
           <Setter Property="FontSize" Value="12"/>
           <Setter Property="Opacity" Value="0.7"/>
         </Style>
+        <Style Selector="SelectableTextBlock.statLabel">
+          <Setter Property="FontSize" Value="12"/>
+          <Setter Property="Opacity" Value="0.7"/>
+        </Style>
         <Style Selector="TextBlock.statValue">
           <Setter Property="FontSize" Value="20"/>
           <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+        <Style Selector="SelectableTextBlock.statValue">
+          <Setter Property="FontSize" Value="20"/>
+          <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
         <Style Selector="TextBlock.statBig">
+          <Setter Property="FontSize" Value="22"/>
+          <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="SelectableTextBlock.statBig">
           <Setter Property="FontSize" Value="22"/>
           <Setter Property="FontWeight" Value="Bold"/>
         </Style>
@@ -63,27 +78,27 @@
         <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="6">
           <StackPanel Grid.Column="0" Classes="stat">
             <TextBlock Classes="statLabel" Text="الملاك"/>
-            <TextBlock x:Name="OwnersCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="OwnersCountText" Classes="statValue"/>
           </StackPanel>
           <StackPanel Grid.Column="1" Classes="stat">
             <TextBlock Classes="statLabel" Text="العملاء"/>
-            <TextBlock x:Name="CustomersCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="CustomersCountText" Classes="statValue"/>
           </StackPanel>
           <StackPanel Grid.Column="2" Classes="stat">
             <TextBlock Classes="statLabel" Text="المنتجات"/>
-            <TextBlock x:Name="ProductsCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="ProductsCountText" Classes="statValue"/>
           </StackPanel>
           <StackPanel Grid.Column="3" Classes="stat">
             <TextBlock Classes="statLabel" Text="العقود"/>
-            <TextBlock x:Name="ContractsCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="ContractsCountText" Classes="statValue"/>
           </StackPanel>
           <StackPanel Grid.Column="4" Classes="stat">
             <TextBlock Classes="statLabel" Text="سندات القبض"/>
-            <TextBlock x:Name="ReceiptsCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="ReceiptsCountText" Classes="statValue"/>
           </StackPanel>
           <StackPanel Grid.Column="5" Classes="stat">
             <TextBlock Classes="statLabel" Text="سندات الصرف"/>
-            <TextBlock x:Name="ExpensesCountText" Classes="statValue"/>
+            <SelectableTextBlock x:Name="ExpensesCountText" Classes="statValue"/>
           </StackPanel>
         </Grid>
       </Border>
@@ -95,19 +110,19 @@
           <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
             <StackPanel Grid.Column="0" Classes="stat">
               <TextBlock Classes="statLabel" Text="إجمالي المحصّل"/>
-              <TextBlock x:Name="TotalCollectedText" Classes="statBig" Foreground="#16A34A"/>
+              <SelectableTextBlock x:Name="TotalCollectedText" Classes="statBig" Foreground="#16A34A"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Classes="stat">
               <TextBlock Classes="statLabel" Text="إجمالي المصروفات"/>
-              <TextBlock x:Name="TotalExpensesText" Classes="statBig" Foreground="#DC2626"/>
+              <SelectableTextBlock x:Name="TotalExpensesText" Classes="statBig" Foreground="#DC2626"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Classes="stat">
               <TextBlock Classes="statLabel" Text="صافي الدخل"/>
-              <TextBlock x:Name="NetIncomeText" Classes="statBig"/>
+              <SelectableTextBlock x:Name="NetIncomeText" Classes="statBig"/>
             </StackPanel>
             <StackPanel Grid.Column="3" Classes="stat">
               <TextBlock Classes="statLabel" Text="المتبقي على العملاء"/>
-              <TextBlock x:Name="OutstandingText" Classes="statBig" Foreground="#D97706"/>
+              <SelectableTextBlock x:Name="OutstandingText" Classes="statBig" Foreground="#D97706"/>
             </StackPanel>
           </Grid>
         </Border>
@@ -116,15 +131,15 @@
           <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
             <StackPanel Grid.Column="0" Classes="stat">
               <TextBlock Classes="statLabel" Text="عقود جارية"/>
-              <TextBlock x:Name="ActiveCountText" Classes="statBig"/>
+              <SelectableTextBlock x:Name="ActiveCountText" Classes="statBig"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Classes="stat">
               <TextBlock Classes="statLabel" Text="عقود متعثرة"/>
-              <TextBlock x:Name="LateCountText" Classes="statBig" Foreground="#DC2626"/>
+              <SelectableTextBlock x:Name="LateCountText" Classes="statBig" Foreground="#DC2626"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Classes="stat">
               <TextBlock Classes="statLabel" Text="عقود منتهية"/>
-              <TextBlock x:Name="FinishedCountText" Classes="statBig"/>
+              <SelectableTextBlock x:Name="FinishedCountText" Classes="statBig"/>
             </StackPanel>
           </Grid>
         </Border>
@@ -144,7 +159,7 @@
         <Border Classes="card" Grid.Column="0">
           <StackPanel Spacing="8">
             <TextBlock Text="تحصيل هذا الشهر" FontSize="13"/>
-            <TextBlock x:Name="CollectionTargetText" FontSize="12" Foreground="Gray"/>
+            <SelectableTextBlock x:Name="CollectionTargetText" FontSize="12" Foreground="Gray"/>
             <ProgressBar x:Name="CollectionBar" Minimum="0" Maximum="100" Height="14" Foreground="#16A34A" CornerRadius="7"/>
           </StackPanel>
         </Border>
@@ -172,7 +187,7 @@
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
             <TextBlock Grid.Column="0" Text="متأخرون عن السداد" FontSize="14" FontWeight="Bold"/>
             <Border Grid.Column="1" Background="#DC2626" CornerRadius="10" Padding="10,2" VerticalAlignment="Center">
-              <TextBlock x:Name="LateListCountText" Foreground="White" FontWeight="Bold"/>
+              <SelectableTextBlock x:Name="LateListCountText" Foreground="White" FontWeight="Bold"/>
             </Border>
             <Button Grid.Column="2" Content="طباعة PDF" Click="ExportLate_Click"/>
           </Grid>
@@ -199,7 +214,7 @@
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
             <TextBlock Grid.Column="0" Text="أقساط مستحقة خلال 7 أيام" FontSize="14" FontWeight="Bold"/>
             <Border Grid.Column="1" Background="#2C6EAF" CornerRadius="10" Padding="10,2" VerticalAlignment="Center">
-              <TextBlock x:Name="UpcomingListCountText" Foreground="White" FontWeight="Bold"/>
+              <SelectableTextBlock x:Name="UpcomingListCountText" Foreground="White" FontWeight="Bold"/>
             </Border>
             <Button Grid.Column="2" Content="طباعة PDF" Click="ExportUpcoming_Click"/>
           </Grid>

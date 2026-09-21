@@ -17,10 +17,10 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم سند الصرف" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ExpensesNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                    <TextBlock x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ExpensesDateBox" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
 
                     <TextBlock Text="اسم المنتج" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                     <ComboBox x:Name="ProductBox" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch">

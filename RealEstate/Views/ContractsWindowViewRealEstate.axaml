@@ -47,7 +47,7 @@
                           ColumnSpacing="10" RowSpacing="8">
 
                         <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ بدء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                         <DatePicker x:Name="ContractDateStartPicker" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
@@ -87,7 +87,7 @@
                             </AutoCompleteBox.ItemTemplate>
                         </AutoCompleteBox>
 
-                            <TextBlock x:Name="TenantInfoText" Grid.Row="1" Grid.ColumnSpan="2"
+                            <SelectableTextBlock x:Name="TenantInfoText" Grid.Row="1" Grid.ColumnSpan="2"
                                        TextAlignment="Right" TextWrapping="Wrap" Foreground="Green"/>
                         </Grid>
 
@@ -159,29 +159,29 @@
                           FlowDirection="RightToLeft">
 
                         <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="1"/>
                         <TextBlock Text="حالة العقد" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
                         <TextBlock Text="{Binding ContractState}" Grid.Row="0" Grid.Column="3"/>
 
                         <TextBlock Text="تاريخ البداية" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="1"/>
                         <TextBlock Text="تاريخ النهاية" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractDateEndBox" Grid.Row="1" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultContractDateEndBox" Grid.Row="1" Grid.Column="3"/>
 
                         <TextBlock Text="الإيجار" Grid.Row="2" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultRentAmountBox" Grid.Row="2" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultRentAmountBox" Grid.Row="2" Grid.Column="1"/>
                         <TextBlock Text="طريقة الدفع" Grid.Row="2" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractPayMethodBox" Grid.Row="2" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultContractPayMethodBox" Grid.Row="2" Grid.Column="3"/>
 
                         <TextBlock Text="نوع الوحدة" Grid.Row="3" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractApartmentTypeBox" Grid.Row="3" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultContractApartmentTypeBox" Grid.Row="3" Grid.Column="1"/>
                         <TextBlock Text="تفاصيل الوحدة" Grid.Row="3" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultContractUnitDetealsBox" Grid.Row="3" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultContractUnitDetealsBox" Grid.Row="3" Grid.Column="3"/>
                     </Grid>
 
                     <StackPanel Spacing="6">
                         <TextBlock Text="الالتزامات" FontWeight="Bold" TextAlignment="Right"/>
-                        <TextBlock x:Name="ResultContractOpligationBox" TextWrapping="Wrap" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ResultContractOpligationBox" TextWrapping="Wrap" TextAlignment="Right"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

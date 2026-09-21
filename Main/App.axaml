@@ -13,5 +13,8 @@
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="Arial"/>
     </Style>
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="FontFamily" Value="Arial"/>
+    </Style>
 </Application.Styles>
 </Application>

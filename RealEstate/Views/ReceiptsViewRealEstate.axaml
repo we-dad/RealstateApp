@@ -20,10 +20,10 @@
                           RowSpacing="8">
 
                         <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
-                        <TextBlock x:Name="ReceiptDate" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ReceiptDate" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
 
                         <TextBlock Text="المبلغ" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
                         <TextBox x:Name="AmountBox"
@@ -80,7 +80,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock x:Name="ContractInfoText"
+                        <SelectableTextBlock x:Name="ContractInfoText"
                                    Grid.Row="5"
                                    Grid.Column="0"
                                    TextAlignment="Right"

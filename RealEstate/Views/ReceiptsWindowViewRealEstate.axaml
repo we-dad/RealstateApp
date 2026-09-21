@@ -37,7 +37,7 @@
                           RowSpacing="8">
 
                         <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <SelectableTextBlock x:Name="ReceiptNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                         <DatePicker x:Name="ReceiptDate" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -76,7 +76,7 @@
                             </AutoCompleteBox.ItemTemplate>
                         </AutoCompleteBox>
 
-                            <TextBlock x:Name="ContractInfoText"
+                            <SelectableTextBlock x:Name="ContractInfoText"
                                        Grid.Row="1"
                                        Grid.Column="0"
                                        Grid.ColumnSpan="2"
@@ -126,14 +126,14 @@
                           FlowDirection="RightToLeft">
 
                         <TextBlock Text="رقم السند" Grid.Row="0" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultReceiptNumBox" Grid.Row="0" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultReceiptNumBox" Grid.Row="0" Grid.Column="1"/>
                         <TextBlock Text="تاريخ السند" Grid.Row="0" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultReceiptDateBox" Grid.Row="0" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultReceiptDateBox" Grid.Row="0" Grid.Column="3"/>
 
                         <TextBlock Text="مبلغ السند" Grid.Row="1" Grid.Column="0" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultAmountBox" Grid.Row="1" Grid.Column="1"/>
+                        <SelectableTextBlock x:Name="ResultAmountBox" Grid.Row="1" Grid.Column="1"/>
                         <TextBlock Text="طريقة الدفع" Grid.Row="1" Grid.Column="2" Foreground="Gray"/>
-                        <TextBlock x:Name="ResultPaymentMethodBox" Grid.Row="1" Grid.Column="3"/>
+                        <SelectableTextBlock x:Name="ResultPaymentMethodBox" Grid.Row="1" Grid.Column="3"/>
 
                     </Grid>
                 </StackPanel>

@@ -30,7 +30,7 @@
                       RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ العقد" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                     <DatePicker x:Name="ContractDateStartPicker" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -77,7 +77,7 @@
                             </AutoCompleteBox.ItemTemplate>
                         </AutoCompleteBox>
 
-                        <TextBlock x:Name="CustomerInfoText"
+                        <SelectableTextBlock x:Name="CustomerInfoText"
                                    Grid.Row="1"
                                    Grid.Column="0"
                                    Grid.ColumnSpan="2"
@@ -187,7 +187,7 @@
                                TextAlignment="Right"/>
 
                     <StackPanel Grid.Row="9" Grid.Column="1" Spacing="4">
-                        <TextBlock x:Name="MonthlyInstallmentBox"
+                        <SelectableTextBlock x:Name="MonthlyInstallmentBox"
                                    FontSize="32"
                                    FontWeight="Bold"
                                    TextAlignment="Right"/>
@@ -247,31 +247,31 @@
                       ColumnSpacing="10" RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultContractNumBox" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ بدء العقد" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultContractDateStartBox" Grid.Row="1" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="تاريخ انتهاء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultContractDateEndBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultContractDateEndBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="اجمالي مبلغ السلعة" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultProductTotalAmount" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultProductTotalAmount" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="نسبة الفائدة السنوية" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultInterestPercentBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultInterestPercentBox" Grid.Row="4" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="مدة العقد" Grid.Row="5" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultContractPeriodBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultContractPeriodBox" Grid.Row="5" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="دفعة مقدمة" Grid.Row="6" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultDownPaymentBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultDownPaymentBox" Grid.Row="6" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="نسبة الرسوم الادارية" Grid.Row="7" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultManagementFeeBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultManagementFeeBox" Grid.Row="7" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="مبلغ القسط الشهري" Grid.Row="8" Grid.Column="1" TextAlignment="Right"/>
-                    <TextBlock x:Name="ResultMonthlyInstallmentBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultMonthlyInstallmentBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right"/>
                 </Grid>
             </StackPanel>
         </Border>

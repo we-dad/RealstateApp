@@ -85,32 +85,32 @@
                       ColumnSpacing="10" RowSpacing="8">
 
                     <TextBlock Text="اسم المنتج" Grid.Row="0" Grid.Column="0"/>
-                    <TextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultProductNameBox" Grid.Row="0" Grid.Column="1"/>
 
                     <TextBlock Text="نوع المنتج" Grid.Row="1" Grid.Column="0"/>
-                    <TextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="1"/>
+                    <SelectableTextBlock x:Name="ResultProductTypeBox" Grid.Row="1" Grid.Column="1"/>
 
                     <TextBlock Text="قيمة المنتج الأصلية" Grid.Row="2" Grid.Column="0"/>
-                    <TextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="1" Text="1"/>
+                    <SelectableTextBlock x:Name="ResultProductMainPriceBox" Grid.Row="2" Grid.Column="1" Text="1"/>
 
                     <TextBlock Text="رقم اللوحة" Grid.Row="3" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsPlateNumberBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultCarsPlateNumberBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
 
                     <TextBlock Text="رقم الهيكل" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsVINBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultCarsVINBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
 
                     <TextBlock Text="الموديل" Grid.Row="5" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsModelBox" Grid.Row="5" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultCarsModelBox" Grid.Row="5" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
 
                     <TextBlock Text="اللون" Grid.Row="6" Grid.Column="0" IsVisible="{Binding IsCarFieldsVisible}"/>
-                    <TextBlock x:Name="ResultCarsColorBox" Grid.Row="6" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultCarsColorBox" Grid.Row="6" Grid.Column="1" IsVisible="{Binding IsCarFieldsVisible}"/>
 
 
                     <TextBlock Text="سعة التخزين" Grid.Row="3" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-                    <TextBlock x:Name="ResultMobileStorageBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultMobileStorageBox" Grid.Row="3" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
 
                     <TextBlock Text="اللون" Grid.Row="4" Grid.Column="0" IsVisible="{Binding IsPhoneFieldsVisible}"/>
-                    <TextBlock x:Name="ResultMobileColorBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
+                    <SelectableTextBlock x:Name="ResultMobileColorBox" Grid.Row="4" Grid.Column="1" IsVisible="{Binding IsPhoneFieldsVisible}"/>
 
                 </Grid>
             </StackPanel>
