@@ -5,82 +5,209 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>لوحة تقدم المشروع</title>
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--text:#1c2430;--muted:#667085;--line:#e4e7ec;
---done:#1f9d55;--done-bg:#e3f5ea;--doing:#b7791f;--doing-bg:#fdf1cf;
---todo:#667085;--todo-bg:#eceef2;--accent:#2563eb}
-@media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--text:#e8ecf2;
---muted:#9aa4b2;--line:#2c3542;--done:#4ade80;--done-bg:#153a25;--doing:#fbbf24;
---doing-bg:#3f3210;--todo:#9aa4b2;--todo-bg:#262d38;--accent:#6ea0ff}}
+:root{
+  --bg:#f3f5f9;--card:#ffffff;--text:#172033;--muted:#6b7688;--line:#e6eaf1;
+  --accent:#4f46e5;--accent2:#0ea5a4;
+  --done:#16a34a;--done-bg:#e7f6ec;--doing:#d97706;--doing-bg:#fef3dc;
+  --todo:#64748b;--todo-bg:#eef1f6;--client:#7c3aed;--client-bg:#f0eaff;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1320;--card:#171e30;--text:#e9edf6;--muted:#93a0b8;--line:#263049;
+  --accent:#8b8cf8;--accent2:#2dd4bf;
+  --done:#4ade80;--done-bg:#12321f;--doing:#fbbf24;--doing-bg:#3a2e0e;
+  --todo:#94a3b8;--todo-bg:#232c42;--client:#b79cff;--client-bg:#2a2148;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);
-font-family:-apple-system,"Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
-line-height:1.6}
-.wrap{max-width:980px;margin:0 auto;padding:20px 16px 40px}
-h1{font-size:1.5rem;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 20px;font-size:.95rem}
-h2{font-size:1.05rem;margin:0 0 12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-padding:16px;margin-bottom:16px}
-.hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px}
-.pct{font-size:2.6rem;font-weight:700;color:var(--done);line-height:1}
-.hero .lbl{color:var(--muted)}
-.bar{height:14px;background:var(--todo-bg);border-radius:999px;overflow:hidden}
-.bar>span{display:block;height:100%;background:var(--done);border-radius:999px}
-.cur{margin-top:14px;padding:10px 12px;background:var(--doing-bg);
-border-radius:8px;color:var(--text)}
-.cur b{color:var(--doing)}
-.grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
-@media (max-width:720px){.grid{grid-template-columns:1fr}}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);line-height:1.65;
+  font-family:-apple-system,"Segoe UI","Noto Sans Arabic","Cairo",Tahoma,Arial,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0;font-size:1.7rem;letter-spacing:-.2px}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+  font-size:.85rem;color:var(--muted);box-shadow:var(--shadow)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;
+  box-shadow:var(--shadow);margin-bottom:18px}
+h2{margin:0 0 14px;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+h2 .count{font-size:.8rem;font-weight:600;color:var(--muted);background:var(--todo-bg);
+  border-radius:999px;padding:1px 10px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+  background:linear-gradient(135deg,var(--card),var(--card)) padding-box}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{width:150px;height:150px;transform:rotate(90deg) scaleX(-1)}
+.ring .bg{stroke:var(--todo-bg)}
+.ring .fg{stroke:url(#g);stroke-linecap:round;transition:stroke-dashoffset .8s}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringtxt b{font-size:2.3rem;line-height:1;color:var(--text)}
+.ringtxt span{font-size:.8rem;color:var(--muted)}
+.hero h2{font-size:1.35rem;margin-bottom:10px}
+.seg{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--todo-bg)}
+.seg i{display:block;height:100%}
+.seg .d{background:var(--done)}.seg .w{background:var(--doing)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.tile{border-radius:14px;padding:10px 12px;background:var(--todo-bg)}
+.tile b{display:block;font-size:1.4rem;line-height:1.2}
+.tile span{font-size:.8rem;color:var(--muted)}
+.tile.done{background:var(--done-bg)}.tile.done b{color:var(--done)}
+.tile.doing{background:var(--doing-bg)}.tile.doing b{color:var(--doing)}
+.tile.client{background:var(--client-bg)}.tile.client b{color:var(--client)}
+
+/* current */
+.cur{border-inline-start:6px solid var(--doing);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.cur .lbl{font-size:.8rem;color:var(--doing);font-weight:700}
+.cur .ttl{font-size:1.15rem;font-weight:700}
+.cur .meta{color:var(--muted);font-size:.9rem}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 ul.list{list-style:none;margin:0;padding:0}
-ul.list li{padding:10px 0;border-top:1px solid var(--line)}
+ul.list li{display:flex;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
 ul.list li:first-child{border-top:0;padding-top:0}
+.box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;margin-top:2px}
+li.done .box{background:var(--done);border-color:var(--done)}
+li.done .box::before{content:"✓"}
+.done .ttl,tr.done .name,.task.done .ttl{text-decoration:line-through;text-decoration-thickness:2px;
+  text-decoration-color:var(--done);color:var(--muted)}
 .small{color:var(--muted);font-size:.85rem}
-.tag{display:inline-block;padding:1px 10px;border-radius:999px;font-size:.8rem;
-font-weight:600;white-space:nowrap}
+.time{flex:none;width:10px;height:10px;border-radius:50%;background:var(--done);margin-top:9px}
+
+/* client tasks */
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.task{border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;
+  border-inline-start:5px solid var(--todo);background:var(--card)}
+.task.doing{border-inline-start-color:var(--doing)}
+.task.done{border-inline-start-color:var(--done);background:var(--done-bg)}
+.task .row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.task .ttl{font-weight:700;font-size:1rem}
+.task .meta{margin-top:6px;color:var(--muted);font-size:.83rem}
+.mini{height:6px;border-radius:999px;background:var(--todo-bg);margin-top:10px;overflow:hidden}
+.mini i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px}
+.task.done .mini i{background:var(--done)}
+
+.tag{display:inline-block;padding:1px 10px;border-radius:999px;font-size:.78rem;font-weight:700;white-space:nowrap}
 .tag.done{background:var(--done-bg);color:var(--done)}
 .tag.doing{background:var(--doing-bg);color:var(--doing)}
 .tag.todo{background:var(--todo-bg);color:var(--todo)}
+.tag.client{background:var(--client-bg);color:var(--client)}
+
+/* table */
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;
+  padding:5px 14px;font:inherit;font-size:.85rem;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.search{flex:1;min-width:160px;border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+  background:var(--card);color:var(--text);font:inherit;font-size:.9rem}
 .tblwrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
-th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);
-vertical-align:top}
-th{color:var(--muted);font-weight:600;font-size:.82rem}
-tr.done td:first-child{border-right:4px solid var(--done)}
-tr.doing td:first-child{border-right:4px solid var(--doing)}
-tr.todo td:first-child{border-right:4px solid var(--todo)}
-@media (max-width:640px){.hide-m{display:none}th,td{padding:8px 6px}}
-.empty{color:var(--muted)}
-footer{color:var(--muted);text-align:center;font-size:.85rem;margin-top:24px}
+th,td{text-align:right;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:.8rem}
+tr.done td:first-child{border-inline-start:4px solid var(--done)}
+tr.doing td:first-child{border-inline-start:4px solid var(--doing)}
+tr.todo td:first-child{border-inline-start:4px solid var(--todo)}
+td.num{color:var(--muted);width:44px}
+td.prog{min-width:110px}
+tr.hidden{display:none}
+.empty{color:var(--muted);padding:6px 0}
+footer{color:var(--muted);text-align:center;font-size:.85rem;margin-top:26px}
+footer code{background:var(--todo-bg);padding:1px 8px;border-radius:8px}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+  .hide-m{display:none}
+  th,td{padding:9px 6px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>لوحة تقدم المشروع</h1>
-<p class="sub">RealEstateInstallmentsManager — خارطة الطريق</p>
 
-<section class="card">
-<div class="hero">
-<div class="pct">29%</div>
-<div class="lbl">منجز 5 من 17 بندًا</div>
-</div>
-<div class="bar" role="progressbar" aria-valuenow="29" aria-valuemin="0" aria-valuemax="100"><span style="width:29%"></span></div>
-<div class="cur"><b>البند الحالي:</b> #13 — مراجعة سياسات RLS في Supabase (نظريًا من اللوحة)</div>
+<header class="top">
+  <div><h1>لوحة تقدم المشروع</h1><p class="sub">RealEstateInstallmentsManager — مهام المشروع وطلبات العميل</p></div>
+  <span class="pill">آخر تحديث: 2026-09-21 17:57</span>
+</header>
+
+<section class="card hero">
+  <div class="ring" role="img" aria-label="نسبة الإنجاز 26%">
+    <svg viewBox="0 0 120 120">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#0ea5a4"/></linearGradient></defs>
+      <circle class="bg" cx="60" cy="60" r="54" fill="none" stroke-width="11"/>
+      <circle class="fg" cx="60" cy="60" r="54" fill="none" stroke-width="11"
+              stroke-dasharray="339.29" stroke-dashoffset="251.07"/>
+    </svg>
+    <div class="ringtxt"><b>26%</b><span>منجزة</span></div>
+  </div>
+  <div>
+    <h2>6 من 23 مهمة منجزة</h2>
+    <div class="seg" aria-hidden="true"><i class="d" style="width:26.1%"></i><i class="w" style="width:8.7%"></i></div>
+    <div class="tiles">
+      <div class="tile done"><b>6</b><span>منجزة</span></div>
+      <div class="tile doing"><b>2</b><span>قيد التنفيذ</span></div>
+      <div class="tile"><b>15</b><span>لم تبدأ</span></div>
+      <div class="tile client"><b>0/5</b><span>طلبات العميل</span></div>
+    </div>
+    <p class="small" style="margin:12px 0 0">الخطوات: 29 من 117 منجزة</p>
+  </div>
 </section>
 
-<div class="grid">
-<section class="card"><h2>مهام يوم 2026-09-19</h2><ul class="list"><li><span class="tag todo">قيد الانتظار</span> مراجعة سياسات RLS في Supabase (بند 13، صغير) — يدوي من المطوّر<div class="small">أعلى أولوية في ROADMAP، وتحمي بيانات الإنتاج الحقيقية. وClaude لا يتصل بـ Supabase، فالمطوّر هو من ينفذها.</div></li><li><span class="tag todo">قيد الانتظار</span> كتابة خطة إصلاح سباق الرفع/السحب وطلب الموافقة (بند 1، متوسط)<div class="small">أول بند تقني في الترتيب، وهو يسبب تكرار صفوف. اليوم نكتب الخطة فقط بدون أي تنفيذ.</div></li><li><span class="tag todo">قيد الانتظار</span> صياغة خطة منع التكرار في UpsertFromCloud (بند 2، متوسط) — خطة فقط<div class="small">يكمل بند 1 ويفضّل أن يأتي بعده، فنجهز الخطتين معًا لتُراجعا في جلسة واحدة.</div></li></ul></section>
-<section class="card"><h2>آخر 5 إنجازات</h2><ul class="list"><li><b>بند 16: قوائم بحث ذكية</b> <span class="small">· 2026-09-20</span><div class="small">كل خانات البحث (العقد في السندات، والعميل والمستأجر بالهوية) صارت قوائم تعرض الاسم جنب الرقم. رقم العقد للقراءة فقط، وأرقام العقود والسندات والمصاريف بها رمز المستخدم. اختبرها المطوّر وأفاد أنها سليمة</div></li><li><b>بند 15: حسبة الدفعة المقدمة في صفحة تعديل العقد</b> <span class="small">· 2026-09-20</span><div class="small">إصلاح النافذة (الدفعة كانت تُحسب مرتين ويُحفظ الإجمالي بدون خصمها)، وتقرير &quot;فحص الحسابات&quot; للقراءة فقط. المتبقي: مراجعة المطوّر للعقود التي انحفظت غلط قبل الإصلاح (لا يصلحها البرنامج تلقائيًا)، وخطأ إلغاء الدفعة في صفحة الإنشاء</div></li><li><b>بند 2: منع تكرار الصفوف في UpsertFromCloud</b> <span class="small">· 2026-09-19</span><div class="small">كل الخدمات الـ12 صارت &quot;تتبنّى&quot; الصف المحلي غير المرتبط (CloudId = 0 وIsDirty = 1 وinsert) بدل إدخال نسخة مكررة، بمفتاح احتياطي لكل جدول (الرقم يُطابق مع حقول أخرى والأب، لأن أكثر من مستخدم قد يكوّنون نفس الرقم). التبنّي يغيّر CloudId وSyncAction فقط ولا يكتب فوق قيم محلية. خطأ UNIQUE في جداول العقود والإيصالات والمصاريف يتخطى الصف بدل إيقاف السحب. كل دفعة مرّت على code-reviewer. اختبر المطوّر الاستخدام العادي في كل الشاشات، وإضافة عقد وإيصال ومصروف، وجوالين بلونين مختلفين، ومبنى بوحداته: سليم. دُمج في claude-setup ولم يُدفع بعد. لم يُختبر التبنّي نفسه لأن إعادة إنتاجه على البيانات الحقيقية خطرة. مهمة لاحقة: رسالة عربية عند تخطي صف بسبب تعارض رقم</div></li><li><b>بند 1: إصلاح سباق الرفع/السحب</b> <span class="small">· 2026-09-19</span><div class="small">تم على فرع fix-push-pull-race (commits 8408799 و726c523 و710b353 و3dbbf48): بوابة الرفع تنتظر بدل أن تُسقط، وبوابة جديدة للأقساط، و11 شاشة قائمة صارت تنتظر الرفع قبل السحب. اختبر المطوّر شاشة الملاك (عقارات) وشاشة العملاء (أقساط) بسجل تجريبي وضغط &quot;تحديث&quot; عدة مرات: سليم بلا تكرار. فحص المطوّر Supabase ولم يجد بيانات متضررة. ثم استُبدلت نسخ الرفع الخاصة في نافذتي العقود والمصاريف (أقساط) باستدعاء الخدمة (commit 3250d98). اختبر المطوّر النافذتين (تعديل عقد، وإضافة مصروف) وأفاد أن كل شيء سليم. بقي دمج الـ Pull Request. دُمج في master عبر Pull Request #1 و#2 (حتى بند 2). البنود اللاحقة (14 وما بعدها) في Pull Request جديد</div></li><li><b>بند 5: رسالة واضحة لدور tester</b> <span class="small">· 2026-09-18</span><div class="small">شريط تنبيه أعلى MainMenuView يظهر فقط عند AppSession.IsTester. تعديل ملفين (MainMenuView.axaml و.axaml.cs) بدون مساس بالمزامنة. البناء نجح، ومراجعة code-reviewer بلا مشاكل حرجة، وتحقق المطوّر بصريًا (يظهر لـ tester ومخفي لبقية الأدوار). commit 9dedd06</div></li></ul></section>
+<section class="card cur"><div><div class="lbl">المهمة الحالية</div><div class="ttl">#22 — نسخ النصوص المعروضة</div><div class="meta">صغير · 0 من 2 خطوات</div></div></section>
+
+<div class="grid2">
+  <section class="card"><h2>مهام يوم 2026-09-21</h2><ul class="list"><li class=""><span class="box"></span><div><div class="ttl">نسخ النصوص المعروضة (مهمة 22، صغيرة، طلب العميل)</div><div class="small">أسهل طلبات العميل وأسرعها، وتغيّر عرض النصوص فقط بدون أي منطق.</div></div></li><li class=""><span class="box"></span><div><div class="ttl">بحث داخل الجداول (مهمة 19، متوسطة، طلب العميل)</div><div class="small">ثاني طلبات العميل. نبدأ بتجربة على شاشة واحدة ثم نعمّمها.</div></div></li><li class="done"><span class="box"></span><div><div class="ttl">مراجعة العقود المتضررة مع العميل (مهمة 15)</div><div class="small">بقيت نقطة مفتوحة: العقود اللي انحفظت قبل إصلاح الدفعة المقدمة، بزر &quot;فحص الحسابات&quot;.</div></div></li></ul></section>
+  <section class="card"><h2>آخر الإنجازات</h2><ul class="list"><li><span class="time"></span><div><div class="ttl" style="text-decoration:none;color:inherit"><b>مهمة 16: قوائم بحث ذكية</b></div><div class="small">2026-09-20</div><div class="small">كل خانات البحث (العقد في السندات، والعميل والمستأجر بالهوية) صارت قوائم تعرض الاسم جنب الرقم. رقم العقد للقراءة فقط، وأرقام العقود والسندات والمصاريف بها رمز المستخدم. اخ…</div></div></li><li><span class="time"></span><div><div class="ttl" style="text-decoration:none;color:inherit"><b>مهمة 15: حسبة الدفعة المقدمة في صفحة تعديل العقد</b></div><div class="small">2026-09-20</div><div class="small">إصلاح النافذة (الدفعة كانت تُحسب مرتين ويُحفظ الإجمالي بدون خصمها)، وتقرير &quot;فحص الحسابات&quot; للقراءة فقط. المتبقي: مراجعة المطوّر للعقود التي انحفظت غلط قبل الإصلاح (لا يصلح…</div></div></li><li><span class="time"></span><div><div class="ttl" style="text-decoration:none;color:inherit"><b>مهمة 2: منع تكرار الصفوف في UpsertFromCloud</b></div><div class="small">2026-09-19</div><div class="small">كل الخدمات الـ12 صارت &quot;تتبنّى&quot; الصف المحلي غير المرتبط (CloudId = 0 وIsDirty = 1 وinsert) بدل إدخال نسخة مكررة، بمفتاح احتياطي لكل جدول (الرقم يُطابق مع حقول أخرى والأب، …</div></div></li><li><span class="time"></span><div><div class="ttl" style="text-decoration:none;color:inherit"><b>مهمة 1: إصلاح سباق الرفع/السحب</b></div><div class="small">2026-09-19</div><div class="small">تم على فرع fix-push-pull-race (commits 8408799 و726c523 و710b353 و3dbbf48): بوابة الرفع تنتظر بدل أن تُسقط، وبوابة جديدة للأقساط، و11 شاشة قائمة صارت تنتظر الرفع قبل السح…</div></div></li><li><span class="time"></span><div><div class="ttl" style="text-decoration:none;color:inherit"><b>مهمة 5: رسالة واضحة لدور tester</b></div><div class="small">2026-09-18</div><div class="small">شريط تنبيه أعلى MainMenuView يظهر فقط عند AppSession.IsTester. تعديل ملفين (MainMenuView.axaml و.axaml.cs) بدون مساس بالمزامنة. البناء نجح، ومراجعة code-reviewer بلا مشاك…</div></div></li></ul></section>
 </div>
 
 <section class="card">
-<h2>كل البنود</h2>
-<div class="tblwrap"><table>
-<thead><tr><th>#</th><th>البند</th><th>الحجم</th><th>الحالة</th><th>المهام</th><th class="hide-m">ملاحظة</th></tr></thead>
-<tbody><tr class="done"><td>1</td><td>إصلاح سباق الرفع/السحب</td><td>متوسط</td><td><span class="tag done">منجز</span></td><td>6/6</td><td class="hide-m">يسبب تكرار صفوف. الحل النموذجي موجود في شاشة الوحدات</td></tr><tr class="done"><td>2</td><td>منع تكرار الصفوف في UpsertFromCloud</td><td>متوسط</td><td><span class="tag done">منجز</span></td><td>4/5</td><td class="hide-m">يكمل بند 1 ويحمي من صفوف بلا CloudId</td></tr><tr class="todo"><td>3</td><td>زر &quot;استرجاع شامل&quot; بمؤشر تقدم</td><td>كبير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/6</td><td class="hide-m">يحتاج 1 و2 و4. يظهر لـ admin و editor و viewer فقط</td></tr><tr class="todo"><td>4</td><td>توحيد منطق المزامنة في مكان واحد</td><td>كبير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/4</td><td class="hide-m">يحوّل 12 نسخة إلى مكان واحد</td></tr><tr class="done"><td>5</td><td>رسالة واضحة لدور tester</td><td>صغير</td><td><span class="tag done">منجز</span></td><td>3/3</td><td class="hide-m">سريع، بدون مساس بمنطق المزامنة</td></tr><tr class="todo"><td>6</td><td>نقل إعدادات Supabase إلى ملف خارجي</td><td>متوسط</td><td><span class="tag todo">لم يبدأ</span></td><td>0/4</td><td class="hide-m">شرط لبنود 7 و8</td></tr><tr class="todo"><td>7</td><td>وضع تجريبي ببيانات وهمية وبدون سحابة</td><td>كبير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/6</td><td class="hide-m">يحتاج 6</td></tr><tr class="todo"><td>8</td><td>مشروع Supabase منفصل للتطوير</td><td>صغير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/5</td><td class="hide-m">يحتاج 6. الإنشاء يدوي من المطوّر. يشمل اختبار RLS العملي</td></tr><tr class="todo"><td>9</td><td>تحديث الحزم الأربع ذات الثغرات الأمنية</td><td>متوسط</td><td><span class="tag todo">لم يبدأ</span></td><td>0/5</td><td class="hide-m">يحتاج إذن المطوّر. بعد بند 12 لأنه قد يكسر البناء</td></tr><tr class="todo"><td>10</td><td>توقيع نسخة macOS</td><td>متوسط</td><td><span class="tag todo">لم يبدأ</span></td><td>0/4</td><td class="hide-m">يحتاج حساب Apple Developer</td></tr><tr class="todo"><td>11</td><td>تطوير مستودع العرض (صور ووصف وفيديو)</td><td>كبير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/4</td><td class="hide-m">ميزة جديدة، آخر أولوية</td></tr><tr class="todo"><td>12</td><td>اختبارات آلية لمنطق المزامنة</td><td>كبير</td><td><span class="tag todo">لم يبدأ</span></td><td>0/7</td><td class="hide-m">تُكتب بعد توحيد المنطق (بند 4)</td></tr><tr class="doing"><td>13</td><td>مراجعة سياسات RLS في Supabase (نظريًا من اللوحة)</td><td>صغير</td><td><span class="tag doing">قيد التنفيذ</span></td><td>0/7</td><td class="hide-m">يدوي من المطوّر. الاختبار العملي ضمن بند 8</td></tr><tr class="doing"><td>14</td><td>سلامة سندات القبض ورصيد العقد بين أكثر من جهاز</td><td>متوسط</td><td><span class="tag doing">قيد التنفيذ</span></td><td>4/12</td><td class="hide-m">عاجل: يمس المال. المرحلة 1 (اشتقاق الرصيد) منجزة ومختبرة، والمرحلة 2 (رقم سند لا يتعارض) لم تبدأ</td></tr><tr class="done"><td>15</td><td>إصلاح حسبة الدفعة المقدمة في صفحة تعديل العقد</td><td>صغير</td><td><span class="tag done">منجز</span></td><td>2/5</td><td class="hide-m">منجز. يبقى فحص العقود التي انحفظت غلط قبل الإصلاح (بمراجعة المطوّر مع العميل)</td></tr><tr class="done"><td>16</td><td>قوائم بحث ذكية بالاسم والهوية ورقم العقد</td><td>متوسط</td><td><span class="tag done">منجز</span></td><td>4/5</td><td class="hide-m">منجز ومختبر</td></tr><tr class="doing"><td>17</td><td>تحديث البيانات تلقائيًا</td><td>متوسط</td><td><span class="tag doing">قيد التنفيذ</span></td><td>4/9</td><td class="hide-m">المرحلة 1 (تحديث الجداول محليًا بعد أي تغيير) منجزة ومختبرة. المرحلة 2 (سحب دوري من السحابة) تنتظر التنفيذ</td></tr></tbody>
-</table></div>
+  <h2>طلبات العميل <span class="count">0 من 5</span></h2>
+  <div class="tasks"><div class="task doing"><div class="row"><div class="ttl">نسخ النصوص المعروضة</div><span class="tag doing">قيد التنفيذ</span></div><div class="meta">مهمة 22 · صغير · 0/2 خطوات</div><div class="mini"><i style="width:0%"></i></div></div><div class="task todo"><div class="row"><div class="ttl">بحث داخل الجداول</div><span class="tag todo">لم تبدأ</span></div><div class="meta">مهمة 19 · متوسط · 0/3 خطوات</div><div class="mini"><i style="width:0%"></i></div></div><div class="task todo"><div class="row"><div class="ttl">رقم السند يدوي أو تلقائي</div><span class="tag todo">لم تبدأ</span></div><div class="meta">مهمة 21 · متوسط · 0/4 خطوات</div><div class="mini"><i style="width:0%"></i></div></div><div class="task todo"><div class="row"><div class="ttl">عرض سعر المنتج قبل الدفعة المقدمة وبعدها</div><span class="tag todo">لم تبدأ</span></div><div class="meta">مهمة 20 · صغير · 0/4 خطوات</div><div class="mini"><i style="width:0%"></i></div></div><div class="task todo"><div class="row"><div class="ttl">بيانات العقد ثابتة بعد الإنشاء</div><span class="tag todo">لم تبدأ</span></div><div class="meta">مهمة 18 · كبير · 0/6 خطوات</div><div class="mini"><i style="width:0%"></i></div></div></div>
 </section>
 
-<footer>آخر تحديث: 2026-09-20 18:33</footer>
+<section class="card" id="all">
+  <h2>كل المهام <span class="count">23</span></h2>
+  <div class="tools">
+    <button class="chip on" data-f="all">الكل</button>
+    <button class="chip" data-f="client">طلبات العميل</button>
+    <button class="chip" data-f="doing">قيد التنفيذ</button>
+    <button class="chip" data-f="todo">لم تبدأ</button>
+    <button class="chip" data-f="done">منجزة</button>
+    <input class="search" id="q" type="search" placeholder="ابحث في المهام...">
+  </div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>#</th><th>المهمة</th><th>النوع</th><th>الحجم</th><th>الحالة</th><th class="hide-m">الخطوات</th><th class="hide-m">ملاحظة</th></tr></thead>
+    <tbody><tr class="doing" data-status="doing" data-kind="client"><td class="num">22</td><td class="name">نسخ النصوص المعروضة</td><td><span class="tag client">طلب العميل</span></td><td>صغير</td><td><span class="tag doing">قيد التنفيذ</span></td><td class="prog hide-m"><span class="small">0/2</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">مطلوب من العميل. تحديد النصوص للنسخ</td></tr><tr class="todo" data-status="todo" data-kind="client"><td class="num">19</td><td class="name">بحث داخل الجداول</td><td><span class="tag client">طلب العميل</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/3</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">مطلوب من العميل. خانة بحث فوق كل جدول</td></tr><tr class="todo" data-status="todo" data-kind="client"><td class="num">21</td><td class="name">رقم السند يدوي أو تلقائي</td><td><span class="tag client">طلب العميل</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">مطلوب من العميل. منع تكرار الرقم اليدوي</td></tr><tr class="todo" data-status="todo" data-kind="client"><td class="num">20</td><td class="name">عرض سعر المنتج قبل الدفعة المقدمة وبعدها</td><td><span class="tag client">طلب العميل</span></td><td>صغير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">مطلوب من العميل. حسبة الأقساط</td></tr><tr class="todo" data-status="todo" data-kind="client"><td class="num">18</td><td class="name">بيانات العقد ثابتة بعد الإنشاء</td><td><span class="tag client">طلب العميل</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/6</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">مطلوب من العميل. يحتاج قرارًا في مخطط Supabase</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">13</td><td class="name">مراجعة سياسات RLS في Supabase (نظريًا من اللوحة)</td><td><span class="small">مشروع</span></td><td>صغير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/7</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يدوي من المطوّر. الاختبار العملي ضمن مهمة 8</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">1</td><td class="name">إصلاح سباق الرفع/السحب</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">6/6</span><div class="mini"><i style="width:100%"></i></div></td><td class="hide-m small">يسبب تكرار صفوف. الحل النموذجي موجود في شاشة الوحدات</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">2</td><td class="name">منع تكرار الصفوف في UpsertFromCloud</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">4/5</span><div class="mini"><i style="width:80%"></i></div></td><td class="hide-m small">يكمل مهمة 1 ويحمي من صفوف بلا CloudId</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">5</td><td class="name">رسالة واضحة لدور tester</td><td><span class="small">مشروع</span></td><td>صغير</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">3/3</span><div class="mini"><i style="width:100%"></i></div></td><td class="hide-m small">سريع، بدون مساس بمنطق المزامنة</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">4</td><td class="name">توحيد منطق المزامنة في مكان واحد</td><td><span class="small">مشروع</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحوّل 12 نسخة إلى مكان واحد</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">12</td><td class="name">اختبارات آلية لمنطق المزامنة</td><td><span class="small">مشروع</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/7</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">تُكتب بعد توحيد المنطق (مهمة 4)</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">9</td><td class="name">تحديث الحزم الأربع ذات الثغرات الأمنية</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/5</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحتاج إذن المطوّر. بعد مهمة 12 لأنه قد يكسر البناء</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">3</td><td class="name">زر &quot;استرجاع شامل&quot; بمؤشر تقدم</td><td><span class="small">مشروع</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/6</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحتاج 1 و2 و4. يظهر لـ admin و editor و viewer فقط</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">6</td><td class="name">نقل إعدادات Supabase إلى ملف خارجي</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">شرط لمهام 7 و8</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">8</td><td class="name">مشروع Supabase منفصل للتطوير</td><td><span class="small">مشروع</span></td><td>صغير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/5</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحتاج 6. الإنشاء يدوي من المطوّر. يشمل اختبار RLS العملي</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">7</td><td class="name">وضع تجريبي ببيانات وهمية وبدون سحابة</td><td><span class="small">مشروع</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/6</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحتاج 6</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">10</td><td class="name">توقيع نسخة macOS</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">يحتاج حساب Apple Developer</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">11</td><td class="name">تطوير مستودع العرض (صور ووصف وفيديو)</td><td><span class="small">مشروع</span></td><td>كبير</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">ميزة جديدة، آخر أولوية</td></tr><tr class="doing" data-status="doing" data-kind="project"><td class="num">14</td><td class="name">سلامة سندات القبض ورصيد العقد بين أكثر من جهاز</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag doing">قيد التنفيذ</span></td><td class="prog hide-m"><span class="small">4/12</span><div class="mini"><i style="width:33%"></i></div></td><td class="hide-m small">عاجل: يمس المال. المرحلة 1 (اشتقاق الرصيد) منجزة ومختبرة، والمرحلة 2 (رقم سند لا يتعارض) لم تبدأ</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">15</td><td class="name">إصلاح حسبة الدفعة المقدمة في صفحة تعديل العقد</td><td><span class="small">مشروع</span></td><td>صغير</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">2/5</span><div class="mini"><i style="width:40%"></i></div></td><td class="hide-m small">منجز. يبقى فحص العقود التي انحفظت غلط قبل الإصلاح (بمراجعة المطوّر مع العميل)</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">16</td><td class="name">قوائم بحث ذكية بالاسم والهوية ورقم العقد</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">4/5</span><div class="mini"><i style="width:80%"></i></div></td><td class="hide-m small">منجز ومختبر</td></tr><tr class="done" data-status="done" data-kind="project"><td class="num">17</td><td class="name">تحديث البيانات تلقائيًا</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag done">منجزة</span></td><td class="prog hide-m"><span class="small">6/6</span><div class="mini"><i style="width:100%"></i></div></td><td class="hide-m small">منجزة ومختبرة</td></tr><tr class="todo" data-status="todo" data-kind="project"><td class="num">23</td><td class="name">ملاحظات المزامنة المؤجلة</td><td><span class="small">مشروع</span></td><td>متوسط</td><td><span class="tag todo">لم تبدأ</span></td><td class="prog hide-m"><span class="small">0/4</span><div class="mini"><i style="width:0%"></i></div></td><td class="hide-m small">من مراجعة المزامنة الدورية. تحتاج قرارات</td></tr></tbody>
+  </table></div>
+</section>
+
+<footer>إذا خلصت مهمة تُشطب تلقائيًا بعد تحديث الملف: <code>python3 docs/generate_dashboard.py</code></footer>
+
 </div>
+<script>
+(function(){
+  var rows=[].slice.call(document.querySelectorAll('#all tbody tr'));
+  var chips=[].slice.call(document.querySelectorAll('.chip'));
+  var box=document.getElementById('q');
+  var f='all';
+  function apply(){
+    var q=(box.value||'').trim().toLowerCase();
+    rows.forEach(function(r){
+      var okS=(f==='all')||r.getAttribute('data-status')===f||(f==='client'&&r.getAttribute('data-kind')==='client');
+      var okQ=!q||r.textContent.toLowerCase().indexOf(q)!==-1;
+      r.classList.toggle('hidden',!(okS&&okQ));
+    });
+  }
+  chips.forEach(function(c){c.addEventListener('click',function(){
+    chips.forEach(function(x){x.classList.remove('on')});
+    c.classList.add('on');f=c.getAttribute('data-f');apply();
+  })});
+  box.addEventListener('input',apply);
+})();
+</script>
 </body>
 </html>
