@@ -168,7 +168,7 @@
                                    TextAlignment="Right"/>
                     </StackPanel>
 
-                    <TextBlock Text="اجمالي قيمة المنتج"
+                    <TextBlock Text="المتبقي (بعد الدفعة المقدمة)"
                                Grid.Row="6"
                                Grid.Column="0"
                                TextAlignment="Right"/>
@@ -179,6 +179,9 @@
                                  Text="{Binding MainTotalAmount}"
                                  IsReadOnly="True"
                                  TextChanged="MainTotalAmountBox_TextChanged"/>
+                        <TextBlock Text="إجمالي المبلغ (الدفعة المقدمة + المتبقي)" TextAlignment="Right" Margin="0,6,0,0"/>
+                        <SelectableTextBlock x:Name="TotalAmountText" TextAlignment="Right" FontWeight="Bold"
+                                             Text="{Binding TotalWithDownPayment, StringFormat='{}{0:0.##}'}"/>
                     </StackPanel>
 
                     <TextBlock Text="القسط الشهري"
@@ -243,7 +246,7 @@
                 <TextBlock Text="بيانات العقد" HorizontalAlignment="Right"/>
 
                 <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                       ColumnSpacing="10" RowSpacing="8">
 
                     <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
@@ -255,7 +258,7 @@
                     <TextBlock Text="تاريخ انتهاء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                     <SelectableTextBlock x:Name="ResultContractDateEndBox" Grid.Row="2" Grid.Column="0" TextAlignment="Right"/>
 
-                    <TextBlock Text="اجمالي مبلغ السلعة" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
+                    <TextBlock Text="المتبقي (بعد الدفعة المقدمة)" Grid.Row="3" Grid.Column="1" TextAlignment="Right"/>
                     <SelectableTextBlock x:Name="ResultProductTotalAmount" Grid.Row="3" Grid.Column="0" TextAlignment="Right"/>
 
                     <TextBlock Text="نسبة الفائدة السنوية" Grid.Row="4" Grid.Column="1" TextAlignment="Right"/>
@@ -272,6 +275,9 @@
 
                     <TextBlock Text="مبلغ القسط الشهري" Grid.Row="8" Grid.Column="1" TextAlignment="Right"/>
                     <SelectableTextBlock x:Name="ResultMonthlyInstallmentBox" Grid.Row="8" Grid.Column="0" TextAlignment="Right"/>
+
+                    <TextBlock Text="إجمالي المبلغ (الدفعة المقدمة + المتبقي)" Grid.Row="9" Grid.Column="1" TextAlignment="Right"/>
+                    <SelectableTextBlock x:Name="ResultTotalAmountBox" Grid.Row="9" Grid.Column="0" TextAlignment="Right"/>
                 </Grid>
             </StackPanel>
         </Border>

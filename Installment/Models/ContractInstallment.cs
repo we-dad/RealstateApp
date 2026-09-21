@@ -40,6 +40,10 @@ public class ContractInstallment : INotifyPropertyChanged
         }
     }
 
+    // Everything the customer pays: the down payment plus the remaining amount
+    // (MainTotalAmount is the remaining amount after the down payment).
+    public double TotalWithDownPayment => Math.Round(MainTotalAmount + DownPayment, 2);
+
     private double _downPayment = 0;
     public double DownPayment
     {
@@ -50,6 +54,7 @@ public class ContractInstallment : INotifyPropertyChanged
             {
                 _downPayment = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(TotalWithDownPayment));
             }
         }
     }
@@ -78,6 +83,7 @@ public class ContractInstallment : INotifyPropertyChanged
             {
                 _mainTotalAmount = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(TotalWithDownPayment));
             }
         }
     }

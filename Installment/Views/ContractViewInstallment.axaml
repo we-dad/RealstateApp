@@ -169,7 +169,7 @@
                                        TextAlignment="Right"/>
                         </StackPanel>
 
-                        <TextBlock Text="اجمالي قيمة المنتج"
+                        <TextBlock Text="المتبقي (بعد الدفعة المقدمة)"
                                    Grid.Row="6"
                                    Grid.Column="0"
                                    TextAlignment="Right"/>
@@ -181,6 +181,9 @@
                                      Text="{Binding MainTotalAmount}"
                                      IsReadOnly="True"
                                      TextChanged="MainTotalAmountBox_TextChanged"/>
+                            <TextBlock Text="إجمالي المبلغ (الدفعة المقدمة + المتبقي)" TextAlignment="Right" Margin="0,6,0,0"/>
+                            <SelectableTextBlock x:Name="TotalAmountText" TextAlignment="Right" FontWeight="Bold"
+                                                 Text="{Binding TotalWithDownPayment, StringFormat='{}{0:0.##}'}"/>
                         </StackPanel>
 
                         <TextBlock Text="القسط الشهري"

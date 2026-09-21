@@ -287,6 +287,7 @@ public partial class ContractWindowViewInstallment : Window
             ResultContractDateStartBox.Text = _contract.ContractStartDate.ToString("yyyy-MM-dd");
             ResultContractDateEndBox.Text = _contract.ContractEndDate.ToString("yyyy-MM-dd");
             ResultProductTotalAmount.Text = _contract.MainTotalAmount.ToString("0.##");
+            ResultTotalAmountBox.Text = _contract.TotalWithDownPayment.ToString("0.##");
             ResultInterestPercentBox.Text = _contract.InterestPercent.ToString("0.##");
             ResultContractPeriodBox.Text = _contract.ContractPeriod.ToString("0.##");
             ResultDownPaymentBox.Text = _contract.DownPayment.ToString("0.##");
