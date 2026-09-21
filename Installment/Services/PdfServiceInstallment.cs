@@ -168,8 +168,6 @@ public class PdfServiceInstallment
                             {
                                 text.Span("، دفعت مبلغ وقدره ");
                                 text.Span($"{c.DownPayment:0.##} ريال").Bold();
-                                text.Span("، والباقي مبلغ وقدره ");
-                                text.Span($"{c.CurrentTotalAmount:0.##} ريال").Bold();
                                 text.Span(".");
                             }
                         });

@@ -29,7 +29,7 @@ public partial class ContractsWindowViewRealEstate : Window
     private ContractRealEstate? _contract;
     private readonly long _contractID;
     private TenantRealEstate? _selectedTenant;
-    private TextBox? _tenantIdSearchBox;
+    private AutoCompleteBox? _tenantIdSearchBox;
 
     public ContractsWindowViewRealEstate(long contractID, SupabaseService supabaseService)
     {
@@ -46,9 +46,24 @@ public partial class ContractsWindowViewRealEstate : Window
 
         _contractID = contractID;
 
+        // The suggestions list matches the identity number or the name. Wired here
+        // (not in the XAML) so nothing fires while the window is being built.
+        TenantIdSearchBox.ItemFilter = (search, item) =>
+            item is TenantPickRowRealEstate row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        TenantIdSearchBox.ItemSelector = (search, item) =>
+            (item as TenantPickRowRealEstate)?.IdentityNumber ?? search;
+        TenantIdSearchBox.SelectionChanged += TenantIdSearchBox_SelectionChanged;
+        TenantIdSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                TenantIdSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _tenantIdSearchBox = this.FindControl<TextBox>("TenantIdSearchBox");
+        _tenantIdSearchBox = this.FindControl<AutoCompleteBox>("TenantIdSearchBox");
     }
 
     private void LoadUnits()
@@ -172,11 +187,64 @@ public partial class ContractsWindowViewRealEstate : Window
         }
     }
 
+    // Picking a line from the suggestions selects that exact tenant (by id: two
+    // people could share an identity number).
+    private void TenantIdSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (TenantIdSearchBox.SelectedItem is not TenantPickRowRealEstate row)
+            return;
+
+        TenantIdSearchBox.Text = row.IdentityNumber;
+
+        var tenant = _tenantsDB.GetById(row.Id);
+
+        if (tenant is null)
+        {
+            _selectedTenant = null;
+            TenantInfoText.Text = "لم يتم العثور على مستأجر بهذا الرقم";
+            TenantInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedTenant(tenant);
+    }
+
+    // If the text no longer points at the chosen tenant, forget it, so a contract
+    // can never be saved for a person the box does not show.
+    private void TenantIdSearchBox_TextChanged()
+    {
+        if (_selectedTenant is null)
+            return;
+
+        var typed = TenantIdSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedTenant.IdentityNumber?.Trim() ?? "", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedTenant = null;
+        TenantInfoText.Text = "";
+    }
+
+    private void ShowSelectedTenant(TenantRealEstate tenant)
+    {
+        _selectedTenant = tenant;
+
+        TenantInfoText.Text =
+            $"اسم المستأجر : {tenant.Name} | رقم الهوية/الإقامة : {tenant.IdentityNumber}";
+
+        TenantInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchTenant_Click(object? sender, RoutedEventArgs e)
     {
         var id = _tenantIdSearchBox?.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        // Already chosen (from the suggestions or loaded with the contract): keep that
+        // exact person, a search by identity could return another one with the same number.
+        if (_selectedTenant is not null && (_selectedTenant.IdentityNumber ?? "").Trim() == id)
             return;
 
         var tenant = _tenantsDB.FindByIdentity(id);
@@ -189,12 +257,7 @@ public partial class ContractsWindowViewRealEstate : Window
             return;
         }
 
-        _selectedTenant = tenant;
-
-        TenantInfoText.Text =
-            $"اسم المستأجر : {tenant.Name} | رقم الهوية/الإقامة : {tenant.IdentityNumber}";
-
-        TenantInfoText.Foreground = Brushes.Green;
+        ShowSelectedTenant(tenant);
     }
 
     private void Refresh()
@@ -222,6 +285,7 @@ public partial class ContractsWindowViewRealEstate : Window
 
         ContractNumBox.Text = _contract.ContractNumber;
         RentAmountBox.Text = _contract.RentAmount.ToString(CultureInfo.InvariantCulture);
+        TenantIdSearchBox.ItemsSource = _tenantsDB.GetPickRows();
         TenantIdSearchBox.Text = _contract.TenantIdentityNumber;
         TenantInfoText.Text =
             $"اسم المستأجر : {_contract.TenantName} | رقم الهوية/الإقامة : {_contract.TenantIdentityNumber}";

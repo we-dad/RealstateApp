@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -25,19 +26,32 @@ public partial class OwnersViewInstallment : UserControl
         
         LoadOwners();
 
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        // Every 2 minutes (while the app is active) push then pull, so other users'
+        // changes appear by themselves.
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadOwners,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
+
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
         
         OwnersGrid.DoubleTapped += OwnersGrid_DoubleTapped;
     }
 
-    private void LoadOwners()
-    {
-        var data = _owners.GetAll();
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at the
+    // moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadOwners() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<OwnerInstallment>(OwnersGrid, r => r.Id, () =>
+        {
+            var data = _owners.GetAll();
 
-        OwnersGrid.ItemsSource = null;
-        OwnersGrid.ItemsSource = data;
-    }
+            OwnersGrid.ItemsSource = null;
+            OwnersGrid.ItemsSource = data;
+        });
     
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
@@ -70,11 +84,31 @@ public partial class OwnersViewInstallment : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncOwnersFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncOwnersFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // The timer is not needed while a sync is already running: skip it.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncOwnersFromCloudAsync()
     {
@@ -98,16 +132,22 @@ public partial class OwnersViewInstallment : UserControl
             }
 
             LoadOwners();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment owners cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

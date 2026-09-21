@@ -54,17 +54,19 @@ public partial class DashboardViewRealEstate : UserControl
 
             YearCombo.SelectionChanged += async (_, __) => await LoadForSelectedYearAsync();
 
-            // counters — units now count real units only (ParentId <> 0)
-            OwnersCountText.Text = new OwnerServiceRealEstate(_db).GetAll().Count.ToString();
-            UnitsCountText.Text = CountRealUnits().ToString();
-            TenantsCountText.Text = new TenantServiceRealEstate(_db).GetAll().Count.ToString();
-            ContractsCountText.Text = new ContractServiceRealEstate(_db).GetAll().Count.ToString();
-            ReceiptsCountText.Text = new ReceiptServiceRealEstate(_db).GetAll().Count.ToString();
+            LoadCounters();
 
             if (ExportPdfBtn != null)
                 ExportPdfBtn.Click += async (_, __) => await ExportPdfAsync();
 
             this.AttachedToVisualTree += async (_, __) => await LoadForSelectedYearAsync();
+
+            // The figures follow the data: recalculated after any add, edit or delete.
+            _autoRefresh = new ScreenAutoRefresh(this, () =>
+            {
+                LoadCounters();
+                _ = LoadForSelectedYearAsync();
+            });
         }
         catch (Exception ex)
         {
@@ -82,6 +84,18 @@ public partial class DashboardViewRealEstate : UserControl
 
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    private ScreenAutoRefresh? _autoRefresh;
+
+    // counters — units now count real units only (ParentId <> 0)
+    private void LoadCounters()
+    {
+        OwnersCountText.Text = new OwnerServiceRealEstate(_db).GetAll().Count.ToString();
+        UnitsCountText.Text = CountRealUnits().ToString();
+        TenantsCountText.Text = new TenantServiceRealEstate(_db).GetAll().Count.ToString();
+        ContractsCountText.Text = new ContractServiceRealEstate(_db).GetAll().Count.ToString();
+        ReceiptsCountText.Text = new ReceiptServiceRealEstate(_db).GetAll().Count.ToString();
     }
 
     // resolve the combo selection: a real year, or 0 for "الكل"

@@ -47,7 +47,7 @@
                           ColumnSpacing="10" RowSpacing="8">
 
                         <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
+                        <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ بدء العقد" Grid.Row="2" Grid.Column="1" TextAlignment="Right"/>
                         <DatePicker x:Name="ContractDateStartPicker" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
@@ -75,8 +75,17 @@
 
                             <Button Content="بحث" Grid.Row="0" Grid.Column="0" Click="SearchTenant_Click"/>
 
-                            <TextBox x:Name="TenantIdSearchBox" Grid.Row="0" Grid.Column="1"
-                                     TextAlignment="Right" Watermark="اكتب رقم الهوية"/>
+                            <AutoCompleteBox x:Name="TenantIdSearchBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                                     MinimumPrefixLength="1"
+                                     MaxDropDownHeight="300"
+                                     FilterMode="Custom"
+                                     Watermark="اكتب رقم الهوية أو الاسم">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:TenantPickRowRealEstate">
+                                    <TextBlock Text="{Binding Display}"/>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
 
                             <TextBlock x:Name="TenantInfoText" Grid.Row="1" Grid.ColumnSpan="2"
                                        TextAlignment="Right" TextWrapping="Wrap" Foreground="Green"/>

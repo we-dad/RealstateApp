@@ -64,12 +64,17 @@
                                     Grid.Column="0"
                                     Click="SearchContract_Click"/>
 
-                            <TextBox x:Name="ContractNumSearchBox"
-                                     Grid.Row="0"
-                                     Grid.Column="1"
-                                     HorizontalAlignment="Stretch"
-                                     TextAlignment="Right"
-                                     Watermark="اكتب رقم العقد"/>
+                            <AutoCompleteBox x:Name="ContractNumSearchBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                                     MinimumPrefixLength="1"
+                                     MaxDropDownHeight="300"
+                                     FilterMode="Custom"
+                                     Watermark="اكتب رقم العقد أو الاسم">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ContractPickRowRealEstate">
+                                    <TextBlock Text="{Binding Display}"/>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
 
                             <TextBlock x:Name="ContractInfoText"
                                        Grid.Row="1"

@@ -91,7 +91,11 @@ public class CustomerServiceInstallment
         cmd.Parameters.AddWithValue("$sponserAddress", sponserAddress);
         cmd.Parameters.AddWithValue("$sponserJob", sponserJob);
 
-        return (long)cmd.ExecuteScalar()!;
+        var id = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return id;
     }
 
     public void Update(
@@ -144,6 +148,8 @@ public class CustomerServiceInstallment
         cmd.Parameters.AddWithValue("$customerId", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public CustomerInstallment? GetById(long id)
@@ -187,6 +193,37 @@ public class CustomerServiceInstallment
 
         customer.BoolSponser = !string.IsNullOrWhiteSpace(customer.SponserName);
         return customer;
+    }
+
+    // Every live customer (identity number and name), for the picker of the contract
+    // screens. Read-only.
+    public List<CustomerPickRowInstallment> GetPickRows()
+    {
+        var rows = new List<CustomerPickRowInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, IdentityNumber, Name
+            FROM CustomersInstallment
+            WHERE SyncAction <> 'delete'
+            ORDER BY Name;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new CustomerPickRowInstallment
+            {
+                Id = reader.GetInt64(0),
+                IdentityNumber = reader.GetString(1),
+                Name = reader.GetString(2)
+            });
+        }
+
+        return rows;
     }
 
     public CustomerInstallment? FindByIdentity(string identityNumber)
@@ -348,6 +385,36 @@ public class CustomerServiceInstallment
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE CustomersInstallment
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM CustomersInstallment
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM($identityNumber) <> ''
+                      AND TRIM(IdentityNumber) = TRIM($identityNumber)
+                      AND TRIM(Name) = TRIM($name)
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$name", name);
+            adopt.Parameters.AddWithValue("$identityNumber", identityNumber);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO CustomersInstallment
@@ -546,6 +613,8 @@ public class CustomerServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

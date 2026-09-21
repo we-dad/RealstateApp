@@ -1,0 +1,45 @@
+<Window x:Class="RealEstateInstallmentsManager.Views.ContractCheckWindowViewInstallment"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:RealEstateInstallmentsManager.Models"
+        Title="فحص حسابات العقود"
+        Width="1500"
+        Height="620"
+        FlowDirection="RightToLeft">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="16" RowSpacing="10">
+
+        <TextBlock Grid.Row="0"
+                   TextWrapping="Wrap"
+                   Text="تقرير للقراءة فقط، ولا يغيّر أي عقد. يقارن الإجمالي المحفوظ في كل عقد بالمعادلة: (سعر المنتج ناقص الدفعة المقدمة) + الرسوم + (سعر المنتج ناقص الدفعة) × الفائدة ÷ 12 × المدة. يستخدم سعر المنتج الحالي، فإذا تغيّر سعره بعد إنشاء العقد، أو كان الإجمالي مكتوبًا يدويًا، يظهر العقد كـ لا يطابق وقد لا يكون فيه خطأ. والعقد الذي لا يوجد له منتج يظهر أيضًا كـ لا يطابق. أما بدون خصم الدفعة فهو المؤشر القوي على الخطأ. وعمودا السعر الأصلي يحسبان السعر المقابل للمبلغ المحفوظ دون الاعتماد على سعر المنتج الحالي: قارنهما بسعر المنتج وقت العقد، فإن طابق الأول فالعقد سليم، وإن طابق الثاني فالدفعة لم تنخصم."/>
+
+        <TextBlock Grid.Row="1"
+                   x:Name="SummaryText"
+                   FontWeight="Bold"/>
+
+        <DataGrid Grid.Row="2"
+                  x:Name="CheckGrid"
+                  x:DataType="models:ContractCheckRowInstallment"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  FlowDirection="RightToLeft">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="رقم العقد" Binding="{Binding ContractNumber}" Width="*"/>
+                <DataGridTextColumn Header="العميل" Binding="{Binding CustomerName}" Width="1.5*"/>
+                <DataGridTextColumn Header="سعر المنتج" Binding="{Binding ProductPrice, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الدفعة المقدمة" Binding="{Binding DownPayment, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الرسوم" Binding="{Binding ManagementFee, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الفائدة %" Binding="{Binding InterestPercent, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="المدة" Binding="{Binding ContractPeriod, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الإجمالي المحفوظ" Binding="{Binding MainTotalAmount, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="المتوقع" Binding="{Binding ExpectedTotal, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="الفرق" Binding="{Binding Difference, StringFormat='{}{0:N2}'}" Width="*"/>
+                <DataGridTextColumn Header="السعر الأصلي المقابل للمحفوظ (لو انخصمت الدفعة)" Binding="{Binding ImpliedPriceIfDeducted, StringFormat='{}{0:N2}'}" Width="1.4*"/>
+                <DataGridTextColumn Header="السعر الأصلي المقابل للمحفوظ (لو لم تنخصم)" Binding="{Binding ImpliedPriceIfNotDeducted, StringFormat='{}{0:N2}'}" Width="1.4*"/>
+                <DataGridTextColumn Header="الحالة" Binding="{Binding Status}" Width="1.3*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

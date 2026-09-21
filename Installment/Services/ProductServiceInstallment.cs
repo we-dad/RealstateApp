@@ -107,7 +107,11 @@ public class ProductServiceInstallment
         cmd.Parameters.AddWithValue("$mobileStorage", mobileStorage);
         cmd.Parameters.AddWithValue("$mobileColor", mobileColor);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -160,6 +164,8 @@ public class ProductServiceInstallment
         cmd.Parameters.AddWithValue("$mobileColor", mobileColor);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public ProductInstallment? GetById(long id)
@@ -338,6 +344,59 @@ public class ProductServiceInstallment
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // There is no unique number for this table, so several fields must match.
+            // Without a VIN every product field must match, so two different
+            // products (e.g. two phones with different colors) are never merged.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE ProductsInstallment
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM ProductsInstallment
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND OwnerId = $ownerId
+                      AND (
+                            (TRIM($carVIN) <> ''
+                             AND TRIM(CarVIN) = TRIM($carVIN))
+                         OR (TRIM($carVIN) = ''
+                             AND TRIM(CarVIN) = ''
+                             AND TRIM(ProductName) = TRIM($productName)
+                             AND TRIM(ProductType) = TRIM($productType)
+                             AND ABS(ProductMainPrice - $productMainPrice) < 0.005
+                             AND TRIM(CarPlateNumber) = TRIM($carPlateNumber)
+                             AND TRIM(CarModel) = TRIM($carModel)
+                             AND TRIM(CarColor) = TRIM($carColor)
+                             AND TRIM(MobileStorage) = TRIM($mobileStorage)
+                             AND TRIM(MobileColor) = TRIM($mobileColor))
+                      )
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$ownerId", ownerLocalId);
+            adopt.Parameters.AddWithValue("$carVIN", carVIN ?? "");
+            adopt.Parameters.AddWithValue("$productName", productName ?? "");
+            adopt.Parameters.AddWithValue("$productType", productType ?? "");
+            adopt.Parameters.AddWithValue("$productMainPrice", productMainPrice);
+            adopt.Parameters.AddWithValue("$carPlateNumber", carPlateNumber ?? "");
+            adopt.Parameters.AddWithValue("$carModel", carModel ?? "");
+            adopt.Parameters.AddWithValue("$carColor", carColor ?? "");
+            adopt.Parameters.AddWithValue("$mobileStorage", mobileStorage ?? "");
+            adopt.Parameters.AddWithValue("$mobileColor", mobileColor ?? "");
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO ProductsInstallment
@@ -482,6 +541,8 @@ public class ProductServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

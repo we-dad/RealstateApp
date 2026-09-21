@@ -29,7 +29,7 @@ public partial class ContractWindowViewInstallment : Window
     private ContractInstallment _contract = new ContractInstallment();
     private readonly long _contractID;
     private CustomerInstallment? _selectedCutomer;
-    private TextBox? _customerIdSearchBox;
+    private AutoCompleteBox? _customerIdSearchBox;
     private bool _isRefreshing;
     private double realMainPrice;
     
@@ -44,6 +44,7 @@ public partial class ContractWindowViewInstallment : Window
         _contractID = contract;
 
         _db.Initialize();
+        _sync = new InstallmentSyncService(_db, _supabaseService);
 
         _contractsDB = new ContractServiceInstallment(_db);
         _customersDB = new CustomerServiceInstallment(_db);
@@ -58,9 +59,29 @@ public partial class ContractWindowViewInstallment : Window
         CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
         OwnerGrid.DoubleTapped += OwnerGrid_DoubleTapped;
 
+        // The suggestions list matches the identity number or the name. Wired here
+        // (not in the XAML) so nothing fires while the window is being built.
+        CustomerIdSearchBox.ItemFilter = (search, item) =>
+            item is CustomerPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        CustomerIdSearchBox.ItemSelector = (search, item) =>
+            (item as CustomerPickRowInstallment)?.IdentityNumber ?? search;
+        CustomerIdSearchBox.SelectionChanged += CustomerIdSearchBox_SelectionChanged;
+        CustomerIdSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                CustomerIdSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
+        _customerIdSearchBox = this.FindControl<AutoCompleteBox>("CustomerIdSearchBox");
+
+        // Wired here, not in the XAML: events set in the XAML can fire while
+        // InitializeComponent is still building the window, before the controls
+        // and services this handler uses exist.
+        DownPaymentCheck.IsCheckedChanged += DownPaymentCheck_Changed;
     }
 
     private void LoadProducts()
@@ -71,82 +92,6 @@ public partial class ContractWindowViewInstallment : Window
         ProductsBox.SelectedItem = products.FirstOrDefault(p => p.Id == _contract.ProductId);
     }
 
-    private async Task PushDirtyContractsAsync()
-    {
-        try
-        {
-            var cloudContracts = new CloudContractsInstallmentService(_supabaseService);
-            var dirtyRows = _contractsDB.GetDirtyRows();
-
-            foreach (var contract in dirtyRows)
-            {
-                if (contract.SyncAction == "delete")
-                {
-                    if (contract.CloudId > 0)
-                        await cloudContracts.DeleteContractAsync(contract.CloudId);
-
-                    _contractsDB.DeleteLocalPermanent(contract.Id);
-                }
-                else if (contract.SyncAction == "insert")
-                {
-                    if (contract.ProductCloudId <= 0 || contract.CustomerCloudId <= 0)
-                        continue;
-
-                    var cloudId = await cloudContracts.AddContractAsync(new ContractInstallmentRow
-                    {
-                        ContractNumber = contract.ContractNumber,
-                        ContractStartDate = contract.ContractStartDate,
-                        ContractEndDate = contract.ContractEndDate,
-                        MainTotalAmount = contract.MainTotalAmount,
-                        CurrentTotalAmount = contract.CurrentTotalAmount,
-                        ContractPeriod = contract.ContractPeriod,
-                        DownPayment = contract.DownPayment,
-                        MonthlyInstallment = contract.MonthlyInstallment,
-                        ManagementFee = contract.ManagementFee,
-                        InterestPercent = contract.InterestPercent,
-                        ContractState = contract.ContractState,
-                        ProductId = contract.ProductCloudId,
-                        CustomerId = contract.CustomerCloudId
-                    });
-
-                    _contractsDB.UpdateCloudId(contract.Id, cloudId);
-                }
-                else if (contract.SyncAction == "update")
-                {
-                    if (contract.CloudId <= 0 || contract.ProductCloudId <= 0 || contract.CustomerCloudId <= 0)
-                        continue;
-
-                    await cloudContracts.UpdateContractAsync(contract.CloudId, new ContractInstallmentRow
-                    {
-                        ContractNumber = contract.ContractNumber,
-                        ContractStartDate = contract.ContractStartDate,
-                        ContractEndDate = contract.ContractEndDate,
-                        MainTotalAmount = contract.MainTotalAmount,
-                        CurrentTotalAmount = contract.CurrentTotalAmount,
-                        ContractPeriod = contract.ContractPeriod,
-                        DownPayment = contract.DownPayment,
-                        MonthlyInstallment = contract.MonthlyInstallment,
-                        ManagementFee = contract.ManagementFee,
-                        InterestPercent = contract.InterestPercent,
-                        ContractState = contract.ContractState,
-                        ProductId = contract.ProductCloudId,
-                        CustomerId = contract.CustomerCloudId
-                    });
-
-                    _contractsDB.MarkSynced(contract.Id);
-                }
-            }
-        }
-        catch (System.Net.Http.HttpRequestException)
-        {
-            Console.WriteLine("Offline: dirty installment contracts will sync later.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
-    }
-
     private void ProductsBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -155,8 +100,8 @@ public partial class ContractWindowViewInstallment : Window
         {
             _contract.ProductId = product.Id;
             _contract.ProductName = product.ProductName;
-            _contract.ProductMainPrice = product.ProductMainPrice;
             realMainPrice = product.ProductMainPrice;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - _contract.DownPayment);
 
             UpdateProductTotalAmount();
         }
@@ -201,7 +146,7 @@ public partial class ContractWindowViewInstallment : Window
 
             Refresh();
 
-            _ = PushDirtyContractsAsync();
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
@@ -211,11 +156,64 @@ public partial class ContractWindowViewInstallment : Window
         }
     }
 
+    // Picking a line from the suggestions selects that exact customer (by id: two
+    // people could share an identity number).
+    private void CustomerIdSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (CustomerIdSearchBox.SelectedItem is not CustomerPickRowInstallment row)
+            return;
+
+        CustomerIdSearchBox.Text = row.IdentityNumber;
+
+        var customer = _customersDB.GetById(row.Id);
+
+        if (customer is null)
+        {
+            _selectedCutomer = null;
+            CustomerInfoText.Text = "لم يتم العثور على عميل بهذا الرقم";
+            CustomerInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedCustomer(customer);
+    }
+
+    // If the text no longer points at the chosen customer, forget it, so a contract
+    // can never be saved for a person the box does not show.
+    private void CustomerIdSearchBox_TextChanged()
+    {
+        if (_selectedCutomer is null)
+            return;
+
+        var typed = CustomerIdSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedCutomer.IdentityNumber?.Trim() ?? "", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedCutomer = null;
+        CustomerInfoText.Text = "";
+    }
+
+    private void ShowSelectedCustomer(CustomerInstallment customer)
+    {
+        _selectedCutomer = customer;
+
+        CustomerInfoText.Text =
+            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
+
+        CustomerInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchCustomer_Click(object? sender, RoutedEventArgs e)
     {
         var id = _customerIdSearchBox?.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        // Already chosen (from the suggestions or loaded with the contract): keep that
+        // exact person, a search by identity could return another one with the same number.
+        if (_selectedCutomer is not null && (_selectedCutomer.IdentityNumber ?? "").Trim() == id)
             return;
 
         var customer = _customersDB.FindByIdentity(id);
@@ -228,12 +226,7 @@ public partial class ContractWindowViewInstallment : Window
             return;
         }
 
-        _selectedCutomer = customer;
-
-        CustomerInfoText.Text =
-            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
-
-        CustomerInfoText.Foreground = Brushes.Green;
+        ShowSelectedCustomer(customer);
     }
 
     private void Refresh()
@@ -268,7 +261,13 @@ public partial class ContractWindowViewInstallment : Window
 
             LoadProducts();
 
-            realMainPrice = _contract.ProductMainPrice + _contract.DownPayment;
+            // GetById reads ProductMainPrice from the product row: it is the FULL price.
+            // (It used to add the down payment on top of it, which counted the down
+            // payment twice.) Like the add screen, keep the price after the down
+            // payment in _contract.ProductMainPrice, so any later recalculation
+            // (period, interest, fee) still deducts the down payment.
+            realMainPrice = _contract.ProductMainPrice;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - _contract.DownPayment);
 
             ContractNumBox.Text = _contract.ContractNumber;
             ContractDateStartPicker.SelectedDate = _contract.ContractStartDate;
@@ -277,6 +276,7 @@ public partial class ContractWindowViewInstallment : Window
             ContractPeriodBox.Text = _contract.ContractPeriod.ToString("0.##");
             DownPaymentBox.Text = _contract.DownPayment.ToString("0.##");
             MonthlyInstallmentBox.Text = _contract.MonthlyInstallment.ToString("0.##");
+            CustomerIdSearchBox.ItemsSource = _customersDB.GetPickRows();
             CustomerIdSearchBox.Text = _contract.CustomerIdentityNumber;
 
             CustomerInfoText.Text =
@@ -342,7 +342,8 @@ public partial class ContractWindowViewInstallment : Window
     {
         if (ContractNumBox is null) return;
 
-        ContractNumBox.IsReadOnly = !IsManualMode;
+        // The contract number is generated and never editable, in manual mode too:
+        // manual mode only unlocks the total amount.
         MainTotalAmountBox.IsReadOnly = !IsManualMode;
 
         if (!IsManualMode)
@@ -370,7 +371,7 @@ public partial class ContractWindowViewInstallment : Window
         {
             _contractsDB.Delete(_contractID);
 
-            _ = PushDirtyContractsAsync();
+            _ = _sync.PushAllDirtyAsync();
 
             Close();
         }
@@ -513,6 +514,38 @@ public partial class ContractWindowViewInstallment : Window
         }
     }
 
+    // No down payment: the calculation goes back to the full product price.
+    // (Setting DownPayment = 0 alone left the price reduced, so the total kept
+    // the old deduction and was saved that way.)
+    private void RemoveDownPayment()
+    {
+        _contract.DownPayment = 0;
+        _contract.ProductMainPrice = realMainPrice;
+
+        UpdateProductTotalAmount();
+    }
+
+    private void DownPaymentCheck_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_isRefreshing) return;
+
+        if (DownPaymentCheck.IsChecked != true)
+        {
+            DownPaymentErrorText.Text = "";
+            RemoveDownPayment();
+            return;
+        }
+
+        // Ticked again: the box still shows the last value, apply it.
+        if (double.TryParse(DownPaymentBox.Text?.Trim(), out double value))
+        {
+            _contract.DownPayment = value;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - value);
+
+            UpdateProductTotalAmount();
+        }
+    }
+
     private void DownPaymentBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -522,14 +555,14 @@ public partial class ContractWindowViewInstallment : Window
         if (!_contract.BoolDownPayment)
         {
             DownPaymentErrorText.Text = "";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 
         if (string.IsNullOrWhiteSpace(text))
         {
             DownPaymentErrorText.Text = "عليك وضع قيمة هنا";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 

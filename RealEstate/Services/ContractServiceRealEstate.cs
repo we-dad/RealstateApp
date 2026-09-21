@@ -54,7 +54,7 @@ public class ContractServiceRealEstate
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Rc-" + next;
+        return "Rc-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(
@@ -128,7 +128,11 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$contractOpligation", contractOpligation);
         cmd.Parameters.AddWithValue("$contractState", contractState);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -187,6 +191,8 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$contractState", contractState);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpdateSignatureCloudInfo(
@@ -219,6 +225,8 @@ public class ContractServiceRealEstate
         cmd.Parameters.AddWithValue("$id", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public List<ContractRealEstate> GetAll()
@@ -406,6 +414,80 @@ public class ContractServiceRealEstate
         cmd.ExecuteNonQuery();
     }
 
+    // Every live contract with its tenant and unit, newest first, for the contract
+    // picker of the receipt screens. Read-only.
+    public List<ContractPickRowRealEstate> GetPickRows()
+    {
+        var rows = new List<ContractPickRowRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.ContractNumber,
+                   COALESCE(t.Name, ''),
+                   COALESCE(u.UnitName, ''),
+                   c.ContractState
+            FROM ContractsRealEstate c
+            LEFT JOIN TenantsRealEstate t ON t.Id = c.TenantId
+            LEFT JOIN UnitsRealEstate u ON u.Id = c.UnitId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new ContractPickRowRealEstate
+            {
+                ContractNumber = reader.GetString(0),
+                TenantName = reader.GetString(1),
+                UnitName = reader.GetString(2),
+                ContractState = reader.GetString(3)
+            });
+        }
+
+        return rows;
+    }
+
+    // The stored numbers a typed contract number refers to. Typing the short form
+    // ("Ic-1051" or "1051") finds "Ic-1051" (old numbers) and every "Ic-1051-XXX"
+    // (numbers with the user code); typing the full number finds just that one.
+    public List<string> FindContractNumbers(string typed)
+    {
+        var numbers = new List<string>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT ContractNumber
+            FROM ContractsRealEstate
+            WHERE SyncAction <> 'delete'
+              AND (ContractNumber = $n COLLATE NOCASE
+                   OR SUBSTR(ContractNumber, 1, LENGTH($n) + 1) = $n || '-' COLLATE NOCASE)
+            ORDER BY ContractNumber;
+        """;
+        cmd.Parameters.AddWithValue("$n", typed.Trim());
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            numbers.Add(reader.GetString(0));
+
+        return numbers;
+    }
+
+    // Returns the contract only when the typed number points to exactly one;
+    // when several match, the candidates are returned so the caller can show them.
+    public ContractRealEstate? FindByTypedNumber(string typed, out List<string> candidates)
+    {
+        candidates = FindContractNumbers(typed);
+
+        return candidates.Count == 1 ? FindByContractNum(candidates[0]) : null;
+    }
+
     public ContractRealEstate? FindByContractNum(string contractNum)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -441,6 +523,7 @@ public class ContractServiceRealEstate
         return new ContractRealEstate
         {
             Id = reader.GetInt64(0),
+            ContractNumber = contractNum, // the SELECT matched it exactly; callers compare against it
             CloudId = reader.GetInt64(1),
             UnitId = reader.GetInt64(2),
             TenantId = reader.GetInt64(3),
@@ -566,6 +649,43 @@ public class ContractServiceRealEstate
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // The number alone is not enough (two users can pick the same one),
+            // so the other fields and the parent row must match too.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE ContractsRealEstate
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM ContractsRealEstate
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM(ContractNumber) = TRIM($contractNumber)
+                      AND date(ContractStartDate) = date($contractStartDate)
+                      AND ABS(RentAmount - $rentAmount) < 0.005
+                      AND UnitId = $unitLocalId
+                      AND TenantId = $tenantLocalId
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$contractNumber", contractNumber);
+            adopt.Parameters.AddWithValue("$contractStartDate", contractStartDate);
+            adopt.Parameters.AddWithValue("$rentAmount", rentAmount);
+            adopt.Parameters.AddWithValue("$unitLocalId", unitLocalId);
+            adopt.Parameters.AddWithValue("$tenantLocalId", tenantLocalId);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO ContractsRealEstate
@@ -629,7 +749,16 @@ public class ContractServiceRealEstate
             insert.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
             insert.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
-            insert.ExecuteNonQuery();
+            try
+            {
+                insert.ExecuteNonQuery();
+            }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067)
+            {
+                // SQLITE_CONSTRAINT_UNIQUE: a different local row already uses this
+                // number. Skip this row and keep pulling the rest.
+                Console.WriteLine($"Skipped cloud row {cloudId} in ContractsRealEstate: number already used locally.");
+            }
         }
     }
 
@@ -863,6 +992,8 @@ public class ContractServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

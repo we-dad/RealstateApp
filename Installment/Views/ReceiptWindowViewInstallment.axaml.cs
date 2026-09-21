@@ -28,7 +28,7 @@ public partial class ReceiptWindowViewInstallment : Window
 
     private ReceiptInstallment? _receipt;
     private readonly long _receiptID;
-    private TextBox? _contractIdSearchBox;
+    private AutoCompleteBox? _contractIdSearchBox;
     private ContractInstallment? _selectedContract;
 
     public ReceiptWindowViewInstallment(long receiptID, SupabaseService supabaseService)
@@ -52,9 +52,24 @@ public partial class ReceiptWindowViewInstallment : Window
         CustomerGrid.DoubleTapped += CustomerGrid_DoubleTapped;
         OwnerGrid.DoubleTapped += OwnerGrid_DoubleTapped;
 
+        // The suggestions list matches the number and the names. Wired here (not in
+        // the XAML) so nothing fires while the window is being built.
+        ContractNumSearchBox.ItemFilter = (search, item) =>
+            item is ContractPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        ContractNumSearchBox.ItemSelector = (search, item) =>
+            (item as ContractPickRowInstallment)?.ContractNumber ?? search;
+        ContractNumSearchBox.SelectionChanged += ContractNumSearchBox_SelectionChanged;
+        ContractNumSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                ContractNumSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
+        _contractIdSearchBox = this.FindControl<AutoCompleteBox>("ContractNumSearchBox");
         
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = _sync.PushAllDirtyAsync();
@@ -116,6 +131,58 @@ public partial class ReceiptWindowViewInstallment : Window
         }
     }
 
+    // Picking a line from the suggestions selects that exact contract, looked up by
+    // its full stored number (a short search could match several contracts).
+    private void ContractNumSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ContractNumSearchBox.SelectedItem is not ContractPickRowInstallment row)
+            return;
+
+        ContractNumSearchBox.Text = row.ContractNumber;
+
+        var contract = _contractsDB.FindByContractNum(row.ContractNumber);
+
+        if (contract is null)
+        {
+            _selectedContract = null;
+            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedContract(contract);
+    }
+
+    // If the text no longer points at the chosen contract, forget that contract,
+    // so a receipt can never be saved on a contract the box does not show.
+    private void ContractNumSearchBox_TextChanged()
+    {
+        if (_selectedContract is null)
+            return;
+
+        var typed = ContractNumSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedContract.ContractNumber, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedContract = null;
+        ContractInfoText.Text = "";
+    }
+
+    private void ShowSelectedContract(ContractInstallment contract)
+    {
+        _selectedContract = contract;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+
+        ContractInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
     {
         var raw = _contractIdSearchBox?.Text?.Trim() ?? "";
@@ -127,26 +194,19 @@ public partial class ReceiptWindowViewInstallment : Window
             ? raw
             : "Ic-" + raw;
 
-        var contract = _contractsDB.FindByContractNum(contractNum);
+        var contract = _contractsDB.FindByTypedNumber(contractNum, out var candidates);
 
         if (contract is null)
         {
             _selectedContract = null;
-            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Text = candidates.Count > 1
+                ? "يوجد أكثر من عقد بهذا الرقم، اكتب الرقم كاملًا: " + string.Join("، ", candidates)
+                : "لم يتم العثور على عقد بهذا الرقم";
             ContractInfoText.Foreground = Brushes.Red;
             return;
         }
 
-        _selectedContract = contract;
-
-        ContractInfoText.Text =
-            $"اسم العميل : {contract.CustomerName} | " +
-            $"اسم المنتج : {contract.ProductName} | " +
-            $"القسط الأساسي : {contract.MainTotalAmount} | " +
-            $"المتبقي : {contract.CurrentTotalAmount} | " +
-            $"القسط الشهري : {contract.MonthlyInstallment}";
-
-        ContractInfoText.Foreground = Brushes.Green;
+        ShowSelectedContract(contract);
     }
 
     private void Refresh()
@@ -168,9 +228,9 @@ public partial class ReceiptWindowViewInstallment : Window
         ReceiptNumBox.Text = _receipt.ReceiptNumber;
         ReceiptDate.SelectedDate = _receipt.ReceiptDate;
 
-        ContractNumSearchBox.Text = contract.ContractNumber.StartsWith("Ic-")
-            ? contract.ContractNumber[3..]
-            : contract.ContractNumber;
+        ContractNumSearchBox.ItemsSource = _contractsDB.GetPickRows();
+        ContractNumSearchBox.Text = contract.ContractNumber;
+        _selectedContract = contract;
 
         ContractInfoText.Text =
             $"اسم العميل : {contract.CustomerName} | " +

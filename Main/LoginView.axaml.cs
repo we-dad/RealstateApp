@@ -42,6 +42,7 @@ public partial class LoginView : UserControl
 
             var roleService = new RoleService(_supabaseService);
             AppSession.Role = await roleService.GetMyRoleAsync();
+            AppSession.UserId = auth.CurrentUserId ?? "";
 
             Console.WriteLine($"ROLE = {AppSession.Role}");
 

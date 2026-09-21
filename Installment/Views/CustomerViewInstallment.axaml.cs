@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -28,6 +30,14 @@ public partial class CustomerViewInstallment : UserControl
 
         LoadCustomer();
 
+        // Reload the grid (only) whenever a customer is added, edited or deleted,
+        // also from the details window.
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadCustomer,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
+
     _sync = new InstallmentSyncService(_db, _supabaseService);
     _ = SyncAsync();
     
@@ -35,7 +45,14 @@ public partial class CustomerViewInstallment : UserControl
     
     }
 
-    private void LoadCustomer()
+    private ScreenAutoRefresh? _autoRefresh;
+
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadCustomer() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<CustomerInstallment>(CustomerGrid, r => r.Id, LoadCustomerCore);
+
+    private void LoadCustomerCore()
     {
         var data = _customerService.GetAll();
 
@@ -101,11 +118,31 @@ public partial class CustomerViewInstallment : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncCustomersFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncCustomersFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncCustomersFromCloudAsync()
     {
@@ -135,14 +172,18 @@ public partial class CustomerViewInstallment : UserControl
             }
 
             LoadCustomer();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment customers cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
 

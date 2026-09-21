@@ -29,8 +29,7 @@
                           RowSpacing="8">
 
                         <TextBlock Text="رقم العقد" Grid.Row="0" Grid.Column="1" TextAlignment="Right"/>
-                        <TextBox x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1"
-                                 TextAlignment="Right" IsReadOnly="True"/>
+                        <TextBlock x:Name="ContractNumBox" Grid.Row="1" Grid.Column="1" TextAlignment="Right"/>
 
                         <TextBlock Text="تاريخ العقد" Grid.Row="0" Grid.Column="0" TextAlignment="Right"/>
                         <DatePicker x:Name="ContractDateStartPicker" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"/>
@@ -66,12 +65,17 @@
                                     Grid.Column="0"
                                     Click="SearchCustomer_Click"/>
 
-                            <TextBox x:Name="CustomerIdSearchBox"
-                                     Grid.Row="0"
-                                     Grid.Column="1"
-                                     HorizontalAlignment="Stretch"
-                                     TextAlignment="Right"
-                                     Watermark="اكتب رقم الهوية"/>
+                            <AutoCompleteBox x:Name="CustomerIdSearchBox" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                                     MinimumPrefixLength="1"
+                                     MaxDropDownHeight="300"
+                                     FilterMode="Custom"
+                                     Watermark="اكتب رقم الهوية أو الاسم">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:CustomerPickRowInstallment">
+                                    <TextBlock Text="{Binding Display}"/>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
 
                             <SelectableTextBlock x:Name="CustomerInfoText"
                                                  Grid.Row="1"
@@ -222,6 +226,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                         <Button Content="تحديث" Click="Refresh_Click"/>
                         <Button Content="إضافة" Click="Add_Click"/>
+                        <Button Content="فحص الحسابات" Click="CheckCalculations_Click"/>
                     </StackPanel>
 
                 </StackPanel>

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -32,6 +33,14 @@ public partial class ProductViewInstallment : UserControl
         LoadOwners();
         LoadProduct();
 
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadProduct,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
+
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
         
@@ -48,7 +57,12 @@ public partial class ProductViewInstallment : UserControl
             OwnerBox.SelectedIndex = 0;
     }
 
-    private void LoadProduct()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadProduct() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<ProductInstallment>(ProductGrid, r => r.Id, LoadProductCore);
+
+    private void LoadProductCore()
     {
         try
         {
@@ -120,11 +134,31 @@ public partial class ProductViewInstallment : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncProductsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncProductsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncProductsFromCloudAsync()
     {
@@ -159,16 +193,22 @@ public partial class ProductViewInstallment : UserControl
             }
 
             LoadProduct();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment products cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {

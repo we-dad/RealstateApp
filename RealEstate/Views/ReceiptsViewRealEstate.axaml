@@ -48,13 +48,18 @@
                                         Spacing="6"
                                         FlowDirection="RightToLeft">
 
-                                <TextBox x:Name="ContractNumSearchBox"
-                                         Width="160"
-                                         TextAlignment="Right"
-                                         Watermark="اكتب رقم العقد"/>
-
-                                <TextBlock Text="Rc-"
-                                           VerticalAlignment="Center"/>
+                                <AutoCompleteBox x:Name="ContractNumSearchBox"
+                                     Width="360"
+                                     MinimumPrefixLength="1"
+                                     MaxDropDownHeight="300"
+                                     FilterMode="Custom"
+                                     Watermark="اكتب رقم العقد أو الاسم">
+                            <AutoCompleteBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ContractPickRowRealEstate">
+                                    <TextBlock Text="{Binding Display}"/>
+                                </DataTemplate>
+                            </AutoCompleteBox.ItemTemplate>
+                        </AutoCompleteBox>
 
                                 <Button Content="بحث"
                                         Click="SearchContract_Click"/>

@@ -33,6 +33,7 @@ public partial class ExpensesWindowViewInstallment : Window
         _supabaseService = supabaseService;
 
         _db.Initialize();
+        _sync = new InstallmentSyncService(_db, _supabaseService);
 
         _expensesDB = new ExpensesServiceInstallment(_db);
         _productsDB = new ProductServiceInstallment(_db);
@@ -61,68 +62,6 @@ public partial class ExpensesWindowViewInstallment : Window
         };
 
         ExpensesServiceBox.SelectedIndex = 0;
-    }
-
-    private async Task PushDirtyExpensesAsync()
-    {
-        try
-        {
-            var cloudExpenses = new CloudExpensesRealEstateService(_supabaseService);
-            var dirtyRows = _expensesDB.GetDirtyRows();
-
-            foreach (var expense in dirtyRows)
-            {
-                if (expense.SyncAction == "delete")
-                {
-                    if (expense.CloudId > 0)
-                        await cloudExpenses.DeleteExpenseAsync(expense.CloudId);
-
-                    _expensesDB.DeleteLocalPermanent(expense.Id);
-                }
-                else if (expense.SyncAction == "insert")
-                {
-                    if (expense.ProductCloudId <= 0)
-                        continue;
-
-                    var cloudId = await cloudExpenses.AddExpenseAsync(new ExpenseRealEstateRow
-                    {
-                        ExpensesNumber = expense.ExpensesNumber,
-                        ExpensesDate = expense.ExpensesDate,
-                        UnitId = expense.ProductCloudId,
-                        ExpensesService = expense.ExpensesService,
-                        ExpensesAmount = expense.ExpensesAmount,
-                        ExpensesNote = expense.ExpensesNote
-                    });
-
-                    _expensesDB.UpdateCloudId(expense.Id, cloudId);
-                }
-                else if (expense.SyncAction == "update")
-                {
-                    if (expense.CloudId <= 0 || expense.ProductCloudId <= 0)
-                        continue;
-
-                    await cloudExpenses.UpdateExpenseAsync(expense.CloudId, new ExpenseRealEstateRow
-                    {
-                        ExpensesNumber = expense.ExpensesNumber,
-                        ExpensesDate = expense.ExpensesDate,
-                        UnitId = expense.ProductCloudId,
-                        ExpensesService = expense.ExpensesService,
-                        ExpensesAmount = expense.ExpensesAmount,
-                        ExpensesNote = expense.ExpensesNote
-                    });
-
-                    _expensesDB.MarkSynced(expense.Id);
-                }
-            }
-        }
-        catch (System.Net.Http.HttpRequestException)
-        {
-            Console.WriteLine("Offline: dirty expenses will sync later.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
     }
 
     private void Update_Click(object? sender, RoutedEventArgs e)
@@ -156,7 +95,7 @@ public partial class ExpensesWindowViewInstallment : Window
 
             Refresh();
 
-            _ = PushDirtyExpensesAsync();
+            _ = _sync.PushAllDirtyAsync();
         }
         catch (Exception ex)
         {
@@ -255,7 +194,7 @@ public partial class ExpensesWindowViewInstallment : Window
         {
             _expensesDB.Delete(_expensesID);
 
-            _ = PushDirtyExpensesAsync();
+            _ = _sync.PushAllDirtyAsync();
 
             Close();
         }

@@ -17,6 +17,10 @@ public partial class MainWindowRealEstate : UserControl
 _supabaseService  = supabaseService;
 
         _mainWindow = mainWindow;
+
+        // Shows whether the last sync with the cloud worked.
+        SyncStatusService.Bind(this, SyncStatusText);
+
         ContentHost.Content = new DashboardViewRealEstate();
     }
 

@@ -40,6 +40,12 @@
 
         </StackPanel>
 
+        <TextBlock x:Name="SyncStatusText"
+                   HorizontalAlignment="Center"
+                   FlowDirection="RightToLeft"
+                   TextWrapping="Wrap"
+                   FontSize="12"/>
+
       </StackPanel>
     </Border>
 

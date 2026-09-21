@@ -67,7 +67,11 @@ public class TenantServiceRealEstate
         cmd.Parameters.AddWithValue("$phone", phone);
         cmd.Parameters.AddWithValue("$address", address);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(long id, string name, string identityNumber, string phone, string address)
@@ -97,6 +101,8 @@ public class TenantServiceRealEstate
         cmd.Parameters.AddWithValue("$address", address);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public TenantRealEstate? GetById(long id)
@@ -126,6 +132,37 @@ public class TenantServiceRealEstate
             Phone = reader.GetString(4),
             Address = reader.GetString(5)
         };
+    }
+
+    // Every live tenant (identity number and name), for the picker of the contract
+    // screens. Read-only.
+    public List<TenantPickRowRealEstate> GetPickRows()
+    {
+        var rows = new List<TenantPickRowRealEstate>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, IdentityNumber, Name
+            FROM TenantsRealEstate
+            WHERE SyncAction <> 'delete'
+            ORDER BY Name;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new TenantPickRowRealEstate
+            {
+                Id = reader.GetInt64(0),
+                IdentityNumber = reader.GetString(1),
+                Name = reader.GetString(2)
+            });
+        }
+
+        return rows;
     }
 
     public TenantRealEstate? FindByIdentity(string identityNumber)
@@ -271,6 +308,36 @@ public class TenantServiceRealEstate
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE TenantsRealEstate
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM TenantsRealEstate
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM($identityNumber) <> ''
+                      AND TRIM(IdentityNumber) = TRIM($identityNumber)
+                      AND TRIM(Name) = TRIM($name)
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$name", name);
+            adopt.Parameters.AddWithValue("$identityNumber", identityNumber);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO TenantsRealEstate
@@ -340,6 +407,8 @@ public class TenantServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
     
     public List<TenantRealEstate> GetTenantRelatedData(long tenantId)

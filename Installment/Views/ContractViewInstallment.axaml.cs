@@ -2,9 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using RealEstateInstallmentsManager.Models;
@@ -24,7 +26,7 @@ public partial class ContractViewInstallment : UserControl
 
     private ContractInstallment _contract;
     private CustomerInstallment? _selectedCutomer;
-    private TextBox? _customerIdSearchBox;
+    private AutoCompleteBox? _customerIdSearchBox;
     private string? ContractNumber;
     private bool _isRefreshing;
     private double realMainPrice;
@@ -51,17 +53,66 @@ public partial class ContractViewInstallment : UserControl
         InterestPercentBox.SelectedItem = "12.5";
         ContractGrid.DoubleTapped += ContractGrid_DoubleTapped;
 
+        // The suggestions list matches the identity number or the name. Wired here
+        // (not in the XAML) so nothing fires while the window is being built.
+        CustomerIdSearchBox.ItemFilter = (search, item) =>
+            item is CustomerPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        CustomerIdSearchBox.ItemSelector = (search, item) =>
+            (item as CustomerPickRowInstallment)?.IdentityNumber ?? search;
+        CustomerIdSearchBox.SelectionChanged += CustomerIdSearchBox_SelectionChanged;
+        CustomerIdSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                CustomerIdSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _customerIdSearchBox = this.FindControl<TextBox>("CustomerIdSearchBox");
+        _customerIdSearchBox = this.FindControl<AutoCompleteBox>("CustomerIdSearchBox");
+
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadContract,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
     }
 
-    private void LoadProducts()
+    private bool _suppressProductChange;
+
+    // keepSelection is true only for the periodic sync, which reloads this list while
+    // the user may be filling the form: the chosen product stays chosen, put back
+    // WITHOUT running the selection handler (it recalculates the total and would drop the
+    // down payment). If that product no longer exists nothing is selected, so the contract
+    // cannot be saved on a product the user did not choose. Everything else (open, the
+    // refresh button, after an add) keeps the old behaviour: first product selected.
+    private void LoadProducts(bool keepSelection = false)
     {
+        var selectedId = (ProductsBox.SelectedItem as ProductInstallment)?.Id;
         var products = _productDB.GetAll();
+
+        if (keepSelection && selectedId is long id)
+        {
+            _suppressProductChange = true;
+
+            try
+            {
+                ProductsBox.ItemsSource = products;
+                ProductsBox.SelectedItem = products.FirstOrDefault(p => p.Id == id);
+            }
+            finally
+            {
+                _suppressProductChange = false;
+            }
+
+            return;
+        }
 
         ProductsBox.ItemsSource = products;
 
@@ -69,7 +120,12 @@ public partial class ContractViewInstallment : UserControl
             ProductsBox.SelectedIndex = 0;
     }
 
-    private void LoadContract()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadContract() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<ContractInstallment>(ContractGrid, r => r.Id, LoadContractCore);
+
+    private void LoadContractCore()
     {
         try
         {
@@ -88,6 +144,9 @@ public partial class ContractViewInstallment : UserControl
     
     private void ProductsBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        if (_suppressProductChange)
+            return;
+
         if (ProductsBox.SelectedItem is ProductInstallment product)
         {
             _contract.ProductId = product.Id;
@@ -151,11 +210,64 @@ public partial class ContractViewInstallment : UserControl
         }
     }
 
+    // Picking a line from the suggestions selects that exact customer (by id: two
+    // people could share an identity number).
+    private void CustomerIdSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (CustomerIdSearchBox.SelectedItem is not CustomerPickRowInstallment row)
+            return;
+
+        CustomerIdSearchBox.Text = row.IdentityNumber;
+
+        var customer = _customersDB.GetById(row.Id);
+
+        if (customer is null)
+        {
+            _selectedCutomer = null;
+            CustomerInfoText.Text = "لم يتم العثور على عميل بهذا الرقم";
+            CustomerInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedCustomer(customer);
+    }
+
+    // If the text no longer points at the chosen customer, forget it, so a contract
+    // can never be saved for a person the box does not show.
+    private void CustomerIdSearchBox_TextChanged()
+    {
+        if (_selectedCutomer is null)
+            return;
+
+        var typed = CustomerIdSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedCutomer.IdentityNumber?.Trim() ?? "", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedCutomer = null;
+        CustomerInfoText.Text = "";
+    }
+
+    private void ShowSelectedCustomer(CustomerInstallment customer)
+    {
+        _selectedCutomer = customer;
+
+        CustomerInfoText.Text =
+            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
+
+        CustomerInfoText.Foreground = Brushes.Green;
+    }
+
     private void SearchCustomer_Click(object? sender, RoutedEventArgs e)
     {
         var id = _customerIdSearchBox?.Text?.Trim() ?? "";
 
         if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        // Already chosen (from the suggestions or loaded with the contract): keep that
+        // exact person, a search by identity could return another one with the same number.
+        if (_selectedCutomer is not null && (_selectedCutomer.IdentityNumber ?? "").Trim() == id)
             return;
 
         var customer = _customersDB.FindByIdentity(id);
@@ -168,21 +280,36 @@ public partial class ContractViewInstallment : UserControl
             return;
         }
 
-        _selectedCutomer = customer;
-
-        CustomerInfoText.Text =
-            $"اسم العميل : {customer.Name} | رقم الهوية/الإقامة : {customer.IdentityNumber}";
-
-        CustomerInfoText.Foreground = Brushes.Green;
+        ShowSelectedCustomer(customer);
     }
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncContractsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncContractsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncContractsFromCloudAsync()
     {
@@ -224,17 +351,23 @@ public partial class ContractViewInstallment : UserControl
             }
 
             LoadContract();
-            LoadProducts();
+            LoadProducts(keepSelection: true);
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment contracts cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
@@ -255,7 +388,9 @@ public partial class ContractViewInstallment : UserControl
             ManagementFeeBox.Text = "0";
             ContractPeriodBox.Text = "1";
             DownPaymentBox.Text = "0";
+            CustomerIdSearchBox.SelectedItem = null;
             CustomerIdSearchBox.Text = "";
+            CustomerIdSearchBox.ItemsSource = _customersDB.GetPickRows();
             CustomerInfoText.Text = "";
             CustomerInfoText.Foreground = Brushes.Black;
 
@@ -276,7 +411,8 @@ public partial class ContractViewInstallment : UserControl
     {
         if (ContractNumBox is null) return;   // fires during InitializeComponent
 
-        ContractNumBox.IsReadOnly = !IsManualMode;
+        // The contract number is generated and never editable, in manual mode too:
+        // manual mode only unlocks the total amount.
         MainTotalAmountBox.IsReadOnly = !IsManualMode;
 
         if (!IsManualMode)
@@ -297,6 +433,12 @@ public partial class ContractViewInstallment : UserControl
             _contract.MainTotalAmount = Math.Round(total, 2);
             UpdateInstallmentAfterTotalChanged();   // recompute monthly from the manual total
         }
+    }
+
+    private async void CheckCalculations_Click(object? sender, RoutedEventArgs e)
+    {
+        var window = new ContractCheckWindowViewInstallment();
+        await window.ShowDialog(TopLevel.GetTopLevel(this) as Window);
     }
 
     private async void ContractGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)

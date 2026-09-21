@@ -29,7 +29,49 @@ public class ContractServiceInstallment
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Ic-" + next;
+        return "Ic-" + next + UserCodeService.GetSuffix();
+    }
+
+    // The remaining balance is derived from the receipts, never trusted as a
+    // stored number: Main total minus the sum of the live receipts (not below 0).
+    // Every device computes the same value from the same receipts, so a balance
+    // changed on one device cannot be lost or overwritten by another. The
+    // contract is not marked dirty: nobody needs to push a derived value.
+    internal static void RecalculateBalance(
+        SqliteConnection con,
+        SqliteTransaction? tran,
+        long contractId,
+        bool onlyIfHasReceipts = false)
+    {
+        using var cmd = con.CreateCommand();
+        cmd.Transaction = tran;
+        cmd.CommandText = """
+            UPDATE ContractsInstallment
+            SET CurrentTotalAmount = ROUND(MAX(0, MainTotalAmount - (
+                    SELECT COALESCE(SUM(Amount), 0)
+                    FROM ReceiptsInstallment
+                    WHERE ContractId = $id
+                      AND SyncAction <> 'delete')), 2),
+                ContractState = CASE
+                    WHEN ROUND(MainTotalAmount - (
+                        SELECT COALESCE(SUM(Amount), 0)
+                        FROM ReceiptsInstallment
+                        WHERE ContractId = $id
+                          AND SyncAction <> 'delete'), 2) <= 0
+                    THEN 'منتهي'
+                    ELSE ContractState
+                END
+            WHERE Id = $id
+              AND ($onlyIfHasReceipts = 0
+                   OR EXISTS (
+                        SELECT 1
+                        FROM ReceiptsInstallment
+                        WHERE ContractId = $id
+                          AND SyncAction <> 'delete'));
+        """;
+        cmd.Parameters.AddWithValue("$id", contractId);
+        cmd.Parameters.AddWithValue("$onlyIfHasReceipts", onlyIfHasReceipts ? 1 : 0);
+        cmd.ExecuteNonQuery();
     }
 
     public long Add(
@@ -105,7 +147,11 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$productId", productId);
         cmd.Parameters.AddWithValue("$customerId", customerId);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(
@@ -168,6 +214,10 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$customerId", customerId);
 
         cmd.ExecuteNonQuery();
+
+        RecalculateBalance(con, null, id);
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpdateSignatureCloudInfo(
@@ -200,6 +250,8 @@ public class ContractServiceInstallment
         cmd.Parameters.AddWithValue("$id", id);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public List<ContractInstallment> GetAll()
@@ -249,6 +301,118 @@ public class ContractServiceInstallment
         }
 
         return list;
+    }
+
+    // Every live contract with its customer and product, newest first, for the
+    // contract picker of the receipt screen. Read-only.
+    public List<ContractPickRowInstallment> GetPickRows()
+    {
+        var rows = new List<ContractPickRowInstallment>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.ContractNumber,
+                   COALESCE(cust.Name, ''),
+                   COALESCE(p.ProductName, ''),
+                   c.ContractState
+            FROM ContractsInstallment c
+            LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
+            LEFT JOIN CustomersInstallment cust ON cust.Id = c.CustomerId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            rows.Add(new ContractPickRowInstallment
+            {
+                ContractNumber = reader.GetString(0),
+                CustomerName = reader.GetString(1),
+                ProductName = reader.GetString(2),
+                ContractState = reader.GetString(3)
+            });
+        }
+
+        return rows;
+    }
+
+    public const string NoDownPaymentDeducted = "بدون خصم الدفعة";
+    public const string DoesNotMatch = "لا يطابق المعادلة";
+
+    // Read-only check: compares each saved total with the contract formula
+    // (price after the down payment + fee + interest). Returns the contract count
+    // and only the contracts that do not match.
+    public (int Total, List<ContractCheckRowInstallment> Mismatches) GetCalculationCheckRows()
+    {
+        var mismatches = new List<ContractCheckRowInstallment>();
+        var total = 0;
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT c.Id,
+                   c.ContractNumber,
+                   COALESCE(cust.Name, ''),
+                   c.MainTotalAmount,
+                   c.DownPayment,
+                   c.ManagementFee,
+                   c.InterestPercent,
+                   c.ContractPeriod,
+                   COALESCE(p.ProductMainPrice, 0)
+            FROM ContractsInstallment c
+            LEFT JOIN ProductsInstallment p ON p.Id = c.ProductId
+            LEFT JOIN CustomersInstallment cust ON cust.Id = c.CustomerId
+            WHERE c.SyncAction <> 'delete'
+            ORDER BY c.Id DESC;
+        """;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            total++;
+
+            var saved = reader.GetDouble(3);
+            var down = reader.GetDouble(4);
+            var fee = reader.GetDouble(5);
+            var interest = reader.GetDouble(6);
+            var period = reader.GetDouble(7);
+            var price = reader.GetDouble(8);
+
+            var reduced = Math.Max(0, price - down);
+            var expected = Math.Round(reduced + fee + (reduced * interest / 100.0 / 12) * period, 2);
+            var expectedWithoutDown = Math.Round(price + fee + (price * interest / 100.0 / 12) * period, 2);
+
+            if (Math.Abs(saved - expected) <= 0.01)
+                continue;
+
+            var status = down > 0 && Math.Abs(saved - expectedWithoutDown) <= 0.01
+                ? NoDownPaymentDeducted
+                : DoesNotMatch;
+
+            mismatches.Add(new ContractCheckRowInstallment
+            {
+                Id = reader.GetInt64(0),
+                ContractNumber = reader.GetString(1),
+                CustomerName = reader.GetString(2),
+                MainTotalAmount = saved,
+                ProductPrice = price,
+                DownPayment = down,
+                ManagementFee = fee,
+                InterestPercent = interest,
+                ContractPeriod = period,
+                ExpectedTotal = expected,
+                Status = status
+            });
+        }
+
+        return (total, mismatches);
     }
 
     public ContractInstallment? GetById(long id)
@@ -419,6 +583,43 @@ public class ContractServiceInstallment
         cmd.ExecuteNonQuery();
     }
 
+    // The stored numbers a typed contract number refers to. Typing the short form
+    // ("Ic-1051" or "1051") finds "Ic-1051" (old numbers) and every "Ic-1051-XXX"
+    // (numbers with the user code); typing the full number finds just that one.
+    public List<string> FindContractNumbers(string typed)
+    {
+        var numbers = new List<string>();
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var cmd = con.CreateCommand();
+        cmd.CommandText = """
+            SELECT ContractNumber
+            FROM ContractsInstallment
+            WHERE SyncAction <> 'delete'
+              AND (ContractNumber = $n COLLATE NOCASE
+                   OR SUBSTR(ContractNumber, 1, LENGTH($n) + 1) = $n || '-' COLLATE NOCASE)
+            ORDER BY ContractNumber;
+        """;
+        cmd.Parameters.AddWithValue("$n", typed.Trim());
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            numbers.Add(reader.GetString(0));
+
+        return numbers;
+    }
+
+    // Returns the contract only when the typed number points to exactly one;
+    // when several match, the candidates are returned so the caller can show them.
+    public ContractInstallment? FindByTypedNumber(string typed, out List<string> candidates)
+    {
+        candidates = FindContractNumbers(typed);
+
+        return candidates.Count == 1 ? FindByContractNum(candidates[0]) : null;
+    }
+
     public ContractInstallment? FindByContractNum(string contractNum)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -459,6 +660,7 @@ public class ContractServiceInstallment
         return new ContractInstallment
         {
             Id = reader.GetInt64(0),
+            ContractNumber = contractNum, // the SELECT matched it exactly; callers compare against it
             CloudId = reader.GetInt64(1),
             ProductId = reader.GetInt64(2),
             CustomerId = reader.GetInt64(3),
@@ -550,6 +752,43 @@ public class ContractServiceInstallment
         string signatureFileName,
         string signatureFileType)
     {
+        UpsertFromCloudCore(cloudId, contractNumber, contractStartDate, contractEndDate, mainTotalAmount, currentTotalAmount, contractPeriod, downPayment, monthlyInstallment, managementFee, interestPercent, contractState, productLocalId, customerLocalId, signatureCloudPath, signatureFileName, signatureFileType);
+
+
+        using var con = new SqliteConnection(_db.ConnectionString);
+        con.Open();
+
+        using var find = con.CreateCommand();
+        find.CommandText = "SELECT Id FROM ContractsInstallment WHERE CloudId = $cloudId;";
+        find.Parameters.AddWithValue("$cloudId", cloudId);
+
+        var localId = find.ExecuteScalar();
+        if (localId != null)
+            // Only when this device already has receipts for the contract. If they
+            // have not been pulled yet, a recalculation would show the full amount
+            // as remaining; keep the cloud value until the receipts arrive.
+            RecalculateBalance(con, null, Convert.ToInt64(localId), onlyIfHasReceipts: true);
+    }
+
+    private void UpsertFromCloudCore(
+        long cloudId,
+        string contractNumber,
+        DateTime contractStartDate,
+        DateTime contractEndDate,
+        double mainTotalAmount,
+        double currentTotalAmount,
+        double contractPeriod,
+        double downPayment,
+        double monthlyInstallment,
+        double managementFee,
+        double interestPercent,
+        string contractState,
+        long productLocalId,
+        long customerLocalId,
+        string signatureCloudPath,
+        string signatureFileName,
+        string signatureFileType)
+    {
         using var con = new SqliteConnection(_db.ConnectionString);
         con.Open();
 
@@ -611,6 +850,43 @@ public class ContractServiceInstallment
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // The number alone is not enough (two users can pick the same one),
+            // so the other fields and the parent row must match too.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE ContractsInstallment
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM ContractsInstallment
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM(ContractNumber) = TRIM($contractNumber)
+                      AND date(ContractStartDate) = date($contractStartDate)
+                      AND ABS(MainTotalAmount - $mainTotalAmount) < 0.005
+                      AND ProductId = $productLocalId
+                      AND CustomerId = $customerLocalId
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$contractNumber", contractNumber);
+            adopt.Parameters.AddWithValue("$contractStartDate", contractStartDate);
+            adopt.Parameters.AddWithValue("$mainTotalAmount", mainTotalAmount);
+            adopt.Parameters.AddWithValue("$productLocalId", productLocalId);
+            adopt.Parameters.AddWithValue("$customerLocalId", customerLocalId);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO ContractsInstallment
@@ -677,7 +953,16 @@ public class ContractServiceInstallment
             insert.Parameters.AddWithValue("$signatureFileName", signatureFileName ?? "");
             insert.Parameters.AddWithValue("$signatureFileType", signatureFileType ?? "");
 
-            insert.ExecuteNonQuery();
+            try
+            {
+                insert.ExecuteNonQuery();
+            }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067)
+            {
+                // SQLITE_CONSTRAINT_UNIQUE: a different local row already uses this
+                // number. Skip this row and keep pulling the rest.
+                Console.WriteLine($"Skipped cloud row {cloudId} in ContractsInstallment: number already used locally.");
+            }
         }
     }
 
@@ -790,6 +1075,8 @@ public class ContractServiceInstallment
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

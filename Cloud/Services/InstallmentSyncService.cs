@@ -23,6 +23,11 @@ public class InstallmentSyncService
 
     public async Task PushAllDirtyAsync()
     {
+        // Same rule as real estate: a role that cannot write online (viewer, tester)
+        // does not even try to upload (it would fail on every sync).
+        if (!AppSession.CanWriteOnline)
+            return;
+
         await _pushGate.WaitAsync();
 
         try
@@ -33,14 +38,18 @@ public class InstallmentSyncService
             await PushDirtyProductsAsync();
             await PushDirtyCustomersAsync();
             await PushDirtyOwnersAsync();
+
+            SyncStatusService.ReportPush(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: installment dirty rows will sync later.");
+            SyncStatusService.ReportPush(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPush(false);
         }
         finally
         {

@@ -48,14 +48,18 @@ public class RealEstateSyncService
             await PushDirtyUnitsAsync();
             await PushDirtyTenantsAsync();
             await PushDirtyOwnersAsync();
+
+            SyncStatusService.ReportPush(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: real estate dirty rows will sync later.");
+            SyncStatusService.ReportPush(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPush(false);
         }
         finally
         {

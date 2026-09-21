@@ -29,7 +29,7 @@ public class ReceiptServiceRealEstate
         var next = Convert.ToInt32(cmd.ExecuteScalar());
         if (next < 1000) next = 1000;
 
-        return "Rr-" + next;
+        return "Rr-" + next + UserCodeService.GetSuffix();
     }
 
     public long Add(string receiptNo, DateTime date, long contractId, string paymentMethod, double amount)
@@ -69,7 +69,11 @@ public class ReceiptServiceRealEstate
         cmd.Parameters.AddWithValue("$method", paymentMethod);
         cmd.Parameters.AddWithValue("$amount", amount);
 
-        return (long)cmd.ExecuteScalar()!;
+        var newId = (long)cmd.ExecuteScalar()!;
+
+        DataChangeNotifier.Notify();
+
+        return newId;
     }
 
     public void Update(long id, DateTime date, long contractId, string paymentMethod, double amount)
@@ -99,6 +103,8 @@ public class ReceiptServiceRealEstate
         cmd.Parameters.AddWithValue("$amount", amount);
 
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void UpsertFromCloud(
@@ -148,6 +154,41 @@ public class ReceiptServiceRealEstate
         }
         else
         {
+            // Not found by CloudId. A local row that was created here and pushed,
+            // but whose CloudId was never saved (offline, crash), would be
+            // duplicated by the insert below. Adopt it instead: give it the
+            // CloudId and make it an update. IsDirty stays 1, so the local
+            // values are kept and pushed - nothing is overwritten.
+            // The number alone is not enough (two users can pick the same one),
+            // so the other fields and the parent row must match too.
+            using var adopt = con.CreateCommand();
+            adopt.CommandText = """
+                UPDATE ReceiptsRealEstate
+                SET CloudId = $cloudId,
+                    SyncAction = 'update'
+                WHERE Id = (
+                    SELECT Id
+                    FROM ReceiptsRealEstate
+                    WHERE CloudId = 0
+                      AND IsDirty = 1
+                      AND SyncAction = 'insert'
+                      AND TRIM(ReceiptNumber) = TRIM($receiptNumber)
+                      AND date(ReceiptDate) = date($receiptDate)
+                      AND ABS(Amount - $amount) < 0.005
+                      AND ContractId = $contractLocalId
+                    LIMIT 1
+                );
+            """;
+
+            adopt.Parameters.AddWithValue("$cloudId", cloudId);
+            adopt.Parameters.AddWithValue("$receiptNumber", receiptNumber);
+            adopt.Parameters.AddWithValue("$receiptDate", receiptDate);
+            adopt.Parameters.AddWithValue("$amount", amount);
+            adopt.Parameters.AddWithValue("$contractLocalId", contractLocalId);
+
+            if (adopt.ExecuteNonQuery() > 0)
+                return;
+
             using var insert = con.CreateCommand();
             insert.CommandText = """
                 INSERT INTO ReceiptsRealEstate
@@ -181,7 +222,16 @@ public class ReceiptServiceRealEstate
             insert.Parameters.AddWithValue("$paymentMethod", paymentMethod);
             insert.Parameters.AddWithValue("$amount", amount);
 
-            insert.ExecuteNonQuery();
+            try
+            {
+                insert.ExecuteNonQuery();
+            }
+            catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == 2067)
+            {
+                // SQLITE_CONSTRAINT_UNIQUE: a different local row already uses this
+                // number. Skip this row and keep pulling the rest.
+                Console.WriteLine($"Skipped cloud row {cloudId} in ReceiptsRealEstate: number already used locally.");
+            }
         }
     }
 
@@ -414,6 +464,8 @@ public class ReceiptServiceRealEstate
 
         cmd.Parameters.AddWithValue("$id", id);
         cmd.ExecuteNonQuery();
+
+        DataChangeNotifier.Notify();
     }
 
     public void DeleteLocalPermanent(long id)

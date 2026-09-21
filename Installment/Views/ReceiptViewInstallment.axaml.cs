@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using RealEstateInstallmentsManager.Models;
 using RealEstateInstallmentsManager.Models.Cloud;
@@ -22,7 +23,7 @@ public partial class ReceiptViewInstallment : UserControl
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
 
-    private TextBox? _contractIdSearchBox;
+    private AutoCompleteBox? _contractIdSearchBox;
     private ContractInstallment? _selectedContract;
 
     public ReceiptViewInstallment(SupabaseService supabaseService)
@@ -38,9 +39,32 @@ public partial class ReceiptViewInstallment : UserControl
         
         ReceiptsGrid.DoubleTapped += ReceiptsGrid_DoubleTapped;
 
+        // The suggestions list matches the number, the customer name or the product.
+        // Wired here (not in the XAML) so nothing fires while the window is being built.
+        ContractNumSearchBox.ItemFilter = (search, item) =>
+            item is ContractPickRowInstallment row
+            && !string.IsNullOrWhiteSpace(search)
+            && row.Display.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
+        ContractNumSearchBox.ItemSelector = (search, item) =>
+            (item as ContractPickRowInstallment)?.ContractNumber ?? search;
+        ContractNumSearchBox.SelectionChanged += ContractNumSearchBox_SelectionChanged;
+        ContractNumSearchBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == AutoCompleteBox.TextProperty)
+                ContractNumSearchBox_TextChanged();
+        };
+
         Refresh();
 
-        _contractIdSearchBox = this.FindControl<TextBox>("ContractNumSearchBox");
+        _contractIdSearchBox = this.FindControl<AutoCompleteBox>("ContractNumSearchBox");
+
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadReceipt,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
 
         _sync = new InstallmentSyncService(_db, _supabaseService);
         _ = SyncAsync();
@@ -57,7 +81,12 @@ public partial class ReceiptViewInstallment : UserControl
         PaymentMethodBox.SelectedIndex = 0;
     }
 
-    private void LoadReceipt()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadReceipt() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<ReceiptInstallment>(ReceiptsGrid, r => r.Id, LoadReceiptCore);
+
+    private void LoadReceiptCore()
     {
         try
         {
@@ -115,11 +144,31 @@ public partial class ReceiptViewInstallment : UserControl
 
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncReceiptsFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncReceiptsFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncReceiptsFromCloudAsync()
     {
@@ -150,15 +199,71 @@ public partial class ReceiptViewInstallment : UserControl
             }
 
             LoadReceipt();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (System.Net.Http.HttpRequestException)
         {
             Console.WriteLine("Offline: skipping installment receipts cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
+    }
+
+    // Picking a line from the suggestions selects that exact contract, looked up by
+    // its full stored number (a short search could match several contracts).
+    private void ContractNumSearchBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ContractNumSearchBox.SelectedItem is not ContractPickRowInstallment row)
+            return;
+
+        ContractNumSearchBox.Text = row.ContractNumber;
+
+        var contract = _contractsDB.FindByContractNum(row.ContractNumber);
+
+        if (contract is null)
+        {
+            _selectedContract = null;
+            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Foreground = Brushes.Red;
+            return;
+        }
+
+        ShowSelectedContract(contract);
+    }
+
+    // If the text no longer points at the chosen contract, forget that contract,
+    // so a receipt can never be saved on a contract the box does not show.
+    private void ContractNumSearchBox_TextChanged()
+    {
+        if (_selectedContract is null)
+            return;
+
+        var typed = ContractNumSearchBox.Text?.Trim() ?? "";
+
+        if (typed.Equals(_selectedContract.ContractNumber, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _selectedContract = null;
+        ContractInfoText.Text = "";
+    }
+
+    private void ShowSelectedContract(ContractInstallment contract)
+    {
+        _selectedContract = contract;
+
+        ContractInfoText.Text =
+            $"اسم العميل : {contract.CustomerName} | " +
+            $"اسم المنتج : {contract.ProductName} | " +
+            $"القسط الأساسي : {contract.MainTotalAmount} | " +
+            $"المتبقي : {contract.CurrentTotalAmount} | " +
+            $"القسط الشهري : {contract.MonthlyInstallment}";
+
+        ContractInfoText.Foreground = Brushes.Green;
     }
 
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
@@ -172,27 +277,22 @@ public partial class ReceiptViewInstallment : UserControl
             ? raw
             : "Ic-" + raw;
 
-        var contract = _contractsDB.FindByContractNum(contractNum);
+        var contract = _contractsDB.FindByTypedNumber(contractNum, out var candidates);
 
         if (contract is null)
         {
             _selectedContract = null;
-            ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
+            ContractInfoText.Text = candidates.Count > 1
+                ? "يوجد أكثر من عقد بهذا الرقم، اكتب الرقم كاملًا: " + string.Join("، ", candidates)
+                : "لم يتم العثور على عقد بهذا الرقم";
             ContractInfoText.Foreground = Brushes.Red;
             return;
         }
 
-        _selectedContract = contract;
-
-        ContractInfoText.Text =
-            $"اسم العميل : {contract.CustomerName} | " +
-            $"اسم المنتج : {contract.ProductName} | " +
-            $"القسط الأساسي : {contract.MainTotalAmount} | " +
-            $"المتبقي : {contract.CurrentTotalAmount} | " +
-            $"القسط الشهري : {contract.MonthlyInstallment}";
-
-        ContractInfoText.Foreground = Brushes.Green;
+        ShowSelectedContract(contract);
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
@@ -212,7 +312,9 @@ public partial class ReceiptViewInstallment : UserControl
         ContractInfoText.Text = "";
         ContractInfoText.Foreground = Brushes.Black;
 
+        ContractNumSearchBox.SelectedItem = null;
         ContractNumSearchBox.Text = "";
+        ContractNumSearchBox.ItemsSource = _contractsDB.GetPickRows();
         AmountBox.Text = "";
 
         _selectedContract = null;

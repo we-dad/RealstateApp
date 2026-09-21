@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using RealEstateInstallmentsManager.Models;
@@ -25,6 +26,14 @@ public partial class OwnersViewRealEstate : UserControl
 
         _db.Initialize();
         _owners = new OwnerServiceRealEstate(_db);
+        // Reload the grid (only) when data changes: an add, an edit or a delete, also
+        // from the details window, so there is no need to press "تحديث".
+        _autoRefresh = new ScreenAutoRefresh(
+            this,
+            LoadOwners,
+            periodicSync: PeriodicSyncAsync,
+            interval: TimeSpan.FromMinutes(2));
+
         _sync = new RealEstateSyncService(_db, _supabaseService);
 
         LoadOwners();
@@ -32,7 +41,12 @@ public partial class OwnersViewRealEstate : UserControl
         _ = SyncAsync();
     }
 
-    private void LoadOwners()
+    // Every reload (open, add, pull, timer) keeps the selected row selected, chosen at
+    // the moment the grid is replaced, so a row picked while a sync runs is not undone.
+    private void LoadOwners() =>
+        ScreenAutoRefresh.ReloadKeepingSelection<OwnerRealEstate>(OwnersGrid, r => r.Id, LoadOwnersCore);
+
+    private void LoadOwnersCore()
     {
         var data = _owners.GetAll();
         
@@ -79,11 +93,31 @@ public partial class OwnersViewRealEstate : UserControl
     
     // push must finish before the pull, or the pull re-reads rows the
     // push has not written CloudIds for yet and duplicates them
+    //
+    // One sync at a time for this screen (static: also across an old and a new instance
+    // of the screen). Two overlapping pulls could both insert the same new cloud row.
+    // A request from the user (opening the screen, the refresh button) WAITS for its
+    // turn, so it is never lost.
+    private static readonly SemaphoreSlim _syncGate = new SemaphoreSlim(1, 1);
+
     private async Task SyncAsync()
     {
-        await _sync.PushAllDirtyAsync();
-        await SyncOwnersFromCloudAsync();
+        await _syncGate.WaitAsync();
+
+        try
+        {
+            await _sync.PushAllDirtyAsync();
+            await SyncOwnersFromCloudAsync();
+        }
+        finally
+        {
+            _syncGate.Release();
+        }
     }
+
+    // Every 2 minutes (while the app is active); skipped while a sync is already running.
+    private Task PeriodicSyncAsync() =>
+        _syncGate.CurrentCount == 0 ? Task.CompletedTask : SyncAsync();
 
     private async Task SyncOwnersFromCloudAsync()
     {
@@ -107,16 +141,22 @@ public partial class OwnersViewRealEstate : UserControl
             }
 
             LoadOwners();
+
+            SyncStatusService.ReportPull(true);
         }
         catch (HttpRequestException)
         {
             Console.WriteLine("Offline: skipping owners cloud sync.");
+            SyncStatusService.ReportPull(false, offline: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            SyncStatusService.ReportPull(false);
         }
     }
+
+    private ScreenAutoRefresh? _autoRefresh;
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
     {
