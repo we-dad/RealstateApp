@@ -18,7 +18,6 @@ OUT = ROOT / "docs" / "dashboard.html"
 
 DONE, DOING, TODO = "done", "doing", "todo"
 STATUS_LABEL = {DONE: "منجزة", DOING: "قيد التنفيذ", TODO: "لم تبدأ"}
-CLIENT = "طلب العميل"
 TASK_WORD = r"(?:مهمة|بند)"  # old files may still say "بند"
 
 
@@ -48,7 +47,6 @@ def parse_roadmap(text):
                 "size": clean(cells[3]),
                 "order": clean(cells[4]),
                 "note": clean(cells[5]) if len(cells) > 5 else "",
-                "kind": clean(cells[6]) if len(cells) > 6 else "مشروع",
                 "checked": 0,
                 "total": 0,
             }
@@ -175,7 +173,7 @@ h2 .count{font-size:.8rem;font-weight:600;color:var(--muted);background:var(--to
 .tile span{font-size:.8rem;color:var(--muted)}
 .tile.done{background:var(--done-bg)}.tile.done b{color:var(--done)}
 .tile.doing{background:var(--doing-bg)}.tile.doing b{color:var(--doing)}
-.tile.client{background:var(--client-bg)}.tile.client b{color:var(--client)}
+.tile.steps{background:var(--client-bg)}.tile.steps b{color:var(--client)}
 
 /* current */
 .cur{border-inline-start:6px solid var(--doing);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
@@ -254,7 +252,7 @@ JS = """
   function apply(){
     var q=(box.value||'').trim().toLowerCase();
     rows.forEach(function(r){
-      var okS=(f==='all')||r.getAttribute('data-status')===f||(f==='client'&&r.getAttribute('data-kind')==='client');
+      var okS=(f==='all')||r.getAttribute('data-status')===f;
       var okQ=!q||r.textContent.toLowerCase().indexOf(q)!==-1;
       r.classList.toggle('hidden',!(okS&&okQ));
     });
@@ -282,8 +280,6 @@ def build(items, status, progress, today):
     seg_w = 100 * counts[DOING] / total if total else 0
     steps_done = sum(i["checked"] for i in items.values())
     steps_all = sum(i["total"] for i in items.values())
-    client_ids = [i for i, t in items.items() if t["kind"] == CLIENT]
-    client_done = sum(1 for i in client_ids if status[i] == DONE)
 
     circ = 339.29
     offset = circ * (1 - pct / 100)
@@ -326,32 +322,17 @@ def build(items, status, progress, today):
     else:
         ach_html = '<p class="empty">لا توجد إنجازات مسجلة بعد.</p>'
 
-    # client tasks (cards)
-    def card(t):
-        st = status[t["id"]]
-        return ('<div class="task %s"><div class="row"><div class="ttl">%s</div>'
-                '<span class="tag %s">%s</span></div>'
-                '<div class="meta">مهمة %d · %s%s</div>%s</div>'
-                % (st, esc(t["title"]), st, STATUS_LABEL[st], t["id"], esc(t["size"]),
-                   (" · %d/%d خطوات" % (t["checked"], t["total"])) if t["total"] else "",
-                   bar(t["checked"], t["total"])))
-    client_sorted = sorted((items[i] for i in client_ids),
-                           key=lambda t: (int(t["order"]) if t["order"].isdigit() else 99, t["id"]))
-    client_html = "".join(card(t) for t in client_sorted) or '<p class="empty">لا توجد طلبات من العميل.</p>'
-
-    # all tasks table (client requests first, then the rest in file order)
-    ordered = client_sorted + [t for t in items.values() if t["kind"] != CLIENT]
+    # all tasks table: the tasks in the order of ROADMAP.md
     rows = []
-    for t in ordered:
+    for t in items.values():
         st = status[t["id"]]
-        kind = ('<span class="tag client">%s</span>' % CLIENT) if t["kind"] == CLIENT else '<span class="small">مشروع</span>'
         prog = ("%d/%d" % (t["checked"], t["total"])) if t["total"] else "—"
         rows.append(
-            '<tr class="%s" data-status="%s" data-kind="%s"><td class="num">%d</td>'
-            '<td class="name">%s</td><td>%s</td><td>%s</td><td><span class="tag %s">%s</span></td>'
+            '<tr class="%s" data-status="%s"><td class="num">%d</td>'
+            '<td class="name">%s</td><td>%s</td><td><span class="tag %s">%s</span></td>'
             '<td class="prog hide-m"><span class="small">%s</span>%s</td><td class="hide-m small">%s</td></tr>'
-            % (st, st, "client" if t["kind"] == CLIENT else "project", t["id"], esc(t["title"]),
-               kind, esc(t["size"]), st, STATUS_LABEL[st], prog, bar(t["checked"], t["total"]), esc(t["note"])))
+            % (st, st, t["id"], esc(t["title"]), esc(t["size"]), st, STATUS_LABEL[st],
+               prog, bar(t["checked"], t["total"]), esc(t["note"])))
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -367,7 +348,7 @@ def build(items, status, progress, today):
 <div class="wrap">
 
 <header class="top">
-  <div><h1>لوحة تقدم المشروع</h1><p class="sub">RealEstateInstallmentsManager — مهام المشروع وطلبات العميل</p></div>
+  <div><h1>لوحة تقدم المشروع</h1><p class="sub">RealEstateInstallmentsManager — مهام المشروع</p></div>
   <span class="pill">آخر تحديث: {now}</span>
 </header>
 
@@ -389,9 +370,8 @@ def build(items, status, progress, today):
       <div class="tile done"><b>{counts[DONE]}</b><span>منجزة</span></div>
       <div class="tile doing"><b>{counts[DOING]}</b><span>قيد التنفيذ</span></div>
       <div class="tile"><b>{counts[TODO]}</b><span>لم تبدأ</span></div>
-      <div class="tile client"><b>{client_done}/{len(client_ids)}</b><span>طلبات العميل</span></div>
+      <div class="tile steps"><b>{steps_done}/{steps_all}</b><span>خطوات منجزة</span></div>
     </div>
-    <p class="small" style="margin:12px 0 0">الخطوات: {steps_done} من {steps_all} منجزة</p>
   </div>
 </section>
 
@@ -402,23 +382,17 @@ def build(items, status, progress, today):
   <section class="card"><h2>آخر الإنجازات</h2>{ach_html}</section>
 </div>
 
-<section class="card">
-  <h2>طلبات العميل <span class="count">{client_done} من {len(client_ids)}</span></h2>
-  <div class="tasks">{client_html}</div>
-</section>
-
 <section class="card" id="all">
   <h2>كل المهام <span class="count">{total}</span></h2>
   <div class="tools">
     <button class="chip on" data-f="all">الكل</button>
-    <button class="chip" data-f="client">طلبات العميل</button>
     <button class="chip" data-f="doing">قيد التنفيذ</button>
     <button class="chip" data-f="todo">لم تبدأ</button>
     <button class="chip" data-f="done">منجزة</button>
     <input class="search" id="q" type="search" placeholder="ابحث في المهام...">
   </div>
   <div class="tblwrap"><table>
-    <thead><tr><th>#</th><th>المهمة</th><th>النوع</th><th>الحجم</th><th>الحالة</th><th class="hide-m">الخطوات</th><th class="hide-m">ملاحظة</th></tr></thead>
+    <thead><tr><th>#</th><th>المهمة</th><th>الحجم</th><th>الحالة</th><th class="hide-m">الخطوات</th><th class="hide-m">ملاحظة</th></tr></thead>
     <tbody>{"".join(rows)}</tbody>
   </table></div>
 </section>
