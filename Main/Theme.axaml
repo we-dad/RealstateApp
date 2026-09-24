@@ -124,6 +124,22 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BrushGold}"/>
     </Style>
 
+    <!-- The card's icon: grey at rest, same gold hover transition as the border.
+         No Stroke set locally on the Path elements in MainMenuView.axaml - a
+         local value would win over this style and make the hover change
+         ineffective. -->
+    <Style Selector="Button.moduleCard Path">
+        <Setter Property="Stroke" Value="{DynamicResource BrushMuted}"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Stroke" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.moduleCard:pointerover Path">
+        <Setter Property="Stroke" Value="{DynamicResource BrushGold}"/>
+    </Style>
+
     <!-- ===================== Status chip ===================== -->
     <!-- A small pill: Border.chip carrying Classes "ok" (green) or "late" (red/muted). -->
 

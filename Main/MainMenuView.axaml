@@ -55,8 +55,11 @@
                             <!-- Text first (physical left), icon last (physical
                                  right) - no ambient FlowDirection here, so source
                                  order is physical order (same technique used to
-                                 reorder the top bar). -->
-                            <StackPanel Orientation="Horizontal" Spacing="14">
+                                 reorder the top bar). HorizontalAlignment="Right"
+                                 (literal/safe, no ambient RTL flow here) so the
+                                 group hugs the card's right edge instead of
+                                 sitting at the left of the stretched row. -->
+                            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Right">
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
                                     <TextBlock Text="الأقساط" FontSize="19" FontWeight="Bold"
                                                Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
@@ -66,7 +69,11 @@
                                 <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushGoldSoft}">
                                     <Viewbox Width="26" Height="26">
                                         <Canvas Width="24" Height="24">
-                                            <Path Data="{DynamicResource Icon.Cards}" Stroke="{DynamicResource BrushGold}"
+                                            <!-- Stroke color comes from Theme.axaml's
+                                                 Button.moduleCard Path style (grey
+                                                 at rest, gold on hover) - no local
+                                                 Stroke here, which would override it. -->
+                                            <Path Data="{DynamicResource Icon.Cards}"
                                                   StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
                                         </Canvas>
                                     </Viewbox>
@@ -107,7 +114,7 @@
                             BorderThickness="1"
                             CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
                         <StackPanel Spacing="20">
-                            <StackPanel Orientation="Horizontal" Spacing="14">
+                            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Right">
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
                                     <TextBlock Text="العقارات" FontSize="19" FontWeight="Bold"
                                                Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
@@ -118,7 +125,7 @@
                                         BorderBrush="{DynamicResource BrushLine}" BorderThickness="1">
                                     <Viewbox Width="26" Height="26">
                                         <Canvas Width="24" Height="24">
-                                            <Path Data="{DynamicResource Icon.Building}" Stroke="{DynamicResource BrushInk}"
+                                            <Path Data="{DynamicResource Icon.Building}"
                                                   StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
                                         </Canvas>
                                     </Viewbox>
