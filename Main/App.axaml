@@ -4,17 +4,27 @@
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
+   <Application.Resources>
+    <!-- Regular/Medium/SemiBold/Bold ship as separate files with their own internal
+         family names (Google Fonts build); the "#Name" syntax groups them into one
+         family for XAML, matched by weight regardless of that internal naming. -->
+    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
+   </Application.Resources>
+
    <Application.Styles>
     <FluentTheme />
 
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 
-    <!-- Apply Arabic-supporting font everywhere -->
-    <Style Selector="TextBlock">
-        <Setter Property="FontFamily" Value="Arial"/>
+    <!-- Arabic font everywhere. FontFamily is declared separately on TemplatedControl
+         (Button, TextBox, ComboBox, DataGrid headers/cells...) and on TextElement
+         (TextBlock, SelectableTextBlock), so both are targeted; ":is()" also reaches
+         subclasses, which a plain type selector would not. -->
+    <Style Selector=":is(TemplatedControl)">
+        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
-    <Style Selector="SelectableTextBlock">
-        <Setter Property="FontFamily" Value="Arial"/>
+    <Style Selector=":is(TextBlock)">
+        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
 </Application.Styles>
 </Application>
