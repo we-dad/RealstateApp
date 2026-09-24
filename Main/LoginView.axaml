@@ -23,25 +23,26 @@
         <!-- Dark brand panel - logo mark, a centered heading, and a small line
              at the bottom. Kept deliberately minimal per the developer's request. -->
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
-            <!-- The real mechanism (now confirmed, not guessed): under the root's
-                 FlowDirection="RightToLeft", Avalonia arranges everything as if it
-                 were plain left-to-right, then mirrors the ENTIRE rendered subtree
-                 as one final horizontal flip - except text glyphs and TextAlignment,
-                 which the text layout engine deliberately never mirrors (its own
-                 bidi-aware logic already handles RTL correctly on its own).
-                 That is why HorizontalAlignment="Right" on a non-text box (the logo)
-                 or on a full-width box (the heading) lands it at the PRE-mirror
-                 right, which becomes the FINAL physical left once the flip is
-                 applied - the opposite of what the name suggests, and worse than
-                 doing nothing (confirmed: adding it to the heading pushed it further
-                 left). The one reliable, low-risk way to pin something to the real
-                 physical right is to give it its own Auto-sized column placed FIRST
-                 (column 0) in a multi-column Grid: an Auto column has no spare space
-                 to "misplace" content in, and column 0 consistently ends up physical-
-                 right after the same subtree mirror. So the logo and the heading
-                 both live in column 0 here - same column, so their right edges
-                 always line up exactly, by construction, not by matching two
-                 independent alignment values. -->
+            <!-- The real mechanism (confirmed by two separate regressions, not
+                 guessed): under the root's FlowDirection="RightToLeft", Avalonia
+                 arranges everything as if it were plain left-to-right, then
+                 mirrors the ENTIRE rendered subtree as one final horizontal flip -
+                 except text glyphs/TextAlignment, which the text layout engine
+                 deliberately never mirrors (its own bidi-aware logic already
+                 handles RTL on its own). So for a non-text control, or a control
+                 with real spare space around it, HorizontalAlignment="Right" lands
+                 it at the PRE-mirror right, which becomes the FINAL physical LEFT
+                 once the flip applies - confirmed twice: once on the logo, once on
+                 this heading (adding "Right" made both worse). "Left" is the one
+                 that actually ends up physical-right.
+                 Column 0 here is Auto-sized to the LOGO ONLY (it's the only
+                 element assigned to it) - an exact-fit column has no spare space
+                 to misplace content in, so the logo needs no alignment at all.
+                 The heading and small line instead span both columns (the full
+                 width) - putting them in column 0 too would have grown that
+                 column to fit the wide heading, leaving the narrower logo with
+                 spare space around it and pushing it left again (exactly what the
+                 developer saw next). -->
             <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*">
 
                 <!-- The client's full logo (wordmark + mark), dark-background
@@ -56,12 +57,12 @@
                          FlowDirection="LeftToRight"
                          Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                           TextAlignment="Right" MaxWidth="480"
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"
+                           HorizontalAlignment="Left" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
-                <TextBlock Grid.Row="2" Grid.Column="0"
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
                            Text="عقارات · أقساط" FontSize="12" Foreground="#8FA09D"/>
             </Grid>
         </Border>
