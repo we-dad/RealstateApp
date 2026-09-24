@@ -10,9 +10,13 @@
          column 0 lands on the physical right and column 1 on the physical left -
          same as the mockup's own CSS grid under dir="rtl". That's why the form
          (480px) is column 0 and the dark panel ("*") is column 1, even though the
-         dark Border is written first below. Default text/checkbox alignment also
-         comes from this FlowDirection, so most TextBlocks below need no explicit
-         TextAlignment="Right". -->
+         dark Border is written first below.
+         Correction: FlowDirection does NOT auto-right-align TextBlock/CheckBox
+         content by itself (an earlier version of this comment claimed it did -
+         wrong, caught by the developer). Every stretched TextBlock below needs
+         its own explicit TextAlignment="Right" (or HorizontalAlignment="Right"
+         for non-text controls), same lesson already applied to Theme.axaml's
+         shared classes for the receipt screen. -->
     <Grid ColumnDefinitions="480,*">
 
         <!-- Dark brand panel - logo mark, a centered heading, and a small line
