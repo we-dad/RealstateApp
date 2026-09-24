@@ -106,6 +106,14 @@
         <Setter Property="Padding" Value="16"/>
     </Style>
 
+    <!-- A clickable card that's a Button underneath (e.g. the module-picker
+         cards) - keeps the same white background on hover instead of
+         FluentTheme's default hover fill change, which the developer found
+         distracting on a card that already has its own static border. -->
+    <Style Selector="Button.moduleCard:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
+    </Style>
+
     <!-- ===================== Status chip ===================== -->
     <!-- A small pill: Border.chip carrying Classes "ok" (green) or "late" (red/muted). -->
 
