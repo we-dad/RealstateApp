@@ -52,7 +52,17 @@
                             Background="{DynamicResource BrushSurface}"
                             BorderThickness="1" CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
                         <StackPanel Spacing="20">
+                            <!-- Text first (physical left), icon last (physical
+                                 right) - no ambient FlowDirection here, so source
+                                 order is physical order (same technique used to
+                                 reorder the top bar). -->
                             <StackPanel Orientation="Horizontal" Spacing="14">
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="الأقساط" FontSize="19" FontWeight="Bold"
+                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
+                                    <TextBlock Text="عقود البيع بالتقسيط والتحصيل والملاك" FontSize="12.5"
+                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
+                                </StackPanel>
                                 <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushGoldSoft}">
                                     <Viewbox Width="26" Height="26">
                                         <Canvas Width="24" Height="24">
@@ -61,29 +71,31 @@
                                         </Canvas>
                                     </Viewbox>
                                 </Border>
-                                <StackPanel Spacing="2" VerticalAlignment="Center">
-                                    <TextBlock Text="الأقساط" FontSize="19" FontWeight="Bold"
-                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
-                                    <TextBlock Text="عقود البيع بالتقسيط والتحصيل والملاك" FontSize="12.5"
-                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
-                                </StackPanel>
                             </StackPanel>
 
-                            <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
-                                <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="عقود نشطة"/>
-                                    <SelectableTextBlock x:Name="StatActiveContracts" Classes="statValue"/>
-                                </StackPanel></Border>
-                                <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="متأخرات"/>
-                                    <SelectableTextBlock x:Name="StatArrears" Classes="statValue"
-                                                          Foreground="{DynamicResource BrushLate}"/>
-                                </StackPanel></Border>
-                                <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="مستحق خلال 7 أيام"/>
-                                    <SelectableTextBlock x:Name="StatDueSoon" Classes="statValue"/>
-                                </StackPanel></Border>
-                            </Grid>
+                            <!-- Bordered/rounded frame around the stat grid,
+                                 matching the reference design (its .stats has its
+                                 own border+radius, not just the hairline gaps). -->
+                            <Border BorderBrush="{DynamicResource BrushLine}" BorderThickness="1" CornerRadius="10">
+                                <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
+                                    <!-- "مستحق خلال 7 أيام" first (physical right)
+                                         and "عقود نشطة" last (physical left), per
+                                         the developer's requested order. -->
+                                    <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="مستحق خلال 7 أيام"/>
+                                        <SelectableTextBlock x:Name="StatDueSoon" Classes="statValue"/>
+                                    </StackPanel></Border>
+                                    <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="متأخرات"/>
+                                        <SelectableTextBlock x:Name="StatArrears" Classes="statValue"
+                                                              Foreground="{DynamicResource BrushLate}"/>
+                                    </StackPanel></Border>
+                                    <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="عقود نشطة"/>
+                                        <SelectableTextBlock x:Name="StatActiveContracts" Classes="statValue"/>
+                                    </StackPanel></Border>
+                                </Grid>
+                            </Border>
 
                         </StackPanel>
                     </Button>
@@ -96,6 +108,12 @@
                             CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
                         <StackPanel Spacing="20">
                             <StackPanel Orientation="Horizontal" Spacing="14">
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="العقارات" FontSize="19" FontWeight="Bold"
+                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
+                                    <TextBlock Text="الوحدات والمستأجرين وعقود الإيجار" FontSize="12.5"
+                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
+                                </StackPanel>
                                 <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushBg}"
                                         BorderBrush="{DynamicResource BrushLine}" BorderThickness="1">
                                     <Viewbox Width="26" Height="26">
@@ -105,28 +123,24 @@
                                         </Canvas>
                                     </Viewbox>
                                 </Border>
-                                <StackPanel Spacing="2" VerticalAlignment="Center">
-                                    <TextBlock Text="العقارات" FontSize="19" FontWeight="Bold"
-                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
-                                    <TextBlock Text="الوحدات والمستأجرين وعقود الإيجار" FontSize="12.5"
-                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
-                                </StackPanel>
                             </StackPanel>
 
-                            <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
-                                <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="الوحدات"/>
-                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
-                                </StackPanel></Border>
-                                <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="متأخرات الإيجار"/>
-                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
-                                </StackPanel></Border>
-                                <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
-                                    <TextBlock Classes="statLabel" Text="عقود تنتهي قريبًا"/>
-                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
-                                </StackPanel></Border>
-                            </Grid>
+                            <Border BorderBrush="{DynamicResource BrushLine}" BorderThickness="1" CornerRadius="10">
+                                <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
+                                    <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="عقود تنتهي قريبًا"/>
+                                        <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                    </StackPanel></Border>
+                                    <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="متأخرات الإيجار"/>
+                                        <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                    </StackPanel></Border>
+                                    <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
+                                        <TextBlock Classes="statLabel" Text="الوحدات"/>
+                                        <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                    </StackPanel></Border>
+                                </Grid>
+                            </Border>
 
                         </StackPanel>
                     </Button>
