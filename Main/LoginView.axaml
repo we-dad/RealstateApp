@@ -1,45 +1,132 @@
 <UserControl
     x:Class="RealEstateInstallmentsManager.Views.LoginView"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FlowDirection="RightToLeft">
 
-    <Grid>
-        <TextBlock
-            Text="{ReflectionBinding AppVersion}"
-            FontSize="16"
-            Margin="10"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"/> 
-        
-        <StackPanel Width="320" Spacing="12"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+    <!-- Split screen: a fixed-width white form + a flexible dark brand panel.
+         FlowDirection="RightToLeft" on the root (matching most other list screens
+         in the app, e.g. CustomerViewInstallment) mirrors Grid column order, so
+         column 0 lands on the physical right and column 1 on the physical left -
+         same as the mockup's own CSS grid under dir="rtl". That's why the form
+         (480px) is column 0 and the dark panel ("*") is column 1, even though the
+         dark Border is written first below. Default text/checkbox alignment also
+         comes from this FlowDirection, so most TextBlocks below need no explicit
+         TextAlignment="Right". -->
+    <Grid ColumnDefinitions="480,*">
 
+        <!-- Dark brand panel - logo, tagline and a decorative coverage strip.
+             The strip and its legend are illustration only, not real contract data:
+             there is nothing to show yet, since nobody has logged in. -->
+        <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
+            <Grid RowDefinitions="Auto,*,Auto">
 
-            <TextBlock Text="تسجيل الدخول"
-                       FontSize="24"
-                       HorizontalAlignment="Center"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="المسار" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="الذهبي" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource BrushGold}"/>
+                </StackPanel>
 
-            <TextBox x:Name="EmailBox"
-                     Watermark="البريد الإلكتروني"/>
+                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="22" MaxWidth="480">
+                    <TextBlock Text="كل قسط في مكانه، وكل ريال له أثر."
+                               FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
+                    <TextBlock Text="العقود، التحصيل، وحصص الملاك في برنامج واحد يشتغل على المكتب وفي السفر."
+                               FontSize="15" Foreground="#B9C4C2" TextWrapping="Wrap"/>
 
-            <TextBox x:Name="PasswordBox"
-                     Watermark="كلمة المرور"
-                     PasswordChar="*"/>
+                    <WrapPanel ItemSpacing="6" LineSpacing="6">
+                        <!-- 3 "paid" + 2 "covered by today's receipt" + 7 "upcoming" -->
+                        <Border Width="34" Height="46" CornerRadius="5" Background="{DynamicResource BrushOk}"/>
+                        <Border Width="34" Height="46" CornerRadius="5" Background="{DynamicResource BrushOk}"/>
+                        <Border Width="34" Height="46" CornerRadius="5" Background="{DynamicResource BrushOk}"/>
+                        <Border Width="34" Height="46" CornerRadius="5" Background="{DynamicResource BrushGold}"/>
+                        <Border Width="34" Height="46" CornerRadius="5" Background="{DynamicResource BrushGold}"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                        <Border Width="34" Height="46" CornerRadius="5" BorderBrush="#3A4B49" BorderThickness="1"/>
+                    </WrapPanel>
 
-            <Button Content="دخول"
-                    Click="Login_Click"
-                    Width="140"
-                    HorizontalContentAlignment="Center"
-                    HorizontalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Spacing="18">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Width="10" Height="10" CornerRadius="2" Background="{DynamicResource BrushOk}"/>
+                            <TextBlock Text="مسدد" FontSize="12" Foreground="#B9C4C2"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Width="10" Height="10" CornerRadius="2" Background="{DynamicResource BrushGold}"/>
+                            <TextBlock Text="يغطيه سند اليوم" FontSize="12" Foreground="#B9C4C2"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Border Width="10" Height="10" CornerRadius="2" BorderBrush="#56706C" BorderThickness="1"/>
+                            <TextBlock Text="قادم" FontSize="12" Foreground="#B9C4C2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
 
-            <TextBlock x:Name="ErrorText"
-                       Foreground="Red"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"/>
-        </StackPanel>
-        
-        
+                <TextBlock Grid.Row="2" Text="الأقساط · العقارات" FontSize="12" Foreground="#8FA09D"/>
+            </Grid>
+        </Border>
+
+        <!-- Login form -->
+        <Grid Grid.Column="0" Background="{DynamicResource BrushSurface}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="60,0" VerticalAlignment="Center" Spacing="16" MaxWidth="360">
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="تسجيل الدخول" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+                        <TextBlock Text="ادخل بحساب المؤسسة. صلاحياتك تحدد الشاشات اللي تظهر لك."
+                                   FontSize="13" Foreground="{DynamicResource BrushMuted}" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="البريد الإلكتروني" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                        <TextBox x:Name="EmailBox"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="كلمة المرور" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                        <Grid>
+                            <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="74,9,12,9"/>
+                            <Button x:Name="TogglePasswordButton" Content="إظهار" Classes="outline"
+                                    Padding="10,4" FontSize="12"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0"
+                                    Click="TogglePassword_Click"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Visual only: no session persistence exists in AuthService yet.
+                         Tracked as a future task, not wired to anything real. -->
+                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True"/>
+
+                    <Button Content="دخول" Classes="primary" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Padding="0,12" FontSize="15"
+                            Click="Login_Click"/>
+
+                    <TextBlock x:Name="ErrorText" Foreground="{DynamicResource BrushLate}"
+                               TextWrapping="Wrap" TextAlignment="Center" FontSize="13"/>
+
+                    <!-- Real connectivity status - see ConnectivityService. -->
+                    <Border Background="{DynamicResource BrushBg}" BorderBrush="{DynamicResource BrushLine}"
+                            BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border x:Name="ConnDot" Width="9" Height="9" CornerRadius="5"
+                                    Background="{DynamicResource BrushMuted}" VerticalAlignment="Top" Margin="0,4,0,0"/>
+                            <StackPanel Spacing="2">
+                                <TextBlock x:Name="ConnStatusText" Text="جارٍ التحقق من الاتصال..."
+                                           FontWeight="Bold" FontSize="13" Foreground="{DynamicResource BrushInk}"/>
+                                <TextBlock Text="يشتغل البرنامج بدون إنترنت، ويزامن تلقائيًا أول ما يرجع الاتصال."
+                                           FontSize="12" Foreground="{DynamicResource BrushMuted}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <TextBlock Text="{ReflectionBinding AppVersion}" FontSize="11"
+                       Foreground="{DynamicResource BrushMuted}"
+                       Margin="12" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+        </Grid>
     </Grid>
-   
 </UserControl>
