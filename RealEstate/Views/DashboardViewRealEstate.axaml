@@ -33,11 +33,11 @@
         </Style>
         <Style Selector="TextBlock.statLabel">
           <Setter Property="FontSize" Value="12"/>
-          <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
+          <Setter Property="Foreground" Value="{DynamicResource BrushMuted}"/>
         </Style>
         <Style Selector="SelectableTextBlock.statLabel">
           <Setter Property="FontSize" Value="12"/>
-          <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
+          <Setter Property="Foreground" Value="{DynamicResource BrushMuted}"/>
         </Style>
         <Style Selector="TextBlock.statValue">
           <Setter Property="FontSize" Value="20"/>
@@ -66,7 +66,7 @@
         <Button Grid.Column="5" x:Name="ExportPdfBtn" Content="تصدير PDF"/>
       </Grid>
       <!-- ===== Records: hairline-divider stat grid ===== -->
-      <Border BorderBrush="{StaticResource BrushLine}" BorderThickness="1" CornerRadius="10">
+      <Border BorderBrush="{DynamicResource BrushLine}" BorderThickness="1" CornerRadius="10">
         <Grid Classes="statGrid" ColumnDefinitions="*,*,*,*,*">
           <Border Grid.Column="0" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="الملاك"/>

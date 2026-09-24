@@ -27,7 +27,7 @@
     <!-- ===================== Module top bar (dark, gold active tab) ===================== -->
 
     <Style Selector="Border.navBar">
-        <Setter Property="Background" Value="{StaticResource BrushInk}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushInk}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="16,12"/>
     </Style>
@@ -44,10 +44,10 @@
         <Setter Property="Background" Value="#2A3B39"/>
     </Style>
     <Style Selector="Button.navBtn.active /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource BrushGold}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushGold}"/>
     </Style>
     <Style Selector="Button.navBtn.active">
-        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
@@ -68,7 +68,7 @@
     <!-- ===================== Buttons ===================== -->
 
     <Style Selector="Button.primary">
-        <Setter Property="Background" Value="{StaticResource BrushGold}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushGold}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="7"/>
@@ -80,7 +80,7 @@
     </Style>
 
     <Style Selector="Button.secondary">
-        <Setter Property="Background" Value="{StaticResource BrushInk}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushInk}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="7"/>
@@ -88,9 +88,9 @@
     </Style>
 
     <Style Selector="Button.outline">
-        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
-        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BrushLine}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="7"/>
         <Setter Property="Padding" Value="14,9"/>
@@ -99,8 +99,8 @@
     <!-- ===================== Cards ===================== -->
 
     <Style Selector="Border.card">
-        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BrushLine}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="16"/>
@@ -120,44 +120,44 @@
         <Setter Property="TextAlignment" Value="Center"/>
     </Style>
     <Style Selector="Border.chip.ok">
-        <Setter Property="Background" Value="{StaticResource BrushOkSoft}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushOkSoft}"/>
     </Style>
     <Style Selector="Border.chip.ok TextBlock, Border.chip.ok SelectableTextBlock">
-        <Setter Property="Foreground" Value="{StaticResource BrushOk}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushOk}"/>
     </Style>
     <Style Selector="Border.chip.late">
-        <Setter Property="Background" Value="{StaticResource BrushLateSoft}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushLateSoft}"/>
     </Style>
     <Style Selector="Border.chip.late TextBlock, Border.chip.late SelectableTextBlock">
-        <Setter Property="Foreground" Value="{StaticResource BrushLate}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushLate}"/>
     </Style>
     <Style Selector="Border.chip.neutral">
-        <Setter Property="Background" Value="{StaticResource BrushGoldSoft}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushGoldSoft}"/>
     </Style>
     <Style Selector="Border.chip.neutral TextBlock, Border.chip.neutral SelectableTextBlock">
-        <Setter Property="Foreground" Value="{StaticResource BrushGold}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushGold}"/>
     </Style>
 
     <!-- ===================== Stat tiles (hairline grid) ===================== -->
-    <!-- Put on a Grid with ColumnSpacing/RowSpacing="1" and Background="{StaticResource BrushLine}":
+    <!-- Put on a Grid with ColumnSpacing/RowSpacing="1" and Background="{DynamicResource BrushLine}":
          each cell (a Border.statCell) is a solid tile, so the 1px gaps read as hairline dividers. -->
 
     <Style Selector="Grid.statGrid">
-        <Setter Property="Background" Value="{StaticResource BrushLine}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushLine}"/>
         <Setter Property="ColumnSpacing" Value="1"/>
         <Setter Property="RowSpacing" Value="1"/>
     </Style>
     <Style Selector="Border.statCell">
-        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
         <Setter Property="Padding" Value="12,10"/>
     </Style>
     <Style Selector="TextBlock.statLabel, SelectableTextBlock.statLabel">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushMuted}"/>
     </Style>
     <Style Selector="TextBlock.statValue, SelectableTextBlock.statValue">
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
     </Style>
 </Styles>

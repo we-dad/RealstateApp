@@ -34,7 +34,7 @@
     <!-- App-wide background (every native Window: the main window and every popup
          add/edit window), replacing the default white/system color. -->
     <Style Selector="Window">
-        <Setter Property="Background" Value="{StaticResource BrushBg}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushBg}"/>
     </Style>
 </Application.Styles>
 </Application>
