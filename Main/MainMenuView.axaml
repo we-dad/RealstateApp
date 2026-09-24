@@ -48,10 +48,9 @@
                       HorizontalAlignment="Center" MaxWidth="1000">
 
                     <!-- Installment module - real numbers from DashboardServiceInstallment. -->
-                    <Button Grid.Column="1" Classes="moduleCard gold" Click="InstallmentButton_Click"
+                    <Button Grid.Column="1" Classes="moduleCard" Click="InstallmentButton_Click"
                             Background="{DynamicResource BrushSurface}"
-                            BorderBrush="{DynamicResource BrushGold}" BorderThickness="1.5"
-                            CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
+                            BorderThickness="1" CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
                         <StackPanel Spacing="20">
                             <StackPanel Orientation="Horizontal" Spacing="14">
                                 <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushGoldSoft}">
@@ -91,9 +90,9 @@
 
                     <!-- Real estate module - stats are placeholders on purpose:
                          no equivalent dashboard query exists yet for this module. -->
-                    <Button Grid.Column="0" Classes="moduleCard neutral" Click="RealEstateButton_Click"
+                    <Button Grid.Column="0" Classes="moduleCard" Click="RealEstateButton_Click"
                             Background="{DynamicResource BrushSurface}"
-                            BorderBrush="{DynamicResource BrushLine}" BorderThickness="1"
+                            BorderThickness="1"
                             CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
                         <StackPanel Spacing="20">
                             <StackPanel Orientation="Horizontal" Spacing="14">

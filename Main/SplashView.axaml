@@ -5,9 +5,15 @@
 
     <!-- Shown only for the moment it takes to check for a saved "تذكرني" session
          at startup, so the developer never sees a flash of the full login form
-         (fields, buttons...) before an auto-login redirects away from it. -->
+         (fields, buttons...) before an auto-login redirects away from it.
+         ProgressBar IsIndeterminate="True" for the loading animation - Avalonia's
+         own built-in indeterminate animation, not a hand-rolled one. -->
     <Border Background="{DynamicResource BrushInk}">
-        <TextBlock Text="المسار الذهبي" FontSize="22" FontWeight="Bold"
-                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
+            <TextBlock Text="المسار الذهبي" FontSize="22" FontWeight="Bold"
+                       Foreground="White" HorizontalAlignment="Center"/>
+            <ProgressBar IsIndeterminate="True" Width="160" Height="4"
+                         Background="#2A3B39" Foreground="{DynamicResource BrushGold}"/>
+        </StackPanel>
     </Border>
 </UserControl>
