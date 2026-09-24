@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- أيقونات المسار الذهبي: خطوط على مربع 24×24، سماكة 1.8 -->
+    <!-- الاستخدام:
+    <Viewbox Width="18" Height="18">
+      <Canvas Width="24" Height="24">
+        <Path Data="{StaticResource Icon.Search}" Stroke="#1C2B2A" StrokeThickness="1.8"
+              StrokeLineCap="Round" StrokeJoin="Round"/>
+      </Canvas>
+    </Viewbox>
+    -->
+    <!-- بحث -->
+    <StreamGeometry x:Key="Icon.Search">M 4,11 A 7,7 0 1 1 18,11 A 7,7 0 1 1 4,11 Z M 16.5,16.5 L 21,21</StreamGeometry>
+    <!-- إضافة -->
+    <StreamGeometry x:Key="Icon.Plus">M 12,5 L 12,19 M 5,12 L 19,12</StreamGeometry>
+    <!-- طباعة -->
+    <StreamGeometry x:Key="Icon.Print">M 7,9 L 7,3 L 17,3 L 17,9 M 5,9 L 19,9 A 2,2 0 0 1 21,11 L 21,15 A 2,2 0 0 1 19,17 L 5,17 A 2,2 0 0 1 3,15 L 3,11 A 2,2 0 0 1 5,9 Z M 7,14 L 17,14 L 17,21 L 7,21 Z</StreamGeometry>
+    <!-- اتصال -->
+    <StreamGeometry x:Key="Icon.Phone">M 5,4 L 9,4 L 11,9 L 8.5,10.5 A 11,11 0 0 0 13.5,15.5 L 15,13 L 20,15 L 20,19 A 2,2 0 0 1 18,21 A 16,16 0 0 1 3,6 A 2,2 0 0 1 5,4</StreamGeometry>
+    <!-- رسالة / واتساب -->
+    <StreamGeometry x:Key="Icon.Message">M 21,12 A 8,8 0 0 1 9.4,19.1 L 4,20 L 5.1,15.6 A 8,8 0 1 1 21,12 Z</StreamGeometry>
+    <!-- الإعدادات -->
+    <StreamGeometry x:Key="Icon.Gear">M 9,12 A 3,3 0 1 1 15,12 A 3,3 0 1 1 9,12 Z M 12,2 L 12,5 M 12,19 L 12,22 M 4.9,4.9 L 7,7 M 17,17 L 19.1,19.1 M 2,12 L 5,12 M 19,12 L 22,12 M 4.9,19.1 L 7,17 M 17,7 L 19.1,4.9</StreamGeometry>
+    <!-- مزامنة -->
+    <StreamGeometry x:Key="Icon.Sync">M 20,11 A 8,8 0 0 0 5.1,8 M 4,4 L 4,8 L 8,8 M 4,13 A 8,8 0 0 0 18.9,16 M 20,20 L 20,16 L 16,16</StreamGeometry>
+    <!-- تنزيل / تصدير -->
+    <StreamGeometry x:Key="Icon.Download">M 12,4 L 12,15 M 7,10 L 12,15 L 17,10 M 5,20 L 19,20</StreamGeometry>
+    <!-- رفع ملف -->
+    <StreamGeometry x:Key="Icon.Upload">M 12,16 L 12,5 M 7,10 L 12,5 L 17,10 M 5,20 L 19,20</StreamGeometry>
+    <!-- عرض / إظهار -->
+    <StreamGeometry x:Key="Icon.Eye">M 2,12 C 2,12 5.5,5 12,5 C 18.5,5 22,12 22,12 C 22,12 18.5,19 12,19 C 5.5,19 2,12 2,12 Z M 9,12 A 3,3 0 1 1 15,12 A 3,3 0 1 1 9,12 Z</StreamGeometry>
+    <!-- ملف / كشف -->
+    <StreamGeometry x:Key="Icon.File">M 14,3 L 6,3 A 1,1 0 0 0 5,4 L 5,20 A 1,1 0 0 0 6,21 L 18,21 A 1,1 0 0 0 19,20 L 19,8 Z M 14,3 L 14,8 L 19,8</StreamGeometry>
+    <!-- تنبيه -->
+    <StreamGeometry x:Key="Icon.Alert">M 12,3 L 2,20 L 22,20 Z M 12,10 L 12,14 M 12,17 L 12.01,17</StreamGeometry>
+    <!-- تاريخ -->
+    <StreamGeometry x:Key="Icon.Calendar">M 5,5 L 19,5 A 2,2 0 0 1 21,7 L 21,19 A 2,2 0 0 1 19,21 L 5,21 A 2,2 0 0 1 3,19 L 3,7 A 2,2 0 0 1 5,5 Z M 3,10 L 21,10 M 8,3 L 8,7 M 16,3 L 16,7</StreamGeometry>
+    <!-- رجوع -->
+    <StreamGeometry x:Key="Icon.Back">M 9,6 L 15,12 L 9,18</StreamGeometry>
+    <!-- التالي -->
+    <StreamGeometry x:Key="Icon.Next">M 15,6 L 9,12 L 15,18</StreamGeometry>
+    <!-- قفل -->
+    <StreamGeometry x:Key="Icon.Lock">M 7,11 L 17,11 A 2,2 0 0 1 19,13 L 19,19 A 2,2 0 0 1 17,21 L 7,21 A 2,2 0 0 1 5,19 L 5,13 A 2,2 0 0 1 7,11 Z M 8,11 L 8,8 A 4,4 0 0 1 16,8 L 16,11</StreamGeometry>
+    <!-- مستخدم -->
+    <StreamGeometry x:Key="Icon.User">M 8,8 A 4,4 0 1 1 16,8 A 4,4 0 1 1 8,8 Z M 4,21 A 8,8 0 0 1 20,21</StreamGeometry>
+    <!-- مسموح / تم -->
+    <StreamGeometry x:Key="Icon.Check">M 5,12 L 10,17 L 19,7</StreamGeometry>
+    <!-- إغلاق -->
+    <StreamGeometry x:Key="Icon.Close">M 6,6 L 18,18 M 18,6 L 6,18</StreamGeometry>
+    <!-- غير مسموح -->
+    <StreamGeometry x:Key="Icon.Minus">M 6,12 L 18,12</StreamGeometry>
+    <!-- العقارات -->
+    <StreamGeometry x:Key="Icon.Building">M 4,21 L 4,5 A 1,1 0 0 1 5,4 L 14,4 A 1,1 0 0 1 15,5 L 15,21 M 15,9 L 19,9 A 1,1 0 0 1 20,10 L 20,21 M 3,21 L 21,21 M 8,8 L 11,8 M 8,12 L 11,12 M 8,16 L 11,16</StreamGeometry>
+    <!-- الأقساط -->
+    <StreamGeometry x:Key="Icon.Cards">M 5,6 L 19,6 A 2,2 0 0 1 21,8 L 21,17 A 2,2 0 0 1 19,19 L 5,19 A 2,2 0 0 1 3,17 L 3,8 A 2,2 0 0 1 5,6 Z M 3,10 L 21,10 M 7,15 L 11,15</StreamGeometry>
+    <!-- الخادم / متصل -->
+    <StreamGeometry x:Key="Icon.Cloud">M 7,18 A 4,4 0 0 1 6.4,10 A 6,6 0 0 1 18,9.5 A 4.3,4.3 0 0 1 17.5,18 Z</StreamGeometry>
+    <!-- تعديل -->
+    <StreamGeometry x:Key="Icon.Edit">M 4,20 L 8,20 L 20,8 L 16,4 L 4,16 Z</StreamGeometry>
+    <!-- إلغاء سند -->
+    <StreamGeometry x:Key="Icon.Ban">M 3,12 A 9,9 0 1 1 21,12 A 9,9 0 1 1 3,12 Z M 6,6 L 18,18</StreamGeometry>
+    <!-- تسجيل خروج -->
+    <StreamGeometry x:Key="Icon.Logout">M 14,4 L 19,4 L 19,20 L 14,20 M 10,8 L 6,12 L 10,16 M 6,12 L 16,12</StreamGeometry>
+    <!-- مرفق -->
+    <StreamGeometry x:Key="Icon.Clip">M 20,11.5 L 12,19.5 A 5,5 0 0 1 5,12.5 L 13,4.5 A 3.3,3.3 0 0 1 17.7,9.2 L 9.7,17.2 A 1.7,1.7 0 0 1 7.3,14.8 L 15,7.5</StreamGeometry>
+    <!-- المخزون -->
+    <StreamGeometry x:Key="Icon.Box">M 3,7 L 12,3 L 21,7 L 21,17 L 12,21 L 3,17 Z M 3,7 L 12,11 L 21,7 M 12,11 L 12,21</StreamGeometry>
+    <!-- سجل التعديلات -->
+    <StreamGeometry x:Key="Icon.Shield">M 12,3 L 20,6 L 20,12 C 20,17 16.5,20 12,21 C 7.5,20 4,17 4,12 L 4,6 Z</StreamGeometry>
+    <!-- الإحصائيات -->
+    <StreamGeometry x:Key="Icon.Chart">M 4,20 L 4,10 M 10,20 L 10,4 M 16,20 L 16,13 M 22,20 L 2,20</StreamGeometry>
+    <!-- العملاء / الكفيل -->
+    <StreamGeometry x:Key="Icon.Users">M 5.5,8 A 3.5,3.5 0 1 1 12.5,8 A 3.5,3.5 0 1 1 5.5,8 Z M 2.5,20 A 6.5,6.5 0 0 1 15.5,20 M 16,4.5 A 3.5,3.5 0 0 1 16,11.5 M 18,14 A 6,6 0 0 1 21.5,20</StreamGeometry>
+    <!-- سند قبض / مبلغ -->
+    <StreamGeometry x:Key="Icon.Wallet">M 5,6 L 19,6 A 2,2 0 0 1 21,8 L 21,18 A 2,2 0 0 1 19,20 L 5,20 A 2,2 0 0 1 3,18 L 3,8 A 2,2 0 0 1 5,6 Z M 3,10 L 21,10 M 16,15 L 18,15</StreamGeometry>
+    <!-- وقت -->
+    <StreamGeometry x:Key="Icon.Clock">M 3,12 A 9,9 0 1 1 21,12 A 9,9 0 1 1 3,12 Z M 12,7 L 12,12 L 15,14</StreamGeometry>
+    <!-- قائمة -->
+    <StreamGeometry x:Key="Icon.List">M 9,6 L 20,6 M 9,12 L 20,12 M 9,18 L 20,18 M 4,6 L 4.01,6 M 4,12 L 4.01,12 M 4,18 L 4.01,18</StreamGeometry>
+</ResourceDictionary>

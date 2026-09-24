@@ -9,6 +9,16 @@
                   separate task (a second palette + a way to switch), not done yet. -->
 
    <Application.Resources>
+    <ResourceDictionary>
+     <ResourceDictionary.MergedDictionaries>
+      <!-- Client-provided icon set: StreamGeometry paths ready for Avalonia
+           (24x24, stroke 1.8), no SVG-rendering library needed. Referenced
+           as DynamicResource from other files (see Main/Theme.axaml's own
+           comment on why StaticResource across separately-loaded files can
+           silently fail to resolve in Avalonia). -->
+      <ResourceInclude Source="avares://RealEstateInstallmentsManager/Main/Icons.axaml"/>
+     </ResourceDictionary.MergedDictionaries>
+
     <!-- IBM Plex Sans Arabic - working.
          The real bug (attempts 1-3 all hit it, with different symptoms): the .csproj
          never had an AvaloniaResource entry for Assets/Fonts, so every avares:// URI
@@ -20,6 +30,7 @@
          actually embedded, so it should give real Medium/SemiBold/Bold instead of
          Avalonia's synthetic (faux) bold. Not yet tested at 4 weights. -->
     <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
+    </ResourceDictionary>
    </Application.Resources>
 
    <Application.Styles>

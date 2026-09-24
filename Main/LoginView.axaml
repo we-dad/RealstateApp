@@ -15,13 +15,14 @@
          TextAlignment="Right". -->
     <Grid ColumnDefinitions="480,*">
 
-        <!-- Dark brand panel - logo mark + one heading pinned to the bottom.
-             Kept deliberately minimal per the developer's request. -->
+        <!-- Dark brand panel - logo mark, a centered heading, and a small line
+             at the bottom. Kept deliberately minimal per the developer's request. -->
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
-            <Grid RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,*,Auto">
 
-                <!-- Vector logo mark (bars + trend line), recreated from the
-                     client-approved mockup's own SVG - no image asset needed. -->
+                <!-- Vector logo mark (bars + trend line) - matches the client's
+                     own logo-mark.svg exactly, drawn as native shapes so nothing
+                     can fail to load at runtime. -->
                 <Viewbox Grid.Row="0" Width="40" Height="40" HorizontalAlignment="Right">
                     <Canvas Width="26" Height="26">
                         <Rectangle Canvas.Left="1" Canvas.Top="14" Width="5" Height="11"
@@ -36,10 +37,13 @@
                     </Canvas>
                 </Viewbox>
 
-                <TextBlock Grid.Row="1" VerticalAlignment="Bottom"
+                <TextBlock Grid.Row="1" VerticalAlignment="Center"
                            HorizontalAlignment="Right" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
+
+                <TextBlock Grid.Row="2" HorizontalAlignment="Right"
+                           Text="عقارات · أقساط" FontSize="12" Foreground="#8FA09D"/>
             </Grid>
         </Border>
 
@@ -63,13 +67,18 @@
                         <TextBlock Text="كلمة المرور" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
                         <Grid>
                             <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="44,9,12,9"/>
-                            <!-- Emoji icon, same convention already used by the print button
-                                 in the receipts grid (🖨️) - no new SVG-icon pattern needed. -->
-                            <Button x:Name="TogglePasswordButton" Content="👁" Classes="outline"
+                            <Button x:Name="TogglePasswordButton" Classes="outline"
                                     ToolTip.Tip="إظهار كلمة المرور"
-                                    Padding="8,4" FontSize="14"
-                                    HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0"
-                                    Click="TogglePassword_Click"/>
+                                    Padding="7" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0"
+                                    Click="TogglePassword_Click">
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{DynamicResource Icon.Eye}"
+                                              Stroke="{DynamicResource BrushInk}" StrokeThickness="1.8"
+                                              StrokeLineCap="Round" StrokeJoin="Round"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
                         </Grid>
                     </StackPanel>
 
