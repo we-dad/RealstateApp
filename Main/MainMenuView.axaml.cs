@@ -21,7 +21,19 @@ public partial class MainMenuView : UserControl
 
         var now = DateTime.Now;
         DateText.Text = ArabicDateService.FormatFullDate(now);
-        var name = string.IsNullOrWhiteSpace(AppSession.DisplayName) ? "" : $"، {AppSession.DisplayName}";
+
+        // The name can be Latin script (e.g. an email's local part like "admin",
+        // per the developer's own account - Supabase has no "full_name" set for
+        // it). Mixing an LTR word into an RTL sentence with no isolation confuses
+        // the Unicode bidi algorithm and can visually reorder the WHOLE sentence,
+        // not just the name (caught by the developer: "تجي مقلوبة"). Wrapping it
+        // in First Strong Isolate/Pop Directional Isolate (U+2068/U+2069) tells
+        // the renderer to treat the name as its own self-contained run, using
+        // whatever direction ITS OWN content actually is, without letting that
+        // leak into the surrounding Arabic text's ordering.
+        var name = string.IsNullOrWhiteSpace(AppSession.DisplayName)
+            ? ""
+            : $"، ⁨{AppSession.DisplayName}⁩";
         GreetingText.Text = $"{ArabicDateService.Greeting(now)}{name}. وش نفتح اليوم؟";
 
         LoadInstallmentStats();
