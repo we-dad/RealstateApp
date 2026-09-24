@@ -15,17 +15,29 @@
          TextAlignment="Right". -->
     <Grid ColumnDefinitions="480,*">
 
-        <!-- Dark brand panel - logo + one heading. Kept deliberately minimal
-             per the developer's request (no tagline, no decorative strip). -->
+        <!-- Dark brand panel - logo mark + one heading pinned to the bottom.
+             Kept deliberately minimal per the developer's request. -->
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
             <Grid RowDefinitions="Auto,*">
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="المسار" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="الذهبي" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource BrushGold}"/>
-                </StackPanel>
+                <!-- Vector logo mark (bars + trend line), recreated from the
+                     client-approved mockup's own SVG - no image asset needed. -->
+                <Viewbox Grid.Row="0" Width="40" Height="40" HorizontalAlignment="Right">
+                    <Canvas Width="26" Height="26">
+                        <Rectangle Canvas.Left="1" Canvas.Top="14" Width="5" Height="11"
+                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}" Opacity="0.45"/>
+                        <Rectangle Canvas.Left="8" Canvas.Top="9" Width="5" Height="16"
+                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}" Opacity="0.7"/>
+                        <Rectangle Canvas.Left="15" Canvas.Top="4" Width="5" Height="21"
+                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}"/>
+                        <Path Data="M2,11 L11,5 L16,7 L24,1"
+                              Stroke="#E6C06A" StrokeThickness="1.8"
+                              StrokeLineCap="Round" StrokeJoin="Round"/>
+                    </Canvas>
+                </Viewbox>
 
-                <TextBlock Grid.Row="1" VerticalAlignment="Center" MaxWidth="480"
+                <TextBlock Grid.Row="1" VerticalAlignment="Bottom"
+                           HorizontalAlignment="Right" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
             </Grid>
