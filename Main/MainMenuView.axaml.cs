@@ -32,9 +32,13 @@ public partial class MainMenuView : UserControl
         // glyphs in this font/engine instead - so instead of fighting bidi with
         // more Unicode tricks, the sentence is split into 3 separate TextBlocks,
         // each holding pure, single-direction text.
+        // No trailing/leading spaces embedded here - the StackPanel's own
+        // Spacing="4" provides the visible gaps between these 3 TextBlocks;
+        // a space at the very edge of one TextBlock's text gets trimmed when
+        // there's a separate adjacent control right next to it.
         var hasName = !string.IsNullOrWhiteSpace(AppSession.DisplayName);
         var greeting = ArabicDateService.Greeting(now);
-        GreetingPrefixText.Text = hasName ? $"{greeting}، " : greeting;
+        GreetingPrefixText.Text = hasName ? $"{greeting}،" : greeting;
         GreetingNameText.Text = hasName ? AppSession.DisplayName : "";
         GreetingSuffixText.Text = ". وش نفتح اليوم؟";
 

@@ -55,8 +55,15 @@
                          control characters. Physical left-to-right order here (no
                          ambient FlowDirection) is the reverse of reading order:
                          the trailing question first, then the name, then the
-                         greeting itself last (physical right). -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                         greeting itself last (physical right).
+                         Spacing="4" (not a trailing space embedded in the text):
+                         a space character at the very edge of one TextBlock, right
+                         up against a separate adjacent control, gets trimmed by
+                         text layout - it only "works" when there's more text after
+                         it in the SAME run. Real layout spacing between the
+                         controls can't be trimmed, so it's the one that actually
+                         shows. -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
                         <TextBlock x:Name="GreetingSuffixText" FontSize="26" FontWeight="Bold"
                                    Foreground="{DynamicResource BrushInk}"/>
                         <TextBlock x:Name="GreetingNameText" FontSize="26" FontWeight="Bold"
