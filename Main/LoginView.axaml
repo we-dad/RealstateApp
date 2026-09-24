@@ -46,7 +46,7 @@
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
-                <TextBlock Grid.Row="2" HorizontalAlignment="Right"
+                <TextBlock Grid.Row="2" 
                            Text="عقارات · أقساط" FontSize="12" Foreground="#8FA09D"/>
             </Grid>
         </Border>
