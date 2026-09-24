@@ -47,8 +47,13 @@
                          FlowDirection="LeftToRight"
                          Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
 
+                <!-- HorizontalAlignment="Right" (not just TextAlignment): without it,
+                     the box stretches across both columns and its wrapped text can
+                     end up not lined up with the logo's own right edge. With it, the
+                     box sizes to its own wrapped content (up to MaxWidth) and sits
+                     flush against the same right edge as the logo. -->
                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"
-                           TextAlignment="Right" MaxWidth="480"
+                           HorizontalAlignment="Right" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
