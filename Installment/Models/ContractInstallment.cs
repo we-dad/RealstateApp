@@ -180,6 +180,10 @@ public class ContractInstallment : INotifyPropertyChanged
 
     public IBrush StateColor =>
         ContractState == "منتهي" ? Brushes.Red : Brushes.Green;
+
+    // For the status chip style (Main/Theme.axaml Border.chip.ok / .late).
+    public bool IsStateOk => ContractState != "منتهي";
+    public bool IsStateLate => !IsStateOk;
     
 
     public event PropertyChangedEventHandler? PropertyChanged;

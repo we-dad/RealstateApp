@@ -221,15 +221,11 @@
                             <DataGridTemplateColumn Header="حالة العقد" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="models:ContractRealEstate">
-                                        <Border Background="{Binding StateColor}"
-                                                Padding="6,2"
-                                                MinWidth="50"
-                                                CornerRadius="4"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding ContractState}"
-                                                       Foreground="White"
-                                                       TextAlignment="Center"/>
+                                        <Border Classes="chip"
+                                                Classes.ok="{Binding IsStateOk}"
+                                                Classes.late="{Binding IsStateLate}"
+                                                MinWidth="50">
+                                            <TextBlock Text="{Binding ContractState}"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

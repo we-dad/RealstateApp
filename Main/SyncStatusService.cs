@@ -50,12 +50,16 @@ public static class SyncStatusService
 
     // Shows the status in a TextBlock and keeps it up to date until the owner leaves
     // the window. Reports may come from any thread, so the update hops to the UI thread.
+    // Muted text on the dark nav bar it sits on (Main/Theme.axaml's ink background);
+    // a plain system gray was too dim against that dark background.
+    private static readonly IBrush NormalBrush = new SolidColorBrush(Color.Parse("#B9C4C2"));
+
     public static void Bind(Control owner, TextBlock target)
     {
         void Update()
         {
             target.Text = GetText();
-            target.Foreground = HasProblem ? Brushes.Firebrick : Brushes.Gray;
+            target.Foreground = HasProblem ? Brushes.Firebrick : NormalBrush;
         }
 
         void OnChanged() => Dispatcher.UIThread.Post(Update);

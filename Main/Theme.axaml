@@ -1,0 +1,163 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+      Shared visual identity ("المسار الذهبي"), based on a design the developer's
+      client approved. Colors, chips and the nav bar live here; screen layout,
+      navigation flow and all logic are untouched - this file only changes how
+      things look.
+    -->
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <!-- Palette -->
+            <SolidColorBrush x:Key="BrushBg" Color="#E9EDEC"/>
+            <SolidColorBrush x:Key="BrushSurface" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="BrushInk" Color="#1C2B2A"/>
+            <SolidColorBrush x:Key="BrushMuted" Color="#667371"/>
+            <SolidColorBrush x:Key="BrushLine" Color="#D5DCDA"/>
+            <SolidColorBrush x:Key="BrushGold" Color="#B8892B"/>
+            <SolidColorBrush x:Key="BrushGoldSoft" Color="#F3E7CC"/>
+            <SolidColorBrush x:Key="BrushOk" Color="#2F7A4F"/>
+            <SolidColorBrush x:Key="BrushOkSoft" Color="#DCEFE3"/>
+            <SolidColorBrush x:Key="BrushLate" Color="#B3261E"/>
+            <SolidColorBrush x:Key="BrushLateSoft" Color="#F6DEDB"/>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!-- ===================== Module top bar (dark, gold active tab) ===================== -->
+
+    <Style Selector="Border.navBar">
+        <Setter Property="Background" Value="{StaticResource BrushInk}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16,12"/>
+    </Style>
+
+    <Style Selector="Button.navBtn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#B9C4C2"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+    <Style Selector="Button.navBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#2A3B39"/>
+    </Style>
+    <Style Selector="Button.navBtn.active /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource BrushGold}"/>
+    </Style>
+    <Style Selector="Button.navBtn.active">
+        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="Button.navHome">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#B9C4C2"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#3A4B49"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ===================== Buttons ===================== -->
+
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{StaticResource BrushGold}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="7"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#A67B26"/>
+    </Style>
+
+    <Style Selector="Button.secondary">
+        <Setter Property="Background" Value="{StaticResource BrushInk}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="7"/>
+        <Setter Property="Padding" Value="14,9"/>
+    </Style>
+
+    <Style Selector="Button.outline">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushLine}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="7"/>
+        <Setter Property="Padding" Value="14,9"/>
+    </Style>
+
+    <!-- ===================== Cards ===================== -->
+
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushLine}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="16"/>
+    </Style>
+
+    <!-- ===================== Status chip ===================== -->
+    <!-- A small pill: Border.chip carrying Classes "ok" (green) or "late" (red/muted). -->
+
+    <Style Selector="Border.chip">
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="10,3"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Border.chip TextBlock, Border.chip SelectableTextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Border.chip.ok">
+        <Setter Property="Background" Value="{StaticResource BrushOkSoft}"/>
+    </Style>
+    <Style Selector="Border.chip.ok TextBlock, Border.chip.ok SelectableTextBlock">
+        <Setter Property="Foreground" Value="{StaticResource BrushOk}"/>
+    </Style>
+    <Style Selector="Border.chip.late">
+        <Setter Property="Background" Value="{StaticResource BrushLateSoft}"/>
+    </Style>
+    <Style Selector="Border.chip.late TextBlock, Border.chip.late SelectableTextBlock">
+        <Setter Property="Foreground" Value="{StaticResource BrushLate}"/>
+    </Style>
+    <Style Selector="Border.chip.neutral">
+        <Setter Property="Background" Value="{StaticResource BrushGoldSoft}"/>
+    </Style>
+    <Style Selector="Border.chip.neutral TextBlock, Border.chip.neutral SelectableTextBlock">
+        <Setter Property="Foreground" Value="{StaticResource BrushGold}"/>
+    </Style>
+
+    <!-- ===================== Stat tiles (hairline grid) ===================== -->
+    <!-- Put on a Grid with ColumnSpacing/RowSpacing="1" and Background="{StaticResource BrushLine}":
+         each cell (a Border.statCell) is a solid tile, so the 1px gaps read as hairline dividers. -->
+
+    <Style Selector="Grid.statGrid">
+        <Setter Property="Background" Value="{StaticResource BrushLine}"/>
+        <Setter Property="ColumnSpacing" Value="1"/>
+        <Setter Property="RowSpacing" Value="1"/>
+    </Style>
+    <Style Selector="Border.statCell">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="Padding" Value="12,10"/>
+    </Style>
+    <Style Selector="TextBlock.statLabel, SelectableTextBlock.statLabel">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
+    </Style>
+    <Style Selector="TextBlock.statValue, SelectableTextBlock.statValue">
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushInk}"/>
+    </Style>
+</Styles>

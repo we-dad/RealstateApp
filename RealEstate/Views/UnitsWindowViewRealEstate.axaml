@@ -18,9 +18,11 @@
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Grid.Column="0" Text="الوحدة السكنية" FontSize="18" FontWeight="SemiBold"/>
-                        <Border Grid.Column="1" Background="{Binding StateColor}"
-                                Padding="8,3" MinWidth="60" CornerRadius="4" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding UnitState}" Foreground="White" TextAlignment="Center"/>
+                        <Border Grid.Column="1" Classes="chip"
+                                Classes.ok="{Binding IsStateOk}"
+                                Classes.late="{Binding IsStateLate}"
+                                MinWidth="60" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding UnitState}"/>
                         </Border>
                     </Grid>
 
@@ -138,15 +140,11 @@
                             <DataGridTemplateColumn Header="الحالة" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate x:DataType="models:UnitRealEstate">
-                                        <Border Background="{Binding StateColor}"
-                                                Padding="6,2"
-                                                MinWidth="50"
-                                                CornerRadius="4"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding UnitState}"
-                                                       Foreground="White"
-                                                       TextAlignment="Center"/>
+                                        <Border Classes="chip"
+                                                Classes.ok="{Binding IsStateOk}"
+                                                Classes.late="{Binding IsStateLate}"
+                                                MinWidth="50">
+                                            <TextBlock Text="{Binding UnitState}"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

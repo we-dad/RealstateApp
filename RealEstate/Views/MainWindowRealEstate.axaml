@@ -5,38 +5,34 @@
   <Grid RowDefinitions="Auto,*" Margin="12" RowSpacing="12">
 
     <!-- Top bar -->
-    <Border Grid.Row="0" Padding="12" CornerRadius="12">
-      <StackPanel Spacing="12">
+    <Border Grid.Row="0" Classes="navBar">
+      <StackPanel Spacing="10">
 
         <!-- العنوان -->
         <TextBlock Text="إدارة العقارات"
-                   FontSize="22"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="White"
                    HorizontalAlignment="Center"/>
 
         <!-- القوائم تحت العنوان -->
         <StackPanel Orientation="Horizontal"
-                    Spacing="8"
+                    Spacing="4"
                     HorizontalAlignment="Center"
                     FlowDirection="RightToLeft">
 
-    <Button Grid.Column="0"
-                            Click="Nav_Home"
-                            ToolTip.Tip="صفحة البدء"
-                            Width="36"
-                            Height="32"
-                            Padding="0"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            FontSize="16">
-                        🏠
-                    </Button>
-          <Button Content="الإحصائيات" Click="Nav_Dashboard"/>
-          <Button Content="الملاك" Click="Nav_Owners"/>
-          <Button Content="المستأجرين" Click="Nav_Tenants"/>
-          <Button Content="الوحدات" Click="Nav_Units"/>
-          <Button Content="عقد الإيجار" Click="Nav_Contracts"/>
-          <Button Content="سند قبض" Click="Nav_Receipts"/>
-          <Button Content="المصروفات" Click="Nav_Expenses"/>
+          <Button Classes="navHome"
+                  Click="Nav_Home"
+                  ToolTip.Tip="صفحة البدء">
+            🏠
+          </Button>
+          <Button x:Name="TabDashboard" Classes="navBtn" Content="الإحصائيات" Click="Nav_Dashboard"/>
+          <Button x:Name="TabOwners" Classes="navBtn" Content="الملاك" Click="Nav_Owners"/>
+          <Button x:Name="TabTenants" Classes="navBtn" Content="المستأجرين" Click="Nav_Tenants"/>
+          <Button x:Name="TabUnits" Classes="navBtn" Content="الوحدات" Click="Nav_Units"/>
+          <Button x:Name="TabContracts" Classes="navBtn" Content="عقد الإيجار" Click="Nav_Contracts"/>
+          <Button x:Name="TabReceipts" Classes="navBtn" Content="سند قبض" Click="Nav_Receipts"/>
+          <Button x:Name="TabExpenses" Classes="navBtn" Content="المصروفات" Click="Nav_Expenses"/>
 
         </StackPanel>
 
@@ -44,14 +40,15 @@
                    HorizontalAlignment="Center"
                    FlowDirection="RightToLeft"
                    TextWrapping="Wrap"
-                   FontSize="12"/>
+                   FontSize="12"
+                   Foreground="#B9C4C2"/>
 
       </StackPanel>
     </Border>
 
 
     <!-- Content -->
-    <Border Grid.Row="1" CornerRadius="12" Padding="12">
+    <Border Grid.Row="1" Classes="card">
       <ContentControl x:Name="ContentHost"/>
     </Border>
 

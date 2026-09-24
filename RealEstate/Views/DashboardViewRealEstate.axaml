@@ -24,20 +24,6 @@
         <Style Selector="DataGridColumnHeader">
           <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
-        <Style Selector="Border.board">
-          <Setter Property="CornerRadius" Value="14"/>
-          <Setter Property="Padding" Value="16"/>
-          <Setter Property="Background" Value="#14FFFFFF"/>
-          <Setter Property="BorderBrush" Value="#28FFFFFF"/>
-          <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-        <Style Selector="Border.card">
-          <Setter Property="CornerRadius" Value="14"/>
-          <Setter Property="Padding" Value="16"/>
-          <Setter Property="Background" Value="#14FFFFFF"/>
-          <Setter Property="BorderBrush" Value="#28FFFFFF"/>
-          <Setter Property="BorderThickness" Value="1"/>
-        </Style>
         <Style Selector="Border.smallcard">
           <Setter Property="CornerRadius" Value="12"/>
           <Setter Property="Padding" Value="8"/>
@@ -47,11 +33,11 @@
         </Style>
         <Style Selector="TextBlock.statLabel">
           <Setter Property="FontSize" Value="12"/>
-          <Setter Property="Opacity" Value="0.7"/>
+          <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
         </Style>
         <Style Selector="SelectableTextBlock.statLabel">
           <Setter Property="FontSize" Value="12"/>
-          <Setter Property="Opacity" Value="0.7"/>
+          <Setter Property="Foreground" Value="{StaticResource BrushMuted}"/>
         </Style>
         <Style Selector="TextBlock.statValue">
           <Setter Property="FontSize" Value="20"/>
@@ -79,35 +65,35 @@
         <Button Grid.Column="4" x:Name="RefreshBtn" Content="تحديث"/>
         <Button Grid.Column="5" x:Name="ExportPdfBtn" Content="تصدير PDF"/>
       </Grid>
-      <!-- ===== Board: records ===== -->
-      <Border Classes="board">
-        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="6">
-          <StackPanel Grid.Column="0" Classes="stat">
+      <!-- ===== Records: hairline-divider stat grid ===== -->
+      <Border BorderBrush="{StaticResource BrushLine}" BorderThickness="1" CornerRadius="10">
+        <Grid Classes="statGrid" ColumnDefinitions="*,*,*,*,*">
+          <Border Grid.Column="0" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="الملاك"/>
             <SelectableTextBlock x:Name="OwnersCountText" Classes="statValue"/>
-          </StackPanel>
-          <StackPanel Grid.Column="1" Classes="stat">
+          </StackPanel></Border>
+          <Border Grid.Column="1" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="الوحدات"/>
             <SelectableTextBlock x:Name="UnitsCountText" Classes="statValue"/>
-          </StackPanel>
-          <StackPanel Grid.Column="2" Classes="stat">
+          </StackPanel></Border>
+          <Border Grid.Column="2" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="المستأجرين"/>
             <SelectableTextBlock x:Name="TenantsCountText" Classes="statValue"/>
-          </StackPanel>
-          <StackPanel Grid.Column="3" Classes="stat">
+          </StackPanel></Border>
+          <Border Grid.Column="3" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="العقود"/>
             <SelectableTextBlock x:Name="ContractsCountText" Classes="statValue"/>
-          </StackPanel>
-          <StackPanel Grid.Column="4" Classes="stat">
+          </StackPanel></Border>
+          <Border Grid.Column="4" Classes="statCell"><StackPanel Classes="stat">
             <TextBlock Classes="statLabel" Text="سندات القبض"/>
             <SelectableTextBlock x:Name="ReceiptsCountText" Classes="statValue"/>
-          </StackPanel>
+          </StackPanel></Border>
         </Grid>
       </Border>
 
       <!-- ===== Board: money + occupancy ===== -->
       <Grid ColumnDefinitions="3*,2*" ColumnSpacing="10">
-        <Border Grid.Column="0" Classes="board">
+        <Border Grid.Column="0" Classes="card">
           <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
             <StackPanel Grid.Column="0" Classes="stat">
               <TextBlock Classes="statLabel" Text="إجمالي القبض"/>
@@ -123,7 +109,7 @@
             </StackPanel>
           </Grid>
         </Border>
-        <Border Grid.Column="1" Classes="board">
+        <Border Grid.Column="1" Classes="card">
           <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
             <StackPanel Grid.Column="0" Classes="stat">
               <TextBlock Classes="statLabel" Text="مؤجر"/>

@@ -32,10 +32,11 @@
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                     ToolTip.Tip="فتح ملف العقد"/>
 
-                            <Border Grid.Column="3" Background="{Binding StateColor}" Padding="8,2"
-                                    MinWidth="60" CornerRadius="4" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding ContractState}" Foreground="White" FontWeight="Bold"
-                                           HorizontalAlignment="Center" TextAlignment="Center"/>
+                            <Border Grid.Column="3" Classes="chip"
+                                    Classes.ok="{Binding IsStateOk}"
+                                    Classes.late="{Binding IsStateLate}"
+                                    MinWidth="60" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ContractState}"/>
                             </Border>
                         </Grid>
 

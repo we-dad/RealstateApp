@@ -56,6 +56,10 @@ public class ContractRealEstate
     //for state box color
     public IBrush StateColor =>
         ContractState == "منتهي" ? Brushes.Red : Brushes.Green;
+
+    // For the status chip style (Main/Theme.axaml Border.chip.ok / .late).
+    public bool IsStateOk => ContractState != "منتهي";
+    public bool IsStateLate => !IsStateOk;
     
     public IBrush SignatureButton =>
         string.IsNullOrWhiteSpace(SignatureCloudPath)

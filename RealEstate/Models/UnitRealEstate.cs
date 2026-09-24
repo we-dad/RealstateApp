@@ -25,6 +25,11 @@ public class UnitRealEstate
     //for state box color
     public IBrush StateColor =>
         UnitState == "مؤجرة" ? Brushes.Red : Brushes.Green;
+
+    // For the status chip style (Main/Theme.axaml Border.chip.ok / .late). Matches
+    // StateColor's existing rule exactly (رمز اللون لم يتغيّر، فقط شكل العرض).
+    public bool IsStateOk => UnitState != "مؤجرة";
+    public bool IsStateLate => !IsStateOk;
     
     public long ParentId { get; set; }
     

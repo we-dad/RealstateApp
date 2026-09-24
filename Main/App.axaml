@@ -5,9 +5,11 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
    <Application.Resources>
-    <!-- Regular/Medium/SemiBold/Bold ship as separate files with their own internal
-         family names (Google Fonts build); the "#Name" syntax groups them into one
-         family for XAML, matched by weight regardless of that internal naming. -->
+    <!-- IBM Plex Sans Arabic crashes Avalonia's text shaper on startup (SIGABRT in
+         Avalonia.Media.TextFormatting.TextFormatterImpl.ShapeTextRuns, on the very
+         first TextBlock measured - before the font is even used on real content).
+         Font files are kept in Assets/Fonts and this resource is kept defined so the
+         issue can be investigated later; nothing below references it right now. -->
     <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
    </Application.Resources>
 
@@ -16,15 +18,23 @@
 
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 
-    <!-- Arabic font everywhere. FontFamily is declared separately on TemplatedControl
-         (Button, TextBox, ComboBox, DataGrid headers/cells...) and on TextElement
-         (TextBlock, SelectableTextBlock), so both are targeted; ":is()" also reaches
-         subclasses, which a plain type selector would not. -->
+    <!-- Visual identity: palette, chips, nav bar and card styles. -->
+    <StyleInclude Source="avares://RealEstateInstallmentsManager/Main/Theme.axaml"/>
+
+    <!-- Reverted to Arial: IBM Plex Sans Arabic crashed the app on startup (see the
+         comment on ArabicFontFamily above). Kept the broader ":is()" selectors, which
+         also reach Button/TextBox text that "Arial"-on-TextBlock-only never did. -->
     <Style Selector=":is(TemplatedControl)">
-        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
+        <Setter Property="FontFamily" Value="Arial"/>
     </Style>
     <Style Selector=":is(TextBlock)">
-        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
+        <Setter Property="FontFamily" Value="Arial"/>
+    </Style>
+
+    <!-- App-wide background (every native Window: the main window and every popup
+         add/edit window), replacing the default white/system color. -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource BrushBg}"/>
     </Style>
 </Application.Styles>
 </Application>
