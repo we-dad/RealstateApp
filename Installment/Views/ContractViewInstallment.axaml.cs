@@ -74,6 +74,11 @@ public partial class ContractViewInstallment : UserControl
 
         _customerIdSearchBox = this.FindControl<AutoCompleteBox>("CustomerIdSearchBox");
 
+        // Wired here, not in the XAML: events set in the XAML can fire while
+        // InitializeComponent is still building the screen, before the controls
+        // and services this handler uses exist.
+        DownPaymentCheck.IsCheckedChanged += DownPaymentCheck_Changed;
+
         // Reload the grid (only) when data changes: an add, an edit or a delete, also
         // from the details window, so there is no need to press "تحديث".
         _autoRefresh = new ScreenAutoRefresh(
@@ -427,13 +432,18 @@ public partial class ContractViewInstallment : UserControl
         }
     }
 
-    private void MainTotalAmountBox_TextChanged(object? sender, TextChangedEventArgs e)
+    // The box shows the total (down payment + remaining) and, in manual mode, lets the
+    // user type it directly. Recalculating on every keystroke would fight the box's own
+    // binding: MainTotalAmount changes -> TotalWithDownPayment changes -> the binding
+    // rewrites the box mid-typing, out from under the user. Waiting for LostFocus avoids
+    // that; the number is committed once the user is done typing it.
+    private void MainTotalAmountBox_LostFocus(object? sender, RoutedEventArgs e)
     {
         if (_isRefreshing || !IsManualMode) return;
 
         if (double.TryParse(MainTotalAmountBox.Text?.Trim(), out var total) && total > 0)
         {
-            _contract.MainTotalAmount = Math.Round(total, 2);
+            _contract.MainTotalAmount = Math.Round(Math.Max(0, total - _contract.DownPayment), 2);
             UpdateInstallmentAfterTotalChanged();   // recompute monthly from the manual total
         }
     }
@@ -583,6 +593,37 @@ public partial class ContractViewInstallment : UserControl
         }
     }
 
+    // No down payment: the calculation goes back to the full product price (same fix
+    // already applied to the edit window).
+    private void RemoveDownPayment()
+    {
+        _contract.DownPayment = 0;
+        _contract.ProductMainPrice = realMainPrice;
+
+        UpdateProductTotalAmount();
+    }
+
+    private void DownPaymentCheck_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_isRefreshing) return;
+
+        if (DownPaymentCheck.IsChecked != true)
+        {
+            DownPaymentErrorText.Text = "";
+            RemoveDownPayment();
+            return;
+        }
+
+        // Ticked again: the box still shows the last value, apply it.
+        if (double.TryParse(DownPaymentBox.Text?.Trim(), out double value))
+        {
+            _contract.DownPayment = value;
+            _contract.ProductMainPrice = Math.Max(0, realMainPrice - value);
+
+            UpdateProductTotalAmount();
+        }
+    }
+
     private void DownPaymentBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isRefreshing) return;
@@ -592,14 +633,14 @@ public partial class ContractViewInstallment : UserControl
         if (!_contract.BoolDownPayment)
         {
             DownPaymentErrorText.Text = "";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 
         if (string.IsNullOrWhiteSpace(text))
         {
             DownPaymentErrorText.Text = "عليك وضع قيمة هنا";
-            _contract.DownPayment = 0;
+            RemoveDownPayment();
             return;
         }
 

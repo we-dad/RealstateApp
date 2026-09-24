@@ -169,7 +169,7 @@
                                        TextAlignment="Right"/>
                         </StackPanel>
 
-                        <TextBlock Text="المتبقي (بعد الدفعة المقدمة)"
+                        <TextBlock Text="إجمالي المبلغ"
                                    Grid.Row="6"
                                    Grid.Column="0"
                                    TextAlignment="Right"/>
@@ -178,12 +178,15 @@
                             <TextBox x:Name="MainTotalAmountBox"
                                      TextAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Text="{Binding MainTotalAmount}"
+                                     Text="{Binding TotalWithDownPayment}"
                                      IsReadOnly="True"
-                                     TextChanged="MainTotalAmountBox_TextChanged"/>
-                            <TextBlock Text="إجمالي المبلغ (الدفعة المقدمة + المتبقي)" TextAlignment="Right" Margin="0,6,0,0"/>
-                            <SelectableTextBlock x:Name="TotalAmountText" TextAlignment="Right" FontWeight="Bold"
-                                                 Text="{Binding TotalWithDownPayment, StringFormat='{}{0:0.##}'}"/>
+                                     LostFocus="MainTotalAmountBox_LostFocus"/>
+                            <TextBlock Text="المتبقي بعد الدفعة المقدمة"
+                                       TextAlignment="Right" Margin="0,6,0,0"
+                                       IsVisible="{Binding BoolDownPayment}"/>
+                            <SelectableTextBlock x:Name="RemainingAmountText" TextAlignment="Right" FontWeight="Bold"
+                                                 IsVisible="{Binding BoolDownPayment}"
+                                                 Text="{Binding MainTotalAmount, StringFormat='{}{0:0.##}'}"/>
                         </StackPanel>
 
                         <TextBlock Text="القسط الشهري"
@@ -205,7 +208,8 @@
                                     Grid.Row="9"
                                     Grid.Column="0">
 
-                            <CheckBox Content="بدفعة مقدمة"
+                            <CheckBox x:Name="DownPaymentCheck"
+                                      Content="بدفعة مقدمة"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding BoolDownPayment, Mode=TwoWay}" />
 

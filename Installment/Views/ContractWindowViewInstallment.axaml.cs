@@ -286,8 +286,12 @@ public partial class ContractWindowViewInstallment : Window
             ResultContractNumBox.Text = _contract.ContractNumber;
             ResultContractDateStartBox.Text = _contract.ContractStartDate.ToString("yyyy-MM-dd");
             ResultContractDateEndBox.Text = _contract.ContractEndDate.ToString("yyyy-MM-dd");
-            ResultProductTotalAmount.Text = _contract.MainTotalAmount.ToString("0.##");
-            ResultTotalAmountBox.Text = _contract.TotalWithDownPayment.ToString("0.##");
+            ResultProductTotalAmount.Text = _contract.TotalWithDownPayment.ToString("0.##");
+
+            // Only shown when there is a down payment (same rule as the form above).
+            ResultRemainingLabel.IsVisible = _contract.BoolDownPayment;
+            ResultRemainingBox.IsVisible = _contract.BoolDownPayment;
+            ResultRemainingBox.Text = _contract.MainTotalAmount.ToString("0.##");
             ResultInterestPercentBox.Text = _contract.InterestPercent.ToString("0.##");
             ResultContractPeriodBox.Text = _contract.ContractPeriod.ToString("0.##");
             ResultDownPaymentBox.Text = _contract.DownPayment.ToString("0.##");
@@ -355,13 +359,18 @@ public partial class ContractWindowViewInstallment : Window
         }
     }
 
-    private void MainTotalAmountBox_TextChanged(object? sender, TextChangedEventArgs e)
+    // The box shows the total (down payment + remaining) and, in manual mode, lets the
+    // user type it directly. Recalculating on every keystroke would fight the box's own
+    // binding: MainTotalAmount changes -> TotalWithDownPayment changes -> the binding
+    // rewrites the box mid-typing, out from under the user. Waiting for LostFocus avoids
+    // that; the number is committed once the user is done typing it.
+    private void MainTotalAmountBox_LostFocus(object? sender, RoutedEventArgs e)
     {
         if (_isRefreshing || !IsManualMode) return;
 
         if (double.TryParse(MainTotalAmountBox.Text?.Trim(), out var total) && total > 0)
         {
-            _contract.MainTotalAmount = Math.Round(total, 2);
+            _contract.MainTotalAmount = Math.Round(Math.Max(0, total - _contract.DownPayment), 2);
             UpdateInstallmentAfterTotalChanged();   // recompute monthly from the manual total
         }
     }
