@@ -23,7 +23,15 @@
         <!-- Dark brand panel - logo mark, a centered heading, and a small line
              at the bottom. Kept deliberately minimal per the developer's request. -->
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
-            <Grid RowDefinitions="Auto,*,Auto">
+            <!-- ColumnDefinitions="Auto,*": HorizontalAlignment="Right" alone was
+                 not reliably placing the logo (still came out on the left). An
+                 Auto column that's FIRST in source order maps to the physical
+                 right under the root's RightToLeft (confirmed pattern, same as
+                 the two-column layout at the very top of this file) - it has no
+                 spare space to place content "wrong" in, unlike a stretched "*"
+                 column plus an alignment value. The heading/bottom text still
+                 span both columns so their own width/wrapping is unaffected. -->
+            <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*">
 
                 <!-- The client's full logo (wordmark + mark), dark-background
                      variant (gold + white instead of gold + ink), rendered via
@@ -34,18 +42,17 @@
                      Rectangle/Canvas...), not just their position - unlike text,
                      which Avalonia deliberately never mirrors. Without this, the
                      logo rendered as a horizontally-flipped mirror image (caught
-                     by the developer: "الشعار معكوس"). This override only stops
-                     the mirror for this element; HorizontalAlignment="Right"
-                     still places it correctly since that's unaffected. -->
-                <svg:Svg Grid.Row="0" Width="162" Height="40" HorizontalAlignment="Right"
+                     by the developer: "الشعار معكوس"). -->
+                <svg:Svg Grid.Row="0" Grid.Column="0" Width="162" Height="40"
                          FlowDirection="LeftToRight"
                          Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
 
-                <TextBlock Grid.Row="1" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="480"
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"
+                           TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
-                <TextBlock Grid.Row="2" 
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
                            Text="عقارات · أقساط" FontSize="12" Foreground="#8FA09D"/>
             </Grid>
         </Border>
