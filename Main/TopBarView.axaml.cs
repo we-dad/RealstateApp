@@ -93,6 +93,11 @@ public partial class TopBarView : UserControl
         }
         finally
         {
+            // Belt-and-suspenders: SignOutAsync should already trigger the SDK's
+            // own DestroySession via the registered persistence, but an explicit
+            // delete here means a "تذكرني" session can never survive an actual
+            // logout even if that assumption is ever wrong.
+            new SessionPersistenceService().DestroySession();
             AppSession.Clear();
             _mainWindow?.ShowLogin();
         }

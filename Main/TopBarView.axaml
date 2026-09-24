@@ -16,26 +16,6 @@
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
 
-                <!-- Real online/offline check (ConnectivityService), same as the
-                     login screen - never a fabricated "last synced at" time,
-                     since no such tracking exists in the sync code. -->
-                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                    <Border x:Name="ConnDot" Width="8" Height="8" CornerRadius="4"
-                            Background="{DynamicResource BrushMuted}"/>
-                    <TextBlock x:Name="ConnText" Text="جارٍ التحقق..." FontSize="12.5" Foreground="#B9C4C2"/>
-                </StackPanel>
-
-                <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource BrushGoldSoft}">
-                    <TextBlock x:Name="AvatarText" Text="؟" FontWeight="Bold" FontSize="14"
-                               Foreground="{DynamicResource BrushGold}"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
-
-                <StackPanel Spacing="0" VerticalAlignment="Center">
-                    <TextBlock x:Name="UserNameText" FontWeight="Bold" FontSize="13" Foreground="White"/>
-                    <TextBlock x:Name="UserRoleText" FontSize="12" Foreground="#B9C4C2"/>
-                </StackPanel>
-
                 <Button x:Name="LogoutButton" Classes="navHome"
                         ToolTip.Tip="تسجيل خروج" Click="Logout_Click">
                     <Viewbox Width="16" Height="16" FlowDirection="LeftToRight">
@@ -45,6 +25,35 @@
                         </Canvas>
                     </Viewbox>
                 </Button>
+
+                
+                <!-- HorizontalAlignment="Right" here is literal/safe: this bar has
+                     no ambient FlowDirection="RightToLeft" anywhere, so none of the
+                     mirroring caveats documented on the login screen apply. -->
+                <StackPanel Spacing="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="UserNameText" HorizontalAlignment="Right"
+                               FontWeight="Bold" FontSize="13" Foreground="White"/>
+                    <TextBlock x:Name="UserRoleText" HorizontalAlignment="Right"
+                               FontSize="12" Foreground="#B9C4C2"/>
+                </StackPanel>
+                
+                <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource BrushGoldSoft}">
+                    <TextBlock x:Name="AvatarText" Text="؟" FontWeight="Bold" FontSize="14"
+                               Foreground="{DynamicResource BrushGold}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                
+                <!-- Real online/offline check (ConnectivityService), same as the
+                     login screen - never a fabricated "last synced at" time,
+                     since no such tracking exists in the sync code. -->
+
+
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                    <TextBlock x:Name="ConnText" Text="جارٍ التحقق..." FontSize="12.5" Foreground="#B9C4C2"/>
+                    <Border x:Name="ConnDot" Width="8" Height="8" CornerRadius="4"
+                            Background="{DynamicResource BrushMuted}"/>
+                </StackPanel>
+                
             </StackPanel>
 
             <!-- Column 1: empty for now - a future screen's own nav links (per

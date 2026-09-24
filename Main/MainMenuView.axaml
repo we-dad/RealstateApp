@@ -28,8 +28,14 @@
                 TextAlignment="Center"/>
         </Border>
 
+        <!-- VerticalAlignment="Center" on the inner Grid: the content is short
+             relative to a maximized window, and was sitting pinned to the top
+             with a lot of empty space below it - centering it in the remaining
+             space (below the top bar) reads better. Still scrolls normally if
+             the window is ever short enough that the content doesn't fit. -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="24,40" RowSpacing="8">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="24,40" RowSpacing="8"
+                  VerticalAlignment="Center">
 
                 <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
                     <TextBlock x:Name="DateText" TextAlignment="Center" FontSize="13"
@@ -80,11 +86,6 @@
                                 </StackPanel></Border>
                             </Grid>
 
-                            <Border Classes="chip ok" HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="فتح قسم الأقساط" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Border>
                         </StackPanel>
                     </Button>
 
@@ -128,18 +129,11 @@
                                 </StackPanel></Border>
                             </Grid>
 
-                            <Border Classes="chip neutral" HorizontalAlignment="Left">
-                                <TextBlock Text="فتح قسم العقارات" FontWeight="SemiBold"/>
-                            </Border>
                         </StackPanel>
                     </Button>
                 </Grid>
 
-                <TextBlock Grid.Row="2" Margin="0,30,0,0" TextAlignment="Center" FontSize="13"
-                           Foreground="{DynamicResource BrushMuted}"
-                           Text="تقدر تبدّل بين القسمين في أي وقت من شعار البرنامج أعلى الشاشة."/>
-
-                <TextBlock Grid.Row="3" Text="{ReflectionBinding AppVersion}" FontSize="11"
+                <TextBlock Grid.Row="2" Text="{ReflectionBinding AppVersion}" FontSize="11"
                            Foreground="{DynamicResource BrushMuted}"
                            Margin="0,20,0,0" HorizontalAlignment="Center"/>
             </Grid>

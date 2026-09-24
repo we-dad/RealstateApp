@@ -108,11 +108,13 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- Visual only: no session persistence exists in AuthService yet.
-                         Tracked as a future task, not wired to anything real. -->
-                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True"/>
+                    <!-- Real now: SessionPersistenceService.RememberMe (set in
+                         Login_Click) controls whether the SDK actually writes the
+                         session to disk on sign-in. See that file's own comment
+                         for the plaintext-storage tradeoff. -->
+                    <CheckBox x:Name="RememberMeCheckBox" Content="تذكرني على هذا الجهاز" IsChecked="True"/>
 
-                    <Button Content="دخول" Classes="primary" HorizontalAlignment="Stretch"
+                    <Button x:Name="LoginButton" Content="دخول" Classes="primary" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center" Padding="0,12" FontSize="15"
                             Click="Login_Click"/>
 
