@@ -28,6 +28,16 @@ public class AuthService
         await _supabaseService.Client.Auth.SignOut();
     }
 
+    // Shared by both the manual login flow and the silent "تذكرني" restore -
+    // fills AppSession from whatever the current signed-in Supabase user is.
+    public async Task PopulateAppSessionAsync()
+    {
+        var roleService = new RoleService(_supabaseService);
+        AppSession.Role = await roleService.GetMyRoleAsync();
+        AppSession.UserId = CurrentUserId ?? "";
+        AppSession.DisplayName = CurrentDisplayName;
+    }
+
     public string? CurrentUserId =>
         _supabaseService.Client.Auth.CurrentUser?.Id;
 

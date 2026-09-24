@@ -13,7 +13,7 @@ public partial class MainWindow : Window
    public MainWindow()
     {
         InitializeComponent();
-        ShowLogin();
+        _ = StartupAsync();
         Opened += async (_, _) =>
         {
             await Task.Delay(3000);
@@ -21,6 +21,33 @@ public partial class MainWindow : Window
         };
 
     }
+
+    // Shows a brief neutral splash while checking for a saved "تذكرني" session,
+    // instead of showing the full login form and then immediately navigating
+    // away from it if one is found - that flash (form appears, then instantly
+    // replaced) was confusing (caught by the developer testing the feature).
+    private async Task StartupAsync()
+    {
+        MainContent.Content = new SplashView();
+
+        var restored = false;
+        try
+        {
+            await _supabaseService.InitializeAsync();
+            if (await _supabaseService.TryRestoreSessionAsync())
+            {
+                await new AuthService(_supabaseService).PopulateAppSessionAsync();
+                restored = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+        if (restored) ShowMainMenu(); else ShowLogin();
+    }
+
     public void ShowLogin()
     {
         MainContent.Content = new LoginView(this, _supabaseService);

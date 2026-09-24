@@ -15,13 +15,9 @@ public partial class LoginView : UserControl
     private readonly SupabaseService _supabaseService;
     private DispatcherTimer? _connectivityTimer;
 
-    // Guards against a real race: TryAutoLoginAsync (silent, on load) and
-    // Login_Click (manual) both call _supabaseService.InitializeAsync(), which
-    // replaces the shared Supabase Client with a new instance every time - two
-    // sign-in attempts running at once could end up reading/replacing that
-    // client from under each other (double navigation, or a mismatched
-    // role/identity). The login button is disabled while either path is running,
-    // so only one can ever be in flight.
+    // Guards against a rapid double-click on the login button starting two
+    // concurrent sign-in attempts (each calls _supabaseService.InitializeAsync(),
+    // which replaces the shared Supabase Client instance).
     private bool _signInInProgress;
 
     public string AppVersion => $"Version {AppVersionService.GetVersion()}";
@@ -33,49 +29,11 @@ public partial class LoginView : UserControl
         _supabaseService = supabaseService;
         DataContext = this;
 
+        // No silent "تذكرني" auto-login attempt here - MainWindow.StartupAsync
+        // already tried that before ever showing this screen. By the time a
+        // developer sees the login form at all, there was nothing to restore.
         Loaded += (_, _) => StartConnectivityChecks();
-        Loaded += async (_, _) => await TryAutoLoginAsync();
         Unloaded += (_, _) => _connectivityTimer?.Stop();
-    }
-
-    // Attempts a silent sign-in from a session saved by a previous "تذكرني"
-    // login. Runs once when this screen loads, before the user touches anything;
-    // if it fails (no saved session, expired, no internet), the login form just
-    // sits there normally - never shows an error for this, since "nothing to
-    // restore" is the everyday case, not a failure.
-    private async Task TryAutoLoginAsync()
-    {
-        _signInInProgress = true;
-        LoginButton.IsEnabled = false;
-        try
-        {
-            await _supabaseService.InitializeAsync();
-            if (!await _supabaseService.TryRestoreSessionAsync()) return;
-
-            var auth = new AuthService(_supabaseService);
-            await CompleteSignInAsync(auth);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
-        finally
-        {
-            _signInInProgress = false;
-            LoginButton.IsEnabled = true;
-        }
-    }
-
-    private async Task CompleteSignInAsync(AuthService auth)
-    {
-        var roleService = new RoleService(_supabaseService);
-        AppSession.Role = await roleService.GetMyRoleAsync();
-        AppSession.UserId = auth.CurrentUserId ?? "";
-        AppSession.DisplayName = auth.CurrentDisplayName;
-
-        Console.WriteLine($"ROLE = {AppSession.Role}");
-
-        _mainWindow.ShowMainMenu();
     }
 
     private void TogglePassword_Click(object? sender, RoutedEventArgs e)
@@ -111,7 +69,7 @@ public partial class LoginView : UserControl
 
     private async void Login_Click(object? sender, RoutedEventArgs e)
     {
-        if (_signInInProgress) return; // a silent auto-login attempt is still running
+        if (_signInInProgress) return; // ignore a rapid double-click
         _signInInProgress = true;
         LoginButton.IsEnabled = false;
 
@@ -135,7 +93,9 @@ public partial class LoginView : UserControl
                 return;
             }
 
-            await CompleteSignInAsync(auth);
+            await auth.PopulateAppSessionAsync();
+            Console.WriteLine($"ROLE = {AppSession.Role}");
+            _mainWindow.ShowMainMenu();
         }
         catch (Exception ex)
         {

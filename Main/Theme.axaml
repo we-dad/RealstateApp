@@ -107,11 +107,21 @@
     </Style>
 
     <!-- A clickable card that's a Button underneath (e.g. the module-picker
-         cards) - keeps the same white background on hover instead of
-         FluentTheme's default hover fill change, which the developer found
-         distracting on a card that already has its own static border. -->
+         cards) - keeps the same white background AND the same border color on
+         hover instead of FluentTheme's default hover fill/border change, which
+         the developer found distracting on a card that already has its own
+         static border. Two sub-classes (not one shared selector) because the
+         two cards have different static border colors (gold for the ready
+         module, plain line-grey for the other) that each need to be pinned to
+         their OWN color on hover, not swapped to a shared one. -->
     <Style Selector="Button.moduleCard:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
+    </Style>
+    <Style Selector="Button.moduleCard.gold:pointerover /template/ ContentPresenter">
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushGold}"/>
+    </Style>
+    <Style Selector="Button.moduleCard.neutral:pointerover /template/ ContentPresenter">
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
     </Style>
 
     <!-- ===================== Status chip ===================== -->
