@@ -154,11 +154,13 @@
     <Style Selector="TextBlock.statLabel, SelectableTextBlock.statLabel">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Foreground" Value="{DynamicResource BrushMuted}"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
     <Style Selector="TextBlock.statValue, SelectableTextBlock.statValue">
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
 
     <!-- ===================== Live-preview box (soft gold) ===================== -->
@@ -172,11 +174,13 @@
     <Style Selector="Border.preview TextBlock.previewLabel, Border.preview SelectableTextBlock.previewLabel">
         <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
         <Setter Property="FontSize" Value="13"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
     <Style Selector="Border.preview TextBlock.previewValue, Border.preview SelectableTextBlock.previewValue">
         <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
 
     <!-- ===================== Info box (product / customer / owner...) ===================== -->
@@ -192,10 +196,12 @@
         <Setter Property="Foreground" Value="{DynamicResource BrushGold}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
     <Style Selector="TextBlock.infoBoxRowLabel, SelectableTextBlock.infoBoxRowLabel">
         <Setter Property="Foreground" Value="{DynamicResource BrushMuted}"/>
         <Setter Property="FontSize" Value="13"/>
+        <Setter Property="TextAlignment" Value="Right"/>
     </Style>
 
     <!-- ===================== Installment progress strip ===================== -->
