@@ -24,17 +24,19 @@ public partial class MainMenuView : UserControl
 
         // The name can be Latin script (e.g. an email's local part like "admin",
         // per the developer's own account - Supabase has no "full_name" set for
-        // it). Mixing an LTR word into an RTL sentence with no isolation confuses
-        // the Unicode bidi algorithm and can visually reorder the WHOLE sentence,
-        // not just the name (caught by the developer: "تجي مقلوبة"). Wrapping it
-        // in First Strong Isolate/Pop Directional Isolate (U+2068/U+2069) tells
-        // the renderer to treat the name as its own self-contained run, using
-        // whatever direction ITS OWN content actually is, without letting that
-        // leak into the surrounding Arabic text's ordering.
-        var name = string.IsNullOrWhiteSpace(AppSession.DisplayName)
-            ? ""
-            : $"، ⁨{AppSession.DisplayName}⁩";
-        GreetingText.Text = $"{ArabicDateService.Greeting(now)}{name}. وش نفتح اليوم؟";
+        // it). See the comment on the GreetingSuffixText/.../GreetingPrefixText
+        // TextBlocks in the .axaml: this used to be one string with the name
+        // embedded inline, which the Unicode bidi algorithm could visually
+        // reorder as a whole (caught by the developer), and wrapping the name in
+        // invisible bidi isolate marks (the usual fix) rendered as literal "?"
+        // glyphs in this font/engine instead - so instead of fighting bidi with
+        // more Unicode tricks, the sentence is split into 3 separate TextBlocks,
+        // each holding pure, single-direction text.
+        var hasName = !string.IsNullOrWhiteSpace(AppSession.DisplayName);
+        var greeting = ArabicDateService.Greeting(now);
+        GreetingPrefixText.Text = hasName ? $"{greeting}، " : greeting;
+        GreetingNameText.Text = hasName ? AppSession.DisplayName : "";
+        GreetingSuffixText.Text = ". وش نفتح اليوم؟";
 
         LoadInstallmentStats();
     }

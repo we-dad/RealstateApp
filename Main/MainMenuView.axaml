@@ -40,8 +40,30 @@
                 <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
                     <TextBlock x:Name="DateText" TextAlignment="Center" FontSize="13"
                                Foreground="{DynamicResource BrushMuted}"/>
-                    <TextBlock x:Name="GreetingText" TextAlignment="Center" FontSize="26" FontWeight="Bold"
-                               Foreground="{DynamicResource BrushInk}"/>
+
+                    <!-- Split into 3 separate TextBlocks instead of one string with
+                         the name embedded inline: mixing an Arabic sentence with a
+                         Latin-script name (e.g. "admin") in a single string relies
+                         on the Unicode bidi algorithm to sort out direction, which
+                         can visually reorder the WHOLE sentence - and the usual fix
+                         (wrapping the name in invisible bidi isolate marks,
+                         U+2068/U+2069) rendered as literal "?" glyphs in this
+                         font/engine instead of being invisible, making it worse.
+                         Three separate TextBlocks each hold pure, single-direction
+                         text (no mixing inside any one of them), which sidesteps
+                         the problem entirely instead of fighting it with Unicode
+                         control characters. Physical left-to-right order here (no
+                         ambient FlowDirection) is the reverse of reading order:
+                         the trailing question first, then the name, then the
+                         greeting itself last (physical right). -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock x:Name="GreetingSuffixText" FontSize="26" FontWeight="Bold"
+                                   Foreground="{DynamicResource BrushInk}"/>
+                        <TextBlock x:Name="GreetingNameText" FontSize="26" FontWeight="Bold"
+                                   Foreground="{DynamicResource BrushInk}"/>
+                        <TextBlock x:Name="GreetingPrefixText" FontSize="26" FontWeight="Bold"
+                                   Foreground="{DynamicResource BrushInk}"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <Grid Grid.Row="1" Margin="0,32,0,0" ColumnDefinitions="*,*" ColumnSpacing="24"
