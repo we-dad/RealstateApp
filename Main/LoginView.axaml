@@ -27,7 +27,7 @@
                 <!-- Vector logo mark (bars + trend line) - matches the client's
                      own logo-mark.svg exactly, drawn as native shapes so nothing
                      can fail to load at runtime. -->
-                <Viewbox Grid.Row="0" Width="40" Height="40" HorizontalAlignment="Right">
+                <Viewbox Grid.Row="0" Width="40" Height="40">
                     <Canvas Width="26" Height="26">
                         <Rectangle Canvas.Left="1" Canvas.Top="14" Width="5" Height="11"
                                    RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}" Opacity="0.45"/>
@@ -41,8 +41,7 @@
                     </Canvas>
                 </Viewbox>
 
-                <TextBlock Grid.Row="1" VerticalAlignment="Center"
-                           HorizontalAlignment="Right" TextAlignment="Right" MaxWidth="480"
+                <TextBlock Grid.Row="1" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
@@ -59,9 +58,6 @@
                     <StackPanel Spacing="4">
                         <TextBlock Text="تسجيل الدخول" FontSize="24" FontWeight="Bold"
                                    Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
-                        <TextBlock Text="ادخل بحساب المؤسسة. صلاحياتك تحدد الشاشات اللي تظهر لك."
-                                   FontSize="13" Foreground="{DynamicResource BrushMuted}"
-                                   TextWrapping="Wrap" TextAlignment="Right"/>
                     </StackPanel>
 
                     <StackPanel Spacing="6">
@@ -74,10 +70,10 @@
                         <TextBlock Text="كلمة المرور" FontSize="13"
                                    Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
                         <Grid>
-                            <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="44,9,12,9"/>
+                            <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="9,9,12,9"/>
                             <Button x:Name="TogglePasswordButton" Classes="outline"
                                     ToolTip.Tip="إظهار كلمة المرور"
-                                    Padding="7" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0"
+                                    Padding="7" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="6,0"
                                     Click="TogglePassword_Click">
                                 <Viewbox Width="16" Height="16">
                                     <Canvas Width="24" Height="24">
@@ -92,7 +88,7 @@
 
                     <!-- Visual only: no session persistence exists in AuthService yet.
                          Tracked as a future task, not wired to anything real. -->
-                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True" HorizontalAlignment="Right"/>
+                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True"/>
 
                     <Button Content="دخول" Classes="primary" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center" Padding="0,12" FontSize="15"
@@ -104,16 +100,13 @@
                     <!-- Real connectivity status - see ConnectivityService. -->
                     <Border Background="{DynamicResource BrushBg}" BorderBrush="{DynamicResource BrushLine}"
                             BorderThickness="1" CornerRadius="8" Padding="14,10">
-                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
                             <Border x:Name="ConnDot" Width="9" Height="9" CornerRadius="5"
                                     Background="{DynamicResource BrushMuted}" VerticalAlignment="Top" Margin="0,4,0,0"/>
                             <StackPanel Spacing="2">
                                 <TextBlock x:Name="ConnStatusText" Text="جارٍ التحقق من الاتصال..."
                                            FontWeight="Bold" FontSize="13" Foreground="{DynamicResource BrushInk}"
                                            TextAlignment="Right"/>
-                                <TextBlock Text="يشتغل البرنامج بدون إنترنت، ويزامن تلقائيًا أول ما يرجع الاتصال."
-                                           FontSize="12" Foreground="{DynamicResource BrushMuted}"
-                                           TextWrapping="Wrap" TextAlignment="Right"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
