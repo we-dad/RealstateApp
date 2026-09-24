@@ -9,12 +9,16 @@
                   separate task (a second palette + a way to switch), not done yet. -->
 
    <Application.Resources>
-    <!-- IBM Plex Sans Arabic crashes Avalonia's text shaper on startup (SIGABRT in
-         Avalonia.Media.TextFormatting.TextFormatterImpl.ShapeTextRuns, on the very
-         first TextBlock measured - before the font is even used on real content).
-         Font files are kept in Assets/Fonts and this resource is kept defined so the
-         issue can be investigated later; nothing below references it right now. -->
-    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
+    <!-- Attempt 2 at IBM Plex Sans Arabic: the first attempt grouped 4 separate weight
+         files (Regular/Medium/SemiBold/Bold) under one family via the "#Name" folder
+         syntax and crashed Avalonia's text shaper on startup (SIGABRT in
+         TextFormatterImpl.ShapeTextRuns). Each weight file has a DIFFERENT internal
+         family name (a Google Fonts packaging quirk), which may be what confused the
+         shaper/font matching. This points at a SINGLE file instead (Regular only), to
+         test whether the crash was about the multi-file grouping specifically.
+         FontWeight="Bold" usages fall back to Avalonia's synthetic (faux) bold on this
+         one face - close enough, not a real second weight file. Not yet tested. -->
+    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts/IBMPlexSansArabic-Regular.ttf#IBM Plex Sans Arabic</FontFamily>
    </Application.Resources>
 
    <Application.Styles>
@@ -25,14 +29,15 @@
     <!-- Visual identity: palette, chips, nav bar and card styles. -->
     <StyleInclude Source="avares://RealEstateInstallmentsManager/Main/Theme.axaml"/>
 
-    <!-- Reverted to Arial: IBM Plex Sans Arabic crashed the app on startup (see the
-         comment on ArabicFontFamily above). Kept the broader ":is()" selectors, which
-         also reach Button/TextBox text that "Arial"-on-TextBlock-only never did. -->
+    <!-- Trying IBM Plex Sans Arabic again, single-file this time (see the comment on
+         ArabicFontFamily above). UNTESTED - the developer must open the app and confirm
+         it does not crash before this counts as working; if it still crashes, revert
+         both Setters below to "Arial" the same way the first attempt was reverted. -->
     <Style Selector=":is(TemplatedControl)">
-        <Setter Property="FontFamily" Value="Arial"/>
+        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
     <Style Selector=":is(TextBlock)">
-        <Setter Property="FontFamily" Value="Arial"/>
+        <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
 
     <!-- App-wide background (every native Window: the main window and every popup
