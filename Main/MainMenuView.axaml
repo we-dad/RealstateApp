@@ -5,68 +5,144 @@
     x:Class="RealEstateInstallmentsManager.Views.MainMenuView"
     x:DataType="views:MainMenuView">
 
-    <Grid RowDefinitions="Auto,*">
+    <!-- No root FlowDirection="RightToLeft" here either (see TopBarView's own
+         comment) - text alignment is set explicitly per element instead. -->
+    <DockPanel Background="{DynamicResource BrushBg}">
+
+        <views:TopBarView x:Name="TopBar" DockPanel.Dock="Top"/>
+
         <Border
-            Grid.Row="0"
+            DockPanel.Dock="Top"
             IsVisible="{Binding IsTester}"
-            FlowDirection="RightToLeft"
             Background="#FFF3CD"
             BorderBrush="#E0C36A"
             BorderThickness="1"
             CornerRadius="6"
-            Margin="20,20,20,0"
-            Padding="16,10"
-            MaxWidth="700"
-            HorizontalAlignment="Center">
+            Margin="20,16,20,0"
+            Padding="16,10">
             <TextBlock
                 Text="هذا حساب تجريبي، ولا يعرض البيانات المخزّنة على السحابة. للحصول على الصلاحية تواصل مع المسؤول."
                 Foreground="#664D03"
-                FontSize="16"
+                FontSize="14"
                 TextWrapping="Wrap"
                 TextAlignment="Center"/>
         </Border>
 
-        <TextBlock
-            Grid.RowSpan="2"
-            Text="{ReflectionBinding AppVersion}"
-            FontSize="16"
-            Margin="10"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"/>
-  
-        <StackPanel
-            Grid.Row="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="200">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="24,40" RowSpacing="8">
 
-            <TextBlock
-                Text="المسار الذهبي"
-                FontSize="28"
-                FontWeight="Bold"
-                HorizontalAlignment="Center"/>
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
+                    <TextBlock x:Name="DateText" TextAlignment="Center" FontSize="13"
+                               Foreground="{DynamicResource BrushMuted}"/>
+                    <TextBlock x:Name="GreetingText" TextAlignment="Center" FontSize="26" FontWeight="Bold"
+                               Foreground="{DynamicResource BrushInk}"/>
+                </StackPanel>
 
-         <StackPanel
-    Orientation="Horizontal"
-    HorizontalAlignment="Center"
-    Spacing="30">
+                <Grid Grid.Row="1" Margin="0,32,0,0" ColumnDefinitions="*,*" ColumnSpacing="24"
+                      HorizontalAlignment="Center" MaxWidth="1000">
 
-    <Button Width="220"
-            Height="220"
-            Content="إدارة التقسيط"
-            FontSize="28"
-            Click="InstallmentButton_Click"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"/>
+                    <!-- Installment module - real numbers from DashboardServiceInstallment. -->
+                    <Button Grid.Column="1" Click="InstallmentButton_Click"
+                            Background="{DynamicResource BrushSurface}"
+                            BorderBrush="{DynamicResource BrushGold}" BorderThickness="1.5"
+                            CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="20">
+                            <StackPanel Orientation="Horizontal" Spacing="14">
+                                <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushGoldSoft}">
+                                    <Viewbox Width="26" Height="26">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{DynamicResource Icon.Cards}" Stroke="{DynamicResource BrushGold}"
+                                                  StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="الأقساط" FontSize="19" FontWeight="Bold"
+                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
+                                    <TextBlock Text="عقود البيع بالتقسيط والتحصيل والملاك" FontSize="12.5"
+                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
+                                </StackPanel>
+                            </StackPanel>
 
-    <Button Width="220"
-            Height="220"
-            Content="إدارة العقارات"
-            FontSize="28"
-            Click="RealEstateButton_Click"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"/>
-</StackPanel>
-        </StackPanel>
-    </Grid>
+                            <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
+                                <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="عقود نشطة"/>
+                                    <SelectableTextBlock x:Name="StatActiveContracts" Classes="statValue"/>
+                                </StackPanel></Border>
+                                <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="متأخرات"/>
+                                    <SelectableTextBlock x:Name="StatArrears" Classes="statValue"
+                                                          Foreground="{DynamicResource BrushLate}"/>
+                                </StackPanel></Border>
+                                <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="مستحق خلال 7 أيام"/>
+                                    <SelectableTextBlock x:Name="StatDueSoon" Classes="statValue"/>
+                                </StackPanel></Border>
+                            </Grid>
+
+                            <Border Classes="chip ok" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="فتح قسم الأقساط" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Real estate module - stats are placeholders on purpose:
+                         no equivalent dashboard query exists yet for this module. -->
+                    <Button Grid.Column="0" Click="RealEstateButton_Click"
+                            Background="{DynamicResource BrushSurface}"
+                            BorderBrush="{DynamicResource BrushLine}" BorderThickness="1"
+                            CornerRadius="10" Padding="26" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="20">
+                            <StackPanel Orientation="Horizontal" Spacing="14">
+                                <Border Width="52" Height="52" CornerRadius="12" Background="{DynamicResource BrushBg}"
+                                        BorderBrush="{DynamicResource BrushLine}" BorderThickness="1">
+                                    <Viewbox Width="26" Height="26">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{DynamicResource Icon.Building}" Stroke="{DynamicResource BrushInk}"
+                                                  StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="العقارات" FontSize="19" FontWeight="Bold"
+                                               Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
+                                    <TextBlock Text="الوحدات والمستأجرين وعقود الإيجار" FontSize="12.5"
+                                               Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Grid Classes="statGrid" ColumnDefinitions="*,*,*">
+                                <Border Grid.Column="0" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="الوحدات"/>
+                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                </StackPanel></Border>
+                                <Border Grid.Column="1" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="متأخرات الإيجار"/>
+                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                </StackPanel></Border>
+                                <Border Grid.Column="2" Classes="statCell"><StackPanel Spacing="4">
+                                    <TextBlock Classes="statLabel" Text="عقود تنتهي قريبًا"/>
+                                    <TextBlock Classes="statValue" Text="—" Foreground="{DynamicResource BrushMuted}"/>
+                                </StackPanel></Border>
+                            </Grid>
+
+                            <Border Classes="chip neutral" HorizontalAlignment="Left">
+                                <TextBlock Text="فتح قسم العقارات" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <TextBlock Grid.Row="2" Margin="0,30,0,0" TextAlignment="Center" FontSize="13"
+                           Foreground="{DynamicResource BrushMuted}"
+                           Text="تقدر تبدّل بين القسمين في أي وقت من شعار البرنامج أعلى الشاشة."/>
+
+                <TextBlock Grid.Row="3" Text="{ReflectionBinding AppVersion}" FontSize="11"
+                           Foreground="{DynamicResource BrushMuted}"
+                           Margin="0,20,0,0" HorizontalAlignment="Center"/>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
 </UserControl>

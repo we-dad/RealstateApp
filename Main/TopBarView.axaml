@@ -1,0 +1,64 @@
+<UserControl
+    x:Class="RealEstateInstallmentsManager.Views.TopBarView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:svg="clr-namespace:Avalonia.Svg.Skia;assembly=Avalonia.Svg.Skia">
+
+    <!-- Deliberately no root FlowDirection="RightToLeft" here: this bar's layout
+         is simple enough to just place columns in their real physical order
+         directly (same technique as ReceiptViewInstallment), avoiding the whole
+         "everything gets mirrored, alignment values flip meaning" class of bug
+         found and fixed on the login screen. Column 0 = physical left (status/
+         identity/logout), column 2 = physical right (brand), matching the
+         reference design's top bar. -->
+    <Border Background="{DynamicResource BrushInk}" Height="58" Padding="22,0">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+
+                <!-- Real online/offline check (ConnectivityService), same as the
+                     login screen - never a fabricated "last synced at" time,
+                     since no such tracking exists in the sync code. -->
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                    <Border x:Name="ConnDot" Width="8" Height="8" CornerRadius="4"
+                            Background="{DynamicResource BrushMuted}"/>
+                    <TextBlock x:Name="ConnText" Text="جارٍ التحقق..." FontSize="12.5" Foreground="#B9C4C2"/>
+                </StackPanel>
+
+                <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource BrushGoldSoft}">
+                    <TextBlock x:Name="AvatarText" Text="؟" FontWeight="Bold" FontSize="14"
+                               Foreground="{DynamicResource BrushGold}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <StackPanel Spacing="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="UserNameText" FontWeight="Bold" FontSize="13" Foreground="White"/>
+                    <TextBlock x:Name="UserRoleText" FontSize="12" Foreground="#B9C4C2"/>
+                </StackPanel>
+
+                <Button x:Name="LogoutButton" Classes="navHome"
+                        ToolTip.Tip="تسجيل خروج" Click="Logout_Click">
+                    <Viewbox Width="16" Height="16" FlowDirection="LeftToRight">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="{DynamicResource Icon.Logout}" Stroke="#DCE3E1" StrokeThickness="1.8"
+                                  StrokeLineCap="Round" StrokeJoin="Round"/>
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+            </StackPanel>
+
+            <!-- Column 1: empty for now - a future screen's own nav links (per
+                 module) would go here; this bar is shared/reused as-is. -->
+
+            <Button Grid.Column="2" Click="Brand_Click"
+                    Background="Transparent" BorderThickness="0" Padding="0"
+                    ToolTip.Tip="الرئيسية">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <svg:Svg Width="22" Height="22" FlowDirection="LeftToRight"
+                             Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-mark.svg"/>
+                    <TextBlock Text="المسار الذهبي" FontWeight="Bold" FontSize="16" Foreground="White"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

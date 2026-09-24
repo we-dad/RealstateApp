@@ -28,7 +28,7 @@ public partial class MainWindow : Window
 
     public void ShowMainMenu()
     {
-        MainContent.Content = new MainMenuView(this);
+        MainContent.Content = new MainMenuView(this, _supabaseService);
     }
 
     public void ShowRealEstatePage()
