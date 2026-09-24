@@ -4,8 +4,22 @@
     <!-- الاستخدام:
     <Viewbox Width="18" Height="18">
       <Canvas Width="24" Height="24">
-        <Path Data="{StaticResource Icon.Search}" Stroke="#1C2B2A" StrokeThickness="1.8"
+        <Path Data="{DynamicResource Icon.Search}" Stroke="#1C2B2A" StrokeThickness="1.8"
               StrokeLineCap="Round" StrokeJoin="Round"/>
+      </Canvas>
+    </Viewbox>
+    (استخدم DynamicResource لا StaticResource: هذا ملف موارد منفصل مُدمَج في
+    Application.Resources، وStaticResource عبر ملفات منفصلة قد يفشل بصمت.)
+
+    تنبيه مهم: أي شاشة فيها FlowDirection="RightToLeft" على الجذر (أغلب شاشات
+    التطبيق) تعكس محتوى العناصر الرسومية (Path وImage وSvg وRectangle وCanvas...)
+    بصريًا - مو بس مكانها - على عكس النص اللي Avalonia ما يعكسه أبدًا. فأي أيقونة
+    من هذا الملف تُستخدم داخل شاشة RTL لازم يكون على الـViewbox نفسه أو أي عنصر
+    أب مباشر لها FlowDirection="LeftToRight" صريح، وإلا تطلع معكوسة (اكتُشفت
+    هذي المشكلة أول مرة بشعار شاشة تسجيل الدخول). مثال:
+    <Viewbox Width="18" Height="18" FlowDirection="LeftToRight">
+      <Canvas Width="24" Height="24">
+        <Path Data="{DynamicResource Icon.Search}" .../>
       </Canvas>
     </Viewbox>
     -->

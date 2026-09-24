@@ -28,8 +28,17 @@
                 <!-- The client's full logo (wordmark + mark), dark-background
                      variant (gold + white instead of gold + ink), rendered via
                      Avalonia.Svg.Skia. Original file is 178.5x44 - kept the
-                     same ratio here (162x40). -->
+                     same ratio here (162x40).
+                     FlowDirection="LeftToRight": the root's RightToLeft mirrors
+                     actual pixel content for graphical elements (Path/Image/Svg/
+                     Rectangle/Canvas...), not just their position - unlike text,
+                     which Avalonia deliberately never mirrors. Without this, the
+                     logo rendered as a horizontally-flipped mirror image (caught
+                     by the developer: "الشعار معكوس"). This override only stops
+                     the mirror for this element; HorizontalAlignment="Right"
+                     still places it correctly since that's unaffected. -->
                 <svg:Svg Grid.Row="0" Width="162" Height="40" HorizontalAlignment="Right"
+                         FlowDirection="LeftToRight"
                          Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
 
                 <TextBlock Grid.Row="1" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="480"
@@ -66,7 +75,12 @@
                                     ToolTip.Tip="إظهار كلمة المرور"
                                     Padding="7" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="6,0"
                                     Click="TogglePassword_Click">
-                                <Viewbox Width="16" Height="16">
+                                <!-- FlowDirection="LeftToRight": same mirroring
+                                     issue as the logo above - graphical content
+                                     gets flipped by the ambient RightToLeft
+                                     otherwise, even though an eye shape is close
+                                     to symmetric enough that it wasn't reported. -->
+                                <Viewbox Width="16" Height="16" FlowDirection="LeftToRight">
                                     <Canvas Width="24" Height="24">
                                         <Path Data="{DynamicResource Icon.Eye}"
                                               Stroke="{DynamicResource BrushInk}" StrokeThickness="1.8"
