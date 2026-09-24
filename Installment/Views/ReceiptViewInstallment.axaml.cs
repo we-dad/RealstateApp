@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using System;
@@ -38,7 +40,7 @@ public partial class ReceiptViewInstallment : UserControl
         _receiptsDB = new ReceiptServiceInstallment(_db);
         _contractsDB = new ContractServiceInstallment(_db);
         _pdfService = new PdfServiceInstallment();
-        
+
         ReceiptsGrid.DoubleTapped += ReceiptsGrid_DoubleTapped;
 
         // The suggestions list matches the number, the customer name or the product.
@@ -102,7 +104,7 @@ public partial class ReceiptViewInstallment : UserControl
             Console.WriteLine(ex.ToString());
         }
     }
-    
+
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -136,7 +138,7 @@ public partial class ReceiptViewInstallment : UserControl
             Refresh();
 
             _ = _sync.PushAllDirtyAsync();
-            
+
         }
         catch (Exception ex)
         {
@@ -229,7 +231,7 @@ public partial class ReceiptViewInstallment : UserControl
 
         if (contract is null)
         {
-            _selectedContract = null;
+            ResetContractSelection();
             ContractInfoText.Text = "لم يتم العثور على عقد بهذا الرقم";
             ContractInfoText.Foreground = Brushes.Red;
             return;
@@ -250,7 +252,7 @@ public partial class ReceiptViewInstallment : UserControl
         if (typed.Equals(_selectedContract.ContractNumber, StringComparison.OrdinalIgnoreCase))
             return;
 
-        _selectedContract = null;
+        ResetContractSelection();
         ContractInfoText.Text = "";
     }
 
@@ -258,14 +260,51 @@ public partial class ReceiptViewInstallment : UserControl
     {
         _selectedContract = contract;
 
-        ContractInfoText.Text =
-            $"اسم العميل : {contract.CustomerName} | " +
-            $"اسم المنتج : {contract.ProductName} | " +
-            $"القسط الأساسي : {contract.MainTotalAmount} | " +
-            $"المتبقي : {contract.CurrentTotalAmount} | " +
-            $"القسط الشهري : {contract.MonthlyInstallment}";
-
+        ContractInfoText.Text = $"تم اختيار عقد {contract.CustomerName}";
         ContractInfoText.Foreground = Brushes.Green;
+
+        NoContractPlaceholder.IsVisible = false;
+        ContractDetailsPanel.IsVisible = true;
+
+        DetailsChipText.Text = contract.ContractState;
+        DetailsChip.Classes.Set("ok", contract.IsStateOk);
+        DetailsChip.Classes.Set("late", contract.IsStateLate);
+
+        DetailsContractNumber.Text = $"عقد {contract.ContractNumber}";
+        DetailsContractDates.Text =
+            $"من {contract.ContractStartDate:yyyy-MM-dd} إلى {contract.ContractEndDate:yyyy-MM-dd} · " +
+            $"{contract.ContractPeriod:0.#} قسط شهري";
+
+        DetailsStatTotal.Text = contract.TotalWithDownPayment.ToString("N2");
+        DetailsStatPaid.Text = Math.Max(0, contract.MainTotalAmount - contract.CurrentTotalAmount).ToString("N2");
+        DetailsStatRemaining.Text = contract.CurrentTotalAmount.ToString("N2");
+        DetailsStatMonthly.Text = contract.MonthlyInstallment.ToString("N2");
+
+        DetailsProductName.Text = string.IsNullOrWhiteSpace(contract.ProductName) ? "—" : contract.ProductName;
+        DetailsProductPrice.Text = contract.ProductMainPrice.ToString("N2");
+
+        DetailsCustomerName.Text = string.IsNullOrWhiteSpace(contract.CustomerName) ? "—" : contract.CustomerName;
+        DetailsCustomerPhone.Text = string.IsNullOrWhiteSpace(contract.CustomerPhone) ? "—" : contract.CustomerPhone;
+
+        DetailsOwnerName.Text = string.IsNullOrWhiteSpace(contract.OwnerName) ? "—" : contract.OwnerName;
+        DetailsOwnerPhone.Text = string.IsNullOrWhiteSpace(contract.OwnerPhone) ? "—" : contract.OwnerPhone;
+
+        UpdatePreviewAndStrip();
+    }
+
+    // Hides the contract details panel and forgets the selection. Called whenever the
+    // chosen contract stops being valid (search cleared, not found, screen reset) - a
+    // receipt can then never be saved against a contract the screen is not showing.
+    private void ResetContractSelection()
+    {
+        _selectedContract = null;
+
+        ContractDetailsPanel.IsVisible = false;
+        NoContractPlaceholder.IsVisible = true;
+        InstallmentStripPanel.Children.Clear();
+        DetailsDueText.Text = "";
+
+        UpdatePreviewAndStrip();
     }
 
     private void SearchContract_Click(object? sender, RoutedEventArgs e)
@@ -283,7 +322,7 @@ public partial class ReceiptViewInstallment : UserControl
 
         if (contract is null)
         {
-            _selectedContract = null;
+            ResetContractSelection();
             ContractInfoText.Text = candidates.Count > 1
                 ? "يوجد أكثر من عقد بهذا الرقم، اكتب الرقم كاملًا: " + string.Join("، ", candidates)
                 : "لم يتم العثور على عقد بهذا الرقم";
@@ -293,6 +332,175 @@ public partial class ReceiptViewInstallment : UserControl
 
         ShowSelectedContract(contract);
     }
+
+    // ===================== Live preview + installment progress strip =====================
+    // Both are display only: neither writes to the database. The amount that actually
+    // gets saved is read straight from AmountBox by Add_Click, exactly as before.
+
+    private double TypedAmount() =>
+        double.TryParse(AmountBox.Text?.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var value) && value > 0
+            ? value
+            : 0;
+
+    private void AmountBox_TextChanged(object? sender, TextChangedEventArgs e) => UpdatePreviewAndStrip();
+
+    // ContractPeriod is a free-typed number of months with no real upper bound in the
+    // contract screen. A very large value would push ContractStartDate.AddMonths(i+1)
+    // past year 9999 and throw. 50 years covers any real contract; anything above that
+    // is bad data, and the strip should not crash the screen over it.
+    private const int MaxStripMonths = 600;
+
+    private static int SafePeriod(ContractInstallment contract) =>
+        Math.Clamp((int)Math.Round(contract.ContractPeriod), 0, MaxStripMonths);
+
+    private void UpdatePreviewAndStrip()
+    {
+        var contract = _selectedContract;
+
+        if (contract is null)
+        {
+            PreviewCoverText.Text = "—";
+            PreviewRemainingText.Text = "—";
+            PreviewStateText.Text = "—";
+            InstallmentStripPanel.Children.Clear();
+            return;
+        }
+
+        var amount = TypedAmount();
+        var monthly = contract.MonthlyInstallment;
+        var remainingBefore = contract.CurrentTotalAmount;
+        var remainingAfter = Math.Max(0, remainingBefore - amount);
+
+        PreviewRemainingText.Text = remainingAfter.ToString("N2") + " ريال";
+
+        PreviewCoverText.Text = monthly > 0
+            ? amount / monthly >= 0.995
+                ? $"{Math.Round(amount / monthly, 1):0.#} قسط"
+                : $"{amount:N2} ريال من قسط"
+            : amount.ToString("N2") + " ريال";
+
+        var period = SafePeriod(contract);
+        var paidSoFar = Math.Max(0, contract.MainTotalAmount - remainingBefore);
+        var afterThisReceipt = paidSoFar + amount;
+
+        var dueCount = 0;
+        var lateAfter = 0;
+        var today = DateTime.Today;
+
+        for (var i = 0; i < period && monthly > 0; i++)
+        {
+            var dueDate = contract.ContractStartDate.AddMonths(i + 1);
+            var isDue = dueDate <= today;
+
+            if (isDue)
+            {
+                dueCount++;
+
+                var afterFrac = Math.Clamp((afterThisReceipt - i * monthly) / monthly, 0, 1);
+                if (afterFrac < 0.999)
+                    lateAfter++;
+            }
+        }
+
+        PreviewStateText.Text = remainingAfter <= 0.01
+            ? "منتهي"
+            : lateAfter > 0
+                ? $"متأخر {lateAfter} قسط"
+                : "منتظم";
+
+        BuildInstallmentStrip(contract, paidSoFar, afterThisReceipt, dueCount);
+    }
+
+    private static readonly string[] ArabicMonths =
+    {
+        "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+    };
+
+    // period is estimated from the contract's start date and equal monthly installments,
+    // not a real per-month schedule (this app does not keep one) - close enough to show
+    // progress, not exact accounting.
+    private void BuildInstallmentStrip(ContractInstallment contract, double paidSoFar, double afterThisReceipt, int dueCount)
+    {
+        InstallmentStripPanel.Children.Clear();
+
+        var monthly = contract.MonthlyInstallment;
+        var period = SafePeriod(contract);
+
+        DetailsDueText.Text = period > 0 && monthly > 0 ? $"مستحق حتى اليوم: {dueCount} أقساط" : "";
+
+        if (monthly <= 0 || period <= 0)
+            return;
+
+        var today = DateTime.Today;
+
+        for (var i = 0; i < period; i++)
+        {
+            var monthStart = contract.ContractStartDate.AddMonths(i);
+            var dueDate = contract.ContractStartDate.AddMonths(i + 1);
+
+            var paidFrac = Math.Clamp((paidSoFar - i * monthly) / monthly, 0, 1);
+            var afterFrac = Math.Clamp((afterThisReceipt - i * monthly) / monthly, 0, 1);
+            var addFrac = Math.Max(0, afterFrac - paidFrac);
+            var isLate = dueDate <= today && afterFrac < 0.999;
+
+            var label = ArabicMonths[((monthStart.Month - 1) % 12 + 12) % 12];
+
+            InstallmentStripPanel.Children.Add(BuildMonthCell(paidFrac, addFrac, isLate, label));
+        }
+    }
+
+    private static Border BuildMonthCell(double paidFrac, double addFrac, bool late, string label)
+    {
+        var emptyFrac = Math.Max(0, 1 - paidFrac - addFrac);
+
+        var grid = new Grid();
+        grid.RowDefinitions.Add(new RowDefinition(emptyFrac, GridUnitType.Star));
+        grid.RowDefinitions.Add(new RowDefinition(addFrac, GridUnitType.Star));
+        grid.RowDefinitions.Add(new RowDefinition(paidFrac, GridUnitType.Star));
+        grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+        var paidBar = new Border { Background = ThemeBrush("BrushOk") };
+        Grid.SetRow(paidBar, 2);
+
+        var addBar = new Border { Background = ThemeBrush("BrushGold") };
+        Grid.SetRow(addBar, 1);
+
+        var labelText = new TextBlock
+        {
+            Text = label,
+            FontSize = 10,
+            Foreground = ThemeBrush("BrushMuted"),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 2, 0, 0)
+        };
+        Grid.SetRow(labelText, 3);
+
+        grid.Children.Add(paidBar);
+        grid.Children.Add(addBar);
+        grid.Children.Add(labelText);
+
+        var cell = new Border
+        {
+            Width = 44,
+            Height = 58,
+            Padding = new Thickness(2),
+            Child = grid,
+            Classes = { "stripCell" }
+        };
+
+        if (late)
+            cell.Classes.Add("late");
+
+        return cell;
+    }
+
+    // Looks the color up the same way DynamicResource does at runtime, so it always
+    // matches Main/Theme.axaml; a plain gray if the app resources are somehow missing.
+    private static IBrush ThemeBrush(string key) =>
+        Application.Current?.TryFindResource(key, out var value) == true && value is IBrush brush
+            ? brush
+            : Brushes.Gray;
 
     private ScreenAutoRefresh? _autoRefresh;
     private GridSearch<ReceiptInstallment>? _gridSearch;
@@ -320,7 +528,7 @@ public partial class ReceiptViewInstallment : UserControl
         ContractNumSearchBox.ItemsSource = _contractsDB.GetPickRows();
         AmountBox.Text = "";
 
-        _selectedContract = null;
+        ResetContractSelection();
     }
 
     private void ReceiptsGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)

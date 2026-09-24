@@ -620,6 +620,9 @@ public class ContractServiceInstallment
         return candidates.Count == 1 ? FindByContractNum(candidates[0]) : null;
     }
 
+    // Finds the id by the exact stored number, then reuses GetById for the full row
+    // (dates, period, product, customer, owner...) instead of duplicating that SELECT
+    // with a thinner one - every caller gets the complete contract, not a partial one.
     public ContractInstallment? FindByContractNum(string contractNum)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
@@ -627,55 +630,18 @@ public class ContractServiceInstallment
 
         using var cmd = con.CreateCommand();
         cmd.CommandText = """
-            SELECT 
-                c.Id,
-                c.CloudId,
-                c.ProductId,
-                c.CustomerId,
-                p.CloudId,
-                cus.CloudId,
-                c.MainTotalAmount,
-                c.CurrentTotalAmount,
-                c.MonthlyInstallment,
-                cus.Name,
-                p.ProductName,
-                c.SignatureCloudPath,
-                c.SignatureFileName,
-                c.SignatureFileType
-            FROM ContractsInstallment c
-            JOIN ProductsInstallment p ON p.Id = c.ProductId
-            JOIN CustomersInstallment cus ON cus.Id = c.CustomerId
-            WHERE c.ContractNumber = $contractNum
-              AND c.SyncAction <> 'delete'
+            SELECT Id
+            FROM ContractsInstallment
+            WHERE ContractNumber = $contractNum
+              AND SyncAction <> 'delete'
             LIMIT 1;
         """;
 
         cmd.Parameters.AddWithValue("$contractNum", contractNum);
 
-        using var reader = cmd.ExecuteReader();
+        var id = cmd.ExecuteScalar();
 
-        if (!reader.Read())
-            return null;
-
-        return new ContractInstallment
-        {
-            Id = reader.GetInt64(0),
-            ContractNumber = contractNum, // the SELECT matched it exactly; callers compare against it
-            CloudId = reader.GetInt64(1),
-            ProductId = reader.GetInt64(2),
-            CustomerId = reader.GetInt64(3),
-            ProductCloudId = reader.GetInt64(4),
-            CustomerCloudId = reader.GetInt64(5),
-            MainTotalAmount = reader.GetDouble(6),
-            CurrentTotalAmount = reader.GetDouble(7),
-            MonthlyInstallment = reader.GetDouble(8),
-            CustomerName = reader.GetString(9),
-            ProductName = reader.GetString(10),
-
-            SignatureCloudPath = reader.GetString(11),
-            SignatureFileName = reader.GetString(12),
-            SignatureFileType = reader.GetString(13)
-        };
+        return id is null ? null : GetById(Convert.ToInt64(id));
     }
 
     public void UpdateCloudId(long id, long cloudId)
