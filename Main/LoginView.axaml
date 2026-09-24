@@ -2,6 +2,7 @@
     x:Class="RealEstateInstallmentsManager.Views.LoginView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:svg="clr-namespace:Avalonia.Svg.Skia;assembly=Avalonia.Svg.Skia"
     FlowDirection="RightToLeft">
 
     <!-- Split screen: a fixed-width white form + a flexible dark brand panel.
@@ -24,22 +25,10 @@
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
             <Grid RowDefinitions="Auto,*,Auto">
 
-                <!-- Vector logo mark (bars + trend line) - matches the client's
-                     own logo-mark.svg exactly, drawn as native shapes so nothing
-                     can fail to load at runtime. -->
-                <Viewbox Grid.Row="0" Width="40" Height="40">
-                    <Canvas Width="26" Height="26">
-                        <Rectangle Canvas.Left="1" Canvas.Top="14" Width="5" Height="11"
-                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}" Opacity="0.45"/>
-                        <Rectangle Canvas.Left="8" Canvas.Top="9" Width="5" Height="16"
-                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}" Opacity="0.7"/>
-                        <Rectangle Canvas.Left="15" Canvas.Top="4" Width="5" Height="21"
-                                   RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource BrushGold}"/>
-                        <Path Data="M2,11 L11,5 L16,7 L24,1"
-                              Stroke="#E6C06A" StrokeThickness="1.8"
-                              StrokeLineCap="Round" StrokeJoin="Round"/>
-                    </Canvas>
-                </Viewbox>
+                <!-- The client's actual logo-mark.svg file, rendered directly via
+                     Avalonia.Svg.Skia (added with the developer's permission). -->
+                <svg:Svg Grid.Row="0" Width="40" Height="40"
+                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-mark.svg"/>
 
                 <TextBlock Grid.Row="1" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"

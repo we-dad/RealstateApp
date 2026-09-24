@@ -24,6 +24,7 @@
     <PackageReference Include="Avalonia" Version="11.3.11" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.11" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -42,8 +43,10 @@
     <!-- The real cause of every "IBM Plex Sans Arabic" crash/exception so far: this
          project never had an AvaloniaResource entry for the font files, so every
          avares://.../Assets/Fonts/... URI pointed at an empty resource folder - not
-         a syntax problem with folders vs. files or with grouping multiple weights. -->
-    <AvaloniaResource Include="Assets\Fonts\**" />
+         a syntax problem with folders vs. files or with grouping multiple weights.
+         Broadened to all of Assets/ (not just Fonts) so the same silent-empty-folder
+         bug can't recur for any future asset (e.g. Assets/Logo/logo-mark.svg). -->
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
