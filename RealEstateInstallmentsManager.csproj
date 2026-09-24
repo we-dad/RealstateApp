@@ -39,6 +39,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The real cause of every "IBM Plex Sans Arabic" crash/exception so far: this
+         project never had an AvaloniaResource entry for the font files, so every
+         avares://.../Assets/Fonts/... URI pointed at an empty resource folder - not
+         a syntax problem with folders vs. files or with grouping multiple weights. -->
+    <AvaloniaResource Include="Assets\Fonts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="RealEstate\Views\ContractsViewRealEstate.axaml.cs">
       <DependentUpon>InstallmentContractsView.axaml</DependentUpon>
     </Compile>
