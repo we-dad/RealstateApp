@@ -9,16 +9,19 @@
                   separate task (a second palette + a way to switch), not done yet. -->
 
    <Application.Resources>
-    <!-- Attempt 2 at IBM Plex Sans Arabic: the first attempt grouped 4 separate weight
-         files (Regular/Medium/SemiBold/Bold) under one family via the "#Name" folder
-         syntax and crashed Avalonia's text shaper on startup (SIGABRT in
-         TextFormatterImpl.ShapeTextRuns). Each weight file has a DIFFERENT internal
-         family name (a Google Fonts packaging quirk), which may be what confused the
-         shaper/font matching. This points at a SINGLE file instead (Regular only), to
-         test whether the crash was about the multi-file grouping specifically.
+    <!-- Attempt 3 at IBM Plex Sans Arabic.
+         Attempt 1: the "#Name" syntax pointed at Assets/Fonts (4 weight files grouped
+         under one family) - loaded fine, then crashed Avalonia's text shaper at first
+         render (SIGABRT in TextFormatterImpl.ShapeTextRuns).
+         Attempt 2: pointed "#Name" directly at one .ttf FILE instead of a folder, to
+         test with only Regular - Avalonia does not support that form at all
+         ("Could not create glyphTypeface", a clean managed exception, not a crash).
+         Attempt 3 (this one): a real folder (Assets/Fonts/Regular) containing only the
+         Regular file, still referenced as a folder (the syntax that actually loads),
+         to properly test the single-file hypothesis this time.
          FontWeight="Bold" usages fall back to Avalonia's synthetic (faux) bold on this
          one face - close enough, not a real second weight file. Not yet tested. -->
-    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts/IBMPlexSansArabic-Regular.ttf#IBM Plex Sans Arabic</FontFamily>
+    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts/Regular#IBM Plex Sans Arabic</FontFamily>
    </Application.Resources>
 
    <Application.Styles>
