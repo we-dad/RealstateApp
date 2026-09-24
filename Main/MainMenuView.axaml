@@ -38,7 +38,7 @@
                   VerticalAlignment="Center">
 
                 <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="4">
-                    <TextBlock x:Name="DateText" TextAlignment="Center" FontSize="13"
+                    <TextBlock x:Name="DateText" FlowDirection="RightToLeft" TextAlignment="Center" FontSize="13"
                                Foreground="{DynamicResource BrushMuted}"/>
 
                     <!-- Split into 3 separate TextBlocks instead of one string with
@@ -64,13 +64,26 @@
                          controls can't be trimmed, so it's the one that actually
                          shows. 8px (not 4px - too subtle to notice at this 26px
                          bold font size, close to a real space character's width
-                         instead). -->
+                         instead).
+                         FlowDirection="RightToLeft" on each TextBlock: a TextBlock
+                         does NOT auto-detect RTL paragraph direction just because
+                         its content is Arabic - it defaults to LTR unless told
+                         otherwise, which put the trailing "،" on the wrong side of
+                         the word (caught by the developer: "الفواصل خطأ"). Safe to
+                         set here specifically because it's plain text with no
+                         graphical children - the mirroring risk documented
+                         elsewhere in this app only applies to Path/Image/Svg/
+                         Rectangle content, which Avalonia deliberately exempts text
+                         from either way. -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                        <TextBlock x:Name="GreetingSuffixText" FontSize="26" FontWeight="Bold"
+                        <TextBlock x:Name="GreetingSuffixText" FlowDirection="RightToLeft"
+                                   FontSize="26" FontWeight="Bold"
                                    Foreground="{DynamicResource BrushInk}"/>
-                        <TextBlock x:Name="GreetingNameText" FontSize="26" FontWeight="Bold"
+                        <TextBlock x:Name="GreetingNameText" FlowDirection="RightToLeft"
+                                   FontSize="26" FontWeight="Bold"
                                    Foreground="{DynamicResource BrushInk}"/>
-                        <TextBlock x:Name="GreetingPrefixText" FontSize="26" FontWeight="Bold"
+                        <TextBlock x:Name="GreetingPrefixText" FlowDirection="RightToLeft"
+                                   FontSize="26" FontWeight="Bold"
                                    Foreground="{DynamicResource BrushInk}"/>
                     </StackPanel>
                 </StackPanel>
