@@ -9,26 +9,17 @@
                   separate task (a second palette + a way to switch), not done yet. -->
 
    <Application.Resources>
-    <!-- IBM Plex Sans Arabic, attempt 4 - found the real bug.
-         Attempts 1-3 all guessed at the "#Name" URI syntax (folder vs. file, one
-         weight vs. four), but the actual cause was simpler and was there the whole
-         time: RealEstateInstallmentsManager.csproj never had an AvaloniaResource
-         entry for Assets/Fonts, so EVERY avares://.../Assets/Fonts/... URI pointed
-         at a folder Avalonia had never embedded - zero font files, in every attempt.
-         (Confirmed by inspecting obj/Debug/net10.0/Avalonia/resources: no .ttf ever
-         appeared in the embedded resource list, not even attempt 1's.) That explains
-         why attempt 2/3 threw a clean "Could not create glyphTypeface" - no file to
-         find - and it's the most likely explanation for attempt 1's native crash too:
-         Avalonia's font fallback path hitting the same "nothing here" case, but
-         through a different, uglier internal path when a whole family is requested
-         instead of one exact typeface.
-         Fix: added <AvaloniaResource Include="Assets\Fonts\**" /> to the .csproj.
-         This build still targets ONLY the single-file Regular folder (the exact
-         same target as attempt 3) - on purpose, to change one variable at a time:
-         confirm the embedding fix alone makes this work before trying the full
-         4-weight family again. FontWeight="Bold" still falls back to Avalonia's
-         synthetic (faux) bold on this one face. Not yet tested. -->
-    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts/Regular#IBM Plex Sans Arabic</FontFamily>
+    <!-- IBM Plex Sans Arabic - working.
+         The real bug (attempts 1-3 all hit it, with different symptoms): the .csproj
+         never had an AvaloniaResource entry for Assets/Fonts, so every avares:// URI
+         pointed at a folder Avalonia had never embedded. Fixed by adding
+         <AvaloniaResource Include="Assets\Fonts\**" /> to the .csproj. Confirmed
+         working with the single Regular file (developer tested, app opens fine).
+         Now pointing back at the full Assets/Fonts folder (all 4 weight files) -
+         this is the exact same folder+URI attempt 1 used, now that the files are
+         actually embedded, so it should give real Medium/SemiBold/Bold instead of
+         Avalonia's synthetic (faux) bold. Not yet tested at 4 weights. -->
+    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
    </Application.Resources>
 
    <Application.Styles>
@@ -39,10 +30,11 @@
     <!-- Visual identity: palette, chips, nav bar and card styles. -->
     <StyleInclude Source="avares://RealEstateInstallmentsManager/Main/Theme.axaml"/>
 
-    <!-- IBM Plex Sans Arabic, now with the font file actually embedded (see the
-         comment on ArabicFontFamily above). UNTESTED - the developer must open the
-         app and confirm it does not crash before this counts as working; if it still
-         crashes, revert both Setters below to "Arial" the same way attempt 1 was. -->
+    <!-- IBM Plex Sans Arabic (see the comment on ArabicFontFamily above). Now
+         trying the full 4-weight family - UNTESTED at this step. If it crashes
+         again, the safe fallback is to point ArabicFontFamily back at
+         Assets/Fonts/Regular alone (confirmed working), not all the way back
+         to "Arial". -->
     <Style Selector=":is(TemplatedControl)">
         <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
