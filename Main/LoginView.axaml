@@ -25,10 +25,12 @@
         <Border Grid.Column="1" Background="{DynamicResource BrushInk}" Padding="70,60">
             <Grid RowDefinitions="Auto,*,Auto">
 
-                <!-- The client's actual logo-mark.svg file, rendered directly via
-                     Avalonia.Svg.Skia (added with the developer's permission). -->
-                <svg:Svg Grid.Row="0" Width="40" Height="40"
-                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-mark.svg"/>
+                <!-- The client's full logo (wordmark + mark), dark-background
+                     variant (gold + white instead of gold + ink), rendered via
+                     Avalonia.Svg.Skia. Original file is 178.5x44 - kept the
+                     same ratio here (162x40). -->
+                <svg:Svg Grid.Row="0" Width="162" Height="40" HorizontalAlignment="Right"
+                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
 
                 <TextBlock Grid.Row="1" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="480"
                            Text="إدارة العقارات والأقساط لمؤسسة فلاح العوفي"
