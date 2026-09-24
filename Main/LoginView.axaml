@@ -53,18 +53,22 @@
                 <StackPanel Margin="60,0" VerticalAlignment="Center" Spacing="16" MaxWidth="360">
 
                     <StackPanel Spacing="4">
-                        <TextBlock Text="تسجيل الدخول" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+                        <TextBlock Text="تسجيل الدخول" FontSize="24" FontWeight="Bold"
+                                   Foreground="{DynamicResource BrushInk}" TextAlignment="Right"/>
                         <TextBlock Text="ادخل بحساب المؤسسة. صلاحياتك تحدد الشاشات اللي تظهر لك."
-                                   FontSize="13" Foreground="{DynamicResource BrushMuted}" TextWrapping="Wrap"/>
+                                   FontSize="13" Foreground="{DynamicResource BrushMuted}"
+                                   TextWrapping="Wrap" TextAlignment="Right"/>
                     </StackPanel>
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="البريد الإلكتروني" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                        <TextBlock Text="البريد الإلكتروني" FontSize="13"
+                                   Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
                         <TextBox x:Name="EmailBox"/>
                     </StackPanel>
 
                     <StackPanel Spacing="6">
-                        <TextBlock Text="كلمة المرور" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                        <TextBlock Text="كلمة المرور" FontSize="13"
+                                   Foreground="{DynamicResource BrushMuted}" TextAlignment="Right"/>
                         <Grid>
                             <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="44,9,12,9"/>
                             <Button x:Name="TogglePasswordButton" Classes="outline"
@@ -84,7 +88,7 @@
 
                     <!-- Visual only: no session persistence exists in AuthService yet.
                          Tracked as a future task, not wired to anything real. -->
-                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True"/>
+                    <CheckBox Content="تذكرني على هذا الجهاز" IsChecked="True" HorizontalAlignment="Right"/>
 
                     <Button Content="دخول" Classes="primary" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center" Padding="0,12" FontSize="15"
@@ -96,14 +100,16 @@
                     <!-- Real connectivity status - see ConnectivityService. -->
                     <Border Background="{DynamicResource BrushBg}" BorderBrush="{DynamicResource BrushLine}"
                             BorderThickness="1" CornerRadius="8" Padding="14,10">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
                             <Border x:Name="ConnDot" Width="9" Height="9" CornerRadius="5"
                                     Background="{DynamicResource BrushMuted}" VerticalAlignment="Top" Margin="0,4,0,0"/>
                             <StackPanel Spacing="2">
                                 <TextBlock x:Name="ConnStatusText" Text="جارٍ التحقق من الاتصال..."
-                                           FontWeight="Bold" FontSize="13" Foreground="{DynamicResource BrushInk}"/>
+                                           FontWeight="Bold" FontSize="13" Foreground="{DynamicResource BrushInk}"
+                                           TextAlignment="Right"/>
                                 <TextBlock Text="يشتغل البرنامج بدون إنترنت، ويزامن تلقائيًا أول ما يرجع الاتصال."
-                                           FontSize="12" Foreground="{DynamicResource BrushMuted}" TextWrapping="Wrap"/>
+                                           FontSize="12" Foreground="{DynamicResource BrushMuted}"
+                                           TextWrapping="Wrap" TextAlignment="Right"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
