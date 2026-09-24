@@ -20,13 +20,13 @@
                         ToolTip.Tip="تسجيل خروج" Click="Logout_Click">
                     <Viewbox Width="16" Height="16" FlowDirection="LeftToRight">
                         <Canvas Width="24" Height="24">
-                            <Path Data="{DynamicResource Icon.Logout}" Stroke="#DCE3E1" StrokeThickness="1.8"
+                            <Path Data="{DynamicResource Icon.Logout}" Stroke="#E6ECF5" StrokeThickness="1.8"
                                   StrokeLineCap="Round" StrokeJoin="Round"/>
                         </Canvas>
                     </Viewbox>
                 </Button>
 
-                
+
                 <!-- HorizontalAlignment="Right" here is literal/safe: this bar has
                      no ambient FlowDirection="RightToLeft" anywhere, so none of the
                      mirroring caveats documented on the login screen apply. -->
@@ -34,39 +34,41 @@
                     <TextBlock x:Name="UserNameText" HorizontalAlignment="Right"
                                FontWeight="Bold" FontSize="13" Foreground="White"/>
                     <TextBlock x:Name="UserRoleText" HorizontalAlignment="Right"
-                               FontSize="12" Foreground="#B9C4C2"/>
+                               FontSize="12" Foreground="{DynamicResource BrushMutedOnDark}"/>
                 </StackPanel>
-                
+
                 <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource BrushGoldSoft}">
                     <TextBlock x:Name="AvatarText" Text="؟" FontWeight="Bold" FontSize="14"
                                Foreground="{DynamicResource BrushGold}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                
+
                 <!-- Real online/offline check (ConnectivityService), same as the
                      login screen - never a fabricated "last synced at" time,
                      since no such tracking exists in the sync code. -->
 
 
                 <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                    <TextBlock x:Name="ConnText" Text="جارٍ التحقق..." FontSize="12.5" Foreground="#B9C4C2"/>
+                    <TextBlock x:Name="ConnText" Text="جارٍ التحقق..." FontSize="12.5"
+                               Foreground="{DynamicResource BrushMutedOnDark}"/>
                     <Border x:Name="ConnDot" Width="8" Height="8" CornerRadius="4"
                             Background="{DynamicResource BrushMuted}"/>
                 </StackPanel>
-                
+
             </StackPanel>
 
             <!-- Column 1: empty for now - a future screen's own nav links (per
                  module) would go here; this bar is shared/reused as-is. -->
 
+            <!-- Real horizontal lockup logo (name + mark in one file) - matches
+                 the reference design's own <img> exactly (height 44, width auto
+                 at the file's own 2964.47:556.80 aspect ratio -> ~234 wide). No
+                 separate text needed; the logo file already contains the name. -->
             <Button Grid.Column="2" Click="Brand_Click"
                     Background="Transparent" BorderThickness="0" Padding="0"
                     ToolTip.Tip="الرئيسية">
-                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <svg:Svg Width="22" Height="22" FlowDirection="LeftToRight"
-                             Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-mark.svg"/>
-                    <TextBlock Text="المسار الذهبي" FontWeight="Bold" FontSize="16" Foreground="White"/>
-                </StackPanel>
+                <svg:Svg Width="234" Height="44" FlowDirection="LeftToRight"
+                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/lockup-horizontal-dark.svg"/>
             </Button>
         </Grid>
     </Border>

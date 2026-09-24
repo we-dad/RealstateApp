@@ -1,26 +1,35 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
-      Shared visual identity ("المسار الذهبي"), based on a design the developer's
-      client approved. Colors, chips and the nav bar live here; screen layout,
+      Shared visual identity for مؤسسة فلاح حماد العوفي التجارية (rebranded from
+      "المسار الذهبي" - same client, new official identity: navy+gold instead of
+      dark-ink+gold). Colors, chips and the nav bar live here; screen layout,
       navigation flow and all logic are untouched - this file only changes how
-      things look.
+      things look. Values ported directly from the client's reference mockups
+      and AlOufi-Logo-Kit/colors.css.
     -->
 
     <Styles.Resources>
         <ResourceDictionary>
             <!-- Palette -->
-            <SolidColorBrush x:Key="BrushBg" Color="#E9EDEC"/>
+            <SolidColorBrush x:Key="BrushBg" Color="#F6F7FA"/>
             <SolidColorBrush x:Key="BrushSurface" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="BrushInk" Color="#1C2B2A"/>
-            <SolidColorBrush x:Key="BrushMuted" Color="#667371"/>
-            <SolidColorBrush x:Key="BrushLine" Color="#D5DCDA"/>
-            <SolidColorBrush x:Key="BrushGold" Color="#B8892B"/>
-            <SolidColorBrush x:Key="BrushGoldSoft" Color="#F3E7CC"/>
+            <SolidColorBrush x:Key="BrushInk" Color="#06214A"/>
+            <SolidColorBrush x:Key="BrushInkHover" Color="#0E3264"/>
+            <SolidColorBrush x:Key="BrushMuted" Color="#5B6B80"/>
+            <SolidColorBrush x:Key="BrushLine" Color="#E2E8F0"/>
+            <SolidColorBrush x:Key="BrushGold" Color="#C39A45"/>
+            <SolidColorBrush x:Key="BrushGoldHover" Color="#B38A38"/>
+            <SolidColorBrush x:Key="BrushGoldSoft" Color="#F7EEDB"/>
             <SolidColorBrush x:Key="BrushOk" Color="#2F7A4F"/>
             <SolidColorBrush x:Key="BrushOkSoft" Color="#DCEFE3"/>
             <SolidColorBrush x:Key="BrushLate" Color="#B3261E"/>
             <SolidColorBrush x:Key="BrushLateSoft" Color="#F6DEDB"/>
+            <!-- Muted text / line colors specifically for use ON the dark navy
+                 background (nav bar, login's dark panel) - too light to use on
+                 the white surface. -->
+            <SolidColorBrush x:Key="BrushMutedOnDark" Color="#B8C4D9"/>
+            <SolidColorBrush x:Key="BrushLineOnDark" Color="#1D3A66"/>
         </ResourceDictionary>
     </Styles.Resources>
 
@@ -34,14 +43,14 @@
 
     <Style Selector="Button.navBtn">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#B9C4C2"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushMutedOnDark}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="6"/>
         <Setter Property="Padding" Value="14,8"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
     <Style Selector="Button.navBtn:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#2A3B39"/>
+        <Setter Property="Background" Value="{DynamicResource BrushInkHover}"/>
     </Style>
     <Style Selector="Button.navBtn.active /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource BrushGold}"/>
@@ -53,9 +62,9 @@
 
     <Style Selector="Button.navHome">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#B9C4C2"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushMutedOnDark}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="BorderBrush" Value="#3A4B49"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushLineOnDark}"/>
         <Setter Property="CornerRadius" Value="6"/>
         <Setter Property="Width" Value="36"/>
         <Setter Property="Height" Value="32"/>
@@ -76,7 +85,7 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#A67B26"/>
+        <Setter Property="Background" Value="{DynamicResource BrushGoldHover}"/>
     </Style>
 
     <Style Selector="Button.secondary">

@@ -3,7 +3,7 @@
         x:Class="RealEstateInstallmentsManager.MainWindow"
         Width="1100" Height="900"
         WindowState="Maximized"
-        Title="المسار الذهبي">
+        Title="مؤسسة العوفي">
 
     <ContentControl x:Name="MainContent"/>
 </Window>

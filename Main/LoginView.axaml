@@ -45,17 +45,17 @@
                  developer saw next). -->
             <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*">
 
-                <!-- The client's full logo (wordmark + mark), dark-background
-                     variant (gold + white instead of gold + ink), rendered via
-                     Avalonia.Svg.Skia. Original file is 178.5x44 - kept the
-                     same ratio here (162x40).
+                <!-- Official vertical lockup (emblem + full company name stacked),
+                     dark-background variant - matches the reference design's own
+                     <img src="lockup-vertical-dark.svg">. Original file is
+                     1221.85x1045.33 - kept the same ratio here (300x257).
                      FlowDirection="LeftToRight": stops the subtree-mirror flip
                      described above from also flipping the logo's own pixel
                      content (it would otherwise render as a mirror image - caught
-                     by the developer: "الشعار معكوس"). -->
-                <svg:Svg Grid.Row="0" Grid.Column="0" Width="162" Height="40"
+                     by the developer earlier on a previous logo: "الشعار معكوس"). -->
+                <svg:Svg Grid.Row="0" Grid.Column="0" Width="300" Height="257"
                          FlowDirection="LeftToRight"
-                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/logo-full-dark.svg"/>
+                         Path="avares://RealEstateInstallmentsManager/Assets/Logo/lockup-vertical-dark.svg"/>
 
                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"
                            HorizontalAlignment="Left" TextAlignment="Right" MaxWidth="480"
@@ -63,7 +63,7 @@
                            FontSize="30" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
 
                 <TextBlock Grid.Row="2" Grid.ColumnSpan="2"
-                           Text="عقارات · أقساط" FontSize="12" Foreground="#8FA09D"/>
+                           Text="عقارات · أقساط" FontSize="12" Foreground="#8FA3C2"/>
             </Grid>
         </Border>
 

@@ -9,8 +9,8 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 
     <AssemblyName>RealEstateInstallmentsManager</AssemblyName>
-    <Product>المسار الذهبي</Product>
-    <Title>المسار الذهبي</Title>
+    <Product>مؤسسة العوفي</Product>
+    <Title>مؤسسة العوفي</Title>
 
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <AvaloniaApplicationIcon>Assets/app.icns</AvaloniaApplicationIcon>
