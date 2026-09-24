@@ -31,7 +31,7 @@ public partial class LoginView : UserControl
     {
         var hidden = PasswordBox.PasswordChar != default(char);
         PasswordBox.PasswordChar = hidden ? default : '*';
-        TogglePasswordButton.Content = hidden ? "إخفاء" : "إظهار";
+        ToolTip.SetTip(TogglePasswordButton, hidden ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
     }
 
     // Checks once immediately, then every 10 seconds while this screen is visible,

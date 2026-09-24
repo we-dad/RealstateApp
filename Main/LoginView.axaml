@@ -87,9 +87,12 @@
                     <StackPanel Spacing="6">
                         <TextBlock Text="كلمة المرور" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
                         <Grid>
-                            <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="74,9,12,9"/>
-                            <Button x:Name="TogglePasswordButton" Content="إظهار" Classes="outline"
-                                    Padding="10,4" FontSize="12"
+                            <TextBox x:Name="PasswordBox" PasswordChar="*" Padding="44,9,12,9"/>
+                            <!-- Emoji icon, same convention already used by the print button
+                                 in the receipts grid (🖨️) - no new SVG-icon pattern needed. -->
+                            <Button x:Name="TogglePasswordButton" Content="👁" Classes="outline"
+                                    ToolTip.Tip="إظهار كلمة المرور"
+                                    Padding="8,4" FontSize="14"
                                     HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0"
                                     Click="TogglePassword_Click"/>
                         </Grid>
