@@ -40,6 +40,12 @@ public partial class TopBarView : UserControl
         AvatarText.Text = name.Length > 0 ? name[..1].ToString() : "؟";
     }
 
+    // A module screen's own nav tabs (its own Buttons, x:Name/Click wiring kept
+    // in that screen's own .axaml/.cs) are reparented here - see the comment on
+    // NavSlotInternal in the .axaml for why this is a plain slot rather than
+    // this file knowing about any specific module's tabs.
+    public ContentControl NavSlot => NavSlotInternal;
+
     private static string RoleDisplayName(string role) => role switch
     {
         "admin" => "مدير",

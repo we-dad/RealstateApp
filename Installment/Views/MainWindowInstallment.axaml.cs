@@ -16,8 +16,24 @@ public partial class MainWindowInstallment : UserControl
 
         _mainWindow = mainWindow;
 
-        // Shows whether the last sync with the cloud worked.
-        SyncStatusService.Bind(this, SyncStatusText);
+        // Shared top bar (brand/identity/connectivity/logout) - same one used
+        // on the module picker.
+        TopBar.Init(mainWindow, supabaseService);
+
+        // NavLinksPanel is declared in its own row in the XAML only so its
+        // Buttons keep plain x:Name/Click wiring; it actually belongs inside
+        // TopBar's dark bar (Button.navBtn/.navHome are styled for that dark
+        // background), so it's moved there now, once, before the screen is shown.
+        // NOTE: this cast assumes NavLinksPanel's direct XAML parent is the root
+        // Grid - do not wrap it in another container (e.g. a Border) without
+        // updating this line, or it will throw here on startup.
+        var outerGrid = (Grid)NavLinksPanel.Parent!;
+        outerGrid.Children.Remove(NavLinksPanel);
+        TopBar.NavSlot.Content = NavLinksPanel;
+
+        // Shows whether the last sync with the cloud worked. This TextBlock now
+        // sits on the light page background, not the old dark nav bar.
+        SyncStatusService.Bind(this, SyncStatusText, onDarkBackground: false);
 
         // صفحة البداية
         ContentHost.Content = new DashboardViewInstallment();

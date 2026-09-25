@@ -50,16 +50,24 @@ public static class SyncStatusService
 
     // Shows the status in a TextBlock and keeps it up to date until the owner leaves
     // the window. Reports may come from any thread, so the update hops to the UI thread.
-    // Muted text on the dark nav bar it sits on (Main/Theme.axaml's ink background);
-    // a plain system gray was too dim against that dark background.
-    private static readonly IBrush NormalBrush = new SolidColorBrush(Color.Parse("#B9C4C2"));
+    // Muted text on a dark nav bar (Main/Theme.axaml's ink background) needs a much
+    // lighter color than the same text sitting on the app's light page background -
+    // a plain system gray was too dim on dark, and this same light gray would be
+    // nearly invisible on white.
+    private static readonly IBrush NormalBrushOnDark = new SolidColorBrush(Color.Parse("#B9C4C2"));
+    private static readonly IBrush NormalBrushOnLight = new SolidColorBrush(Color.Parse("#5B6B80"));
 
-    public static void Bind(Control owner, TextBlock target)
+    // onDarkBackground: true for a TextBlock still sitting on the old dark nav bar
+    // (RealEstate's MainWindowRealEstate, not yet restructured); false once it's
+    // been moved onto the light page background (Installment's MainWindowInstallment).
+    public static void Bind(Control owner, TextBlock target, bool onDarkBackground = true)
     {
+        var normalBrush = onDarkBackground ? NormalBrushOnDark : NormalBrushOnLight;
+
         void Update()
         {
             target.Text = GetText();
-            target.Foreground = HasProblem ? Brushes.Firebrick : NormalBrush;
+            target.Foreground = HasProblem ? Brushes.Firebrick : normalBrush;
         }
 
         void OnChanged() => Dispatcher.UIThread.Post(Update);

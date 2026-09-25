@@ -60,33 +60,15 @@ public partial class OwnersViewInstallment : UserControl
             OwnersCountText.Text = $"{data.Count} ملاك";
         }, () => _gridSearch?.AfterLoad());
     
-    private void Add_Click(object? sender, RoutedEventArgs e)
+    // Unlike the rest of the app (inline add-form on the list screen), Owners now
+    // adds through its own window, per the developer's explicit request to match
+    // the reference design's separate owners.html/owner-new.html pages. The new
+    // window calls OwnerInstallmentService.Add() itself, which raises
+    // DataChangeNotifier - _autoRefresh already listens for that and reloads the
+    // grid, so no explicit LoadOwners()/PushAllDirtyAsync() call is needed here.
+    private void AddOwner_Click(object? sender, RoutedEventArgs e)
     {
-        try
-        {
-            var name = NameBox.Text?.Trim() ?? "";
-            var phone = PhoneBox.Text?.Trim() ?? "";
-            var identityNumber = IdentityNumberBox.Text?.Trim() ?? "";
-            var address = AddressBox.Text?.Trim() ?? "";
-
-            if (string.IsNullOrWhiteSpace(name))
-                return;
-
-            _owners.Add(name, identityNumber, phone, address);
-
-            NameBox.Text = "";
-            IdentityNumberBox.Text = "";
-            PhoneBox.Text = "";
-            AddressBox.Text = "";
-
-            LoadOwners();
-
-            _ = _sync.PushAllDirtyAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        new OwnersAddWindowViewInstallment(_supabaseService).Show();
     }
 
     // push must finish before the pull, or the pull re-reads rows the

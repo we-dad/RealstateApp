@@ -1,51 +1,50 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:RealEstateInstallmentsManager.Views"
              x:Class="RealEstateInstallmentsManager.MainWindowInstallment">
 
-    <Grid RowDefinitions="Auto,*" Margin="12" RowSpacing="12">
+    <!-- Restyled on the new identity to match the reference design's single-row
+         top bar exactly (logo, tabs, identity/logout all in one bar), per the
+         developer's explicit request - reuses the shared TopBarView (same
+         brand/identity/connectivity/logout already built for the module picker)
+         instead of a bespoke dark bar, and its nav-tabs slot (added for this).
+         The tab Buttons below keep their existing x:Name/Click wiring completely
+         unchanged (Nav_Dashboard, Nav_Owners...) - they're declared in their own
+         Auto row here (collapses to nothing once emptied) and moved into
+         TopBar's NavSlot in the code-behind, instead of rewriting them as
+         TopBarView doesn't know this module's specific tabs. -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Background="{DynamicResource BrushBg}">
 
-        <Border Grid.Row="0" Classes="navBar">
-            <StackPanel Spacing="10">
+        <views:TopBarView x:Name="TopBar" Grid.Row="0"/>
 
-                <TextBlock Text="إدارة التقسيط"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           Foreground="White"
-                           HorizontalAlignment="Center"/>
+        <!-- Declared here (own row) only so the Buttons keep simple XAML
+             declarations with their existing x:Name/Click wiring; moved into
+             TopBar's dark nav slot in the code-behind (Button.navBtn/.navHome
+             are styled for that dark background, not this page's light one) -
+             this row collapses to nothing once its child is removed. -->
+        <StackPanel x:Name="NavLinksPanel" Grid.Row="1" Orientation="Horizontal" Spacing="2"
+                    FlowDirection="RightToLeft">
+            <Button Classes="navHome" Click="Nav_Home" ToolTip.Tip="صفحة البدء">🏠</Button>
+            <Button x:Name="TabDashboard" Classes="navBtn" Content="الإحصائيات" Click="Nav_Dashboard"/>
+            <Button x:Name="TabOwners" Classes="navBtn" Content="الملاك" Click="Nav_Owners"/>
+            <Button x:Name="TabCustomer" Classes="navBtn" Content="العملاء" Click="Nav_Customer"/>
+            <Button x:Name="TabProducts" Classes="navBtn" Content="المنتجات" Click="Nav_Products"/>
+            <Button x:Name="TabContracts" Classes="navBtn" Content="عقد البيع" Click="Nav_Contracts"/>
+            <Button x:Name="TabReceipts" Classes="navBtn" Content="سند قبض" Click="Nav_Receipts"/>
+            <Button x:Name="TabExpenses" Classes="navBtn" Content="المصروفات" Click="Nav_Expenses"/>
+        </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            Spacing="4"
-                            HorizontalAlignment="Center"
-                            FlowDirection="RightToLeft">
-
-                    <Button Classes="navHome"
-                            Click="Nav_Home"
-                            ToolTip.Tip="صفحة البدء">
-                        🏠
-                    </Button>
-                    <Button x:Name="TabDashboard" Classes="navBtn" Content="الإحصائيات" Click="Nav_Dashboard"/>
-                    <Button x:Name="TabOwners" Classes="navBtn" Content="الملاك" Click="Nav_Owners"/>
-                    <Button x:Name="TabCustomer" Classes="navBtn" Content="العملاء" Click="Nav_Customer"/>
-                    <Button x:Name="TabProducts" Classes="navBtn" Content="المنتجات" Click="Nav_Products"/>
-                    <Button x:Name="TabContracts" Classes="navBtn" Content="عقد البيع" Click="Nav_Contracts"/>
-                    <Button x:Name="TabReceipts" Classes="navBtn" Content="سند قبض" Click="Nav_Receipts"/>
-                    <Button x:Name="TabExpenses" Classes="navBtn" Content="المصروفات" Click="Nav_Expenses"/>
-
-                </StackPanel>
-
-                <TextBlock x:Name="SyncStatusText"
-                           HorizontalAlignment="Center"
-                           FlowDirection="RightToLeft"
-                           TextWrapping="Wrap"
-                           FontSize="12"
-                           Foreground="#B9C4C2"/>
-
-            </StackPanel>
-        </Border>
-
+        <!-- Push/pull sync status (different from TopBar's own connectivity dot,
+             which only checks network reachability) - kept, just re-themed for
+             sitting on this light page instead of the old dark bar. -->
+        <TextBlock x:Name="SyncStatusText" Grid.Row="2"
+                   Margin="20,10,20,0"
+                   TextWrapping="Wrap"
+                   FontSize="12"
+                   FlowDirection="RightToLeft"/>
 
         <!-- Content -->
-        <Border Grid.Row="1" Classes="card">
+        <Border Grid.Row="3" Margin="20,10,20,20" Classes="card">
             <ContentControl x:Name="ContentHost"/>
         </Border>
 

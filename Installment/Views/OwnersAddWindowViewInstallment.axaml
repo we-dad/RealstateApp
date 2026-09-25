@@ -1,0 +1,36 @@
+<Window x:Class="RealEstateInstallmentsManager.Views.OwnersAddWindowViewInstallment"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="مالك جديد"
+        Width="500"
+        Height="360"
+        FlowDirection="RightToLeft">
+
+    <!-- New (not edit) window - the app's other entities add inline on their list
+         screen, but the developer explicitly asked for Owners to add through its
+         own window here, matching the reference design's separate owner-new.html
+         page. Same 4 fields as OwnersWindowViewInstallment.axaml (edit window) -
+         no new data added (see OwnersViewInstallment.axaml's own comment). -->
+    <Border Margin="16" Classes="card">
+        <StackPanel Spacing="12">
+            <TextBlock Text="بيانات المالك" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnSpacing="10" RowSpacing="6">
+                <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="1"/>
+                <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="0"/>
+                <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="1"/>
+                <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="0"/>
+            </Grid>
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource BrushLate}" FontSize="12"
+                       TextWrapping="Wrap" IsVisible="False"/>
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
+                <Button Classes="outline" Content="إلغاء" Click="Cancel_Click"/>
+                <Button Classes="add" Content="إضافة مالك" Click="Add_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

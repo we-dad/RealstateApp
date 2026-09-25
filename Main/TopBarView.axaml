@@ -57,8 +57,14 @@
 
             </StackPanel>
 
-            <!-- Column 1: empty for now - a future screen's own nav links (per
-                 module) would go here; this bar is shared/reused as-is. -->
+            <!-- Column 1: a module's own nav tabs go here (e.g. MainWindowInstallment's
+                 "الإحصائيات/الملاك/العملاء/..."). Declared as a plain ContentControl -
+                 the consuming screen builds/keeps its own tab Buttons (with their own
+                 x:Name and Click wiring, untouched) and reparents that panel here via
+                 the public NavSlot property, instead of this file knowing about any
+                 specific module's tabs. Empty (collapses to nothing) for screens that
+                 don't set it, like the module picker. -->
+            <ContentControl x:Name="NavSlotInternal" Grid.Column="1" VerticalAlignment="Center"/>
 
             <!-- Real horizontal lockup logo (name + mark in one file) - matches
                  the reference design's own <img> exactly (height 44, width auto
