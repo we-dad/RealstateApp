@@ -7,21 +7,21 @@
 
   <!-- Restyled to match the developer's own updated mockup (owners.html, v3) as
        closely as our real data allows:
-       - No text heading at all (the developer asked to drop it) - just the
-         search box (with the mockup's own icon) and the two buttons, matching
-         the mockup's .head row minus its title.
        - Only the 4 real fields (Name/IdentityNumber/Phone/Address) - the
          mockup's "العقود النشطة"/"رأس المال في العقود"/"الربح المحقق" columns
          were tried once and explicitly rejected: no new columns, computed or
          not - back to the plain table.
-       - DataGrid header/row colors are styled here (BrushSoft header
-         background, BrushLine2 row separators, matching the mockup's .t table
-         CSS) since Avalonia's default DataGrid theme doesn't resemble it at
-         all otherwise - scoped to this screen only, not Theme.axaml globally,
-         until the developer approves it for wider use.
-       - The count ("X ملاك") moved into the footer row below the table,
-         mirroring the mockup's own .pager position, instead of sitting next to
-         a now-removed title. -->
+       - DataGrid header/row colors and borders are styled here (BrushSoft
+         header background, 1px BrushLine under the header row, BrushLine2 row
+         separators - matching the mockup's .t table CSS pixel-for-pixel: th
+         padding 9px/10px, font-size 12px/600 weight, td padding 9px/10px,
+         font-size 14px) since Avalonia's default DataGrid theme doesn't
+         resemble it at all otherwise - scoped to this screen only, not
+         Theme.axaml globally, until the developer approves it for wider use.
+       - No Background on the root Grid: this view is hosted inside
+         MainWindowInstallment's own white "card" Border around ContentHost,
+         so painting a second (different) background here just showed as a
+         mismatched rectangle inside that white frame - removed. -->
   <UserControl.Styles>
     <Style Selector="DataGridColumnHeader">
       <Setter Property="Background" Value="{DynamicResource BrushSoft}"/>
@@ -29,6 +29,8 @@
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Padding" Value="10,9"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
+      <Setter Property="BorderThickness" Value="0,0,0,1"/>
     </Style>
     <Style Selector="DataGridCell">
       <Setter Property="Padding" Value="10,9"/>
@@ -39,10 +41,14 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="Auto,*,Auto" Margin="20" RowSpacing="10" Background="{DynamicResource BrushBg}">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="20" RowSpacing="10">
 
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
-      <TextBox Grid.Column="0" x:Name="OwnersGridSearchBox" Width="260" TextAlignment="Right"
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+      <StackPanel Grid.Column="0" Spacing="2">
+        <TextBlock Text="الملاك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+        <TextBlock x:Name="OwnersCountText" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+      </StackPanel>
+      <TextBox Grid.Column="2" x:Name="OwnersGridSearchBox" Width="260" TextAlignment="Right"
                 Watermark="الاسم، الجوال، رقم الهوية">
         <TextBox.InnerLeftContent>
           <Viewbox Width="16" Height="16" Margin="9,0,0,0" FlowDirection="LeftToRight">
@@ -53,8 +59,18 @@
           </Viewbox>
         </TextBox.InnerLeftContent>
       </TextBox>
-      <Button Grid.Column="2" Classes="outline" Content="تحديث" Click="Refresh_Click" Margin="0,0,8,0"/>
-      <Button Grid.Column="3" Classes="add" Content="مالك جديد" Click="AddOwner_Click"/>
+      <Button Grid.Column="3" Classes="outline" Content="تحديث" Click="Refresh_Click" Margin="8,0,8,0"/>
+      <Button Grid.Column="4" Classes="add" Click="AddOwner_Click">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <Viewbox Width="16" Height="16" FlowDirection="LeftToRight">
+            <Canvas Width="24" Height="24">
+              <Path Data="{DynamicResource Icon.Plus}" Stroke="{DynamicResource BrushInk}"
+                    StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
+            </Canvas>
+          </Viewbox>
+          <TextBlock Text="مالك جديد"/>
+        </StackPanel>
+      </Button>
     </Grid>
 
     <!-- Table -->
@@ -92,14 +108,9 @@
       </DataGrid>
     </Border>
 
-    <!-- Footer - same proven column order as the list-heading pattern used
-         elsewhere (title/count in the star column, hint in the Auto column,
-         no HorizontalAlignment on either - see docs/ui-lessons.md #1). -->
-    <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
-      <TextBlock Grid.Column="0" x:Name="OwnersCountText" FontSize="13" Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Center"/>
-      <TextBlock Grid.Column="1" Text="اضغط مرتين على الصف لتعديل بيانات المالك"
-                 FontSize="12" Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Center"/>
-    </Grid>
+    <!-- Footer hint (the real count now lives in the header, next to "الملاك") -->
+    <TextBlock Grid.Row="2" Text="اضغط مرتين على الصف لتعديل بيانات المالك"
+               FontSize="12" Foreground="{DynamicResource BrushMuted}"/>
 
   </Grid>
 </UserControl>
