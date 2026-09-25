@@ -18,6 +18,10 @@
             <SolidColorBrush x:Key="BrushInkHover" Color="#0E3264"/>
             <SolidColorBrush x:Key="BrushMuted" Color="#5B6B80"/>
             <SolidColorBrush x:Key="BrushLine" Color="#E2E8F0"/>
+            <!-- Table-specific: mockup's "soft" (column header background) and
+                 "line2" (lighter row separator, vs. BrushLine for panel borders). -->
+            <SolidColorBrush x:Key="BrushSoft" Color="#F3F6FB"/>
+            <SolidColorBrush x:Key="BrushLine2" Color="#EDF1F6"/>
             <SolidColorBrush x:Key="BrushGold" Color="#C39A45"/>
             <SolidColorBrush x:Key="BrushGoldHover" Color="#B38A38"/>
             <SolidColorBrush x:Key="BrushGoldSoft" Color="#F7EEDB"/>
