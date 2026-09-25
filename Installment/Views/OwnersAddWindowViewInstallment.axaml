@@ -1,36 +1,87 @@
 <Window x:Class="RealEstateInstallmentsManager.Views.OwnersAddWindowViewInstallment"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="مالك جديد"
-        Width="500"
-        Height="360"
-        FlowDirection="RightToLeft">
+        Title="إضافة مالك"
+        Width="520"
+        Height="440"
+        FlowDirection="RightToLeft"
+        Background="{DynamicResource BrushBg}">
 
     <!-- New (not edit) window - the app's other entities add inline on their list
          screen, but the developer explicitly asked for Owners to add through its
-         own window here, matching the reference design's separate owner-new.html
-         page. Same 4 fields as OwnersWindowViewInstallment.axaml (edit window) -
-         no new data added (see OwnersViewInstallment.axaml's own comment). -->
-    <Border Margin="16" Classes="card">
-        <StackPanel Spacing="12">
-            <TextBlock Text="بيانات المالك" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
-            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto"
-                  ColumnSpacing="10" RowSpacing="6">
-                <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-                <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="1"/>
-                <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-                <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="0"/>
-                <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-                <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="1"/>
-                <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-                <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="0"/>
-            </Grid>
-            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource BrushLate}" FontSize="12"
-                       TextWrapping="Wrap" IsVisible="False"/>
-            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
-                <Button Classes="outline" Content="إلغاء" Click="Cancel_Click"/>
-                <Button Classes="add" Content="إضافة مالك" Click="Add_Click"/>
-            </StackPanel>
+         own window, matching owner-new.html's own separate page. Restyled again
+         on the developer's own updated mockup (v3): icon + heading, "* مطلوبة"
+         note, and the mockup's exact field order (name full width, then a
+         phone/identity row, then address) - still the same 4 fields, no new
+         data (see OwnersViewInstallment.axaml's own comment). -->
+    <StackPanel Margin="20" Spacing="14">
+        <StackPanel Spacing="2">
+            <TextBlock Text="إضافة مالك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+            <TextBlock Text="رقم المالك يُعطى تلقائيًا عند الحفظ" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
         </StackPanel>
-    </Border>
+
+        <Border Classes="card">
+            <StackPanel Spacing="18">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource BrushGoldSoft}">
+                        <Viewbox Width="22" Height="22" FlowDirection="LeftToRight">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="{DynamicResource Icon.User}" Stroke="{DynamicResource BrushGold}"
+                                      StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Border>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="بيانات المالك" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4" FlowDirection="RightToLeft">
+                            <TextBlock Text="الحقول المعلَّمة بـ" FontSize="12.5" Foreground="{DynamicResource BrushMuted}"/>
+                            <TextBlock Text="*" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource BrushLate}"/>
+                            <TextBlock Text="مطلوبة" FontSize="12.5" Foreground="{DynamicResource BrushMuted}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <StackPanel Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="3" FlowDirection="RightToLeft">
+                            <TextBlock Text="الاسم الكامل" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                            <TextBlock Text="*" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource BrushLate}"/>
+                        </StackPanel>
+                        <TextBox x:Name="NameBox" Watermark="الاسم كما في الهوية"/>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="3" FlowDirection="RightToLeft">
+                                <TextBlock Text="رقم الجوال" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                                <TextBlock Text="*" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource BrushLate}"/>
+                            </StackPanel>
+                            <TextBox x:Name="PhoneBox" Watermark="05XXXXXXXX"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="3" FlowDirection="RightToLeft">
+                                <TextBlock Text="رقم الهوية" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                                <TextBlock Text="*" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource BrushLate}"/>
+                            </StackPanel>
+                            <TextBox x:Name="IdentityNumberBox" Watermark="1XXXXXXXXX"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="العنوان" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+                        <TextBox x:Name="AddressBox" Watermark="المدينة، الحي، الشارع"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock x:Name="ErrorText" Foreground="{DynamicResource BrushLate}" FontSize="12"
+                           TextWrapping="Wrap" IsVisible="False"/>
+
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Classes="primary" Content="حفظ المالك" Click="Add_Click"
+                            HorizontalContentAlignment="Center" Padding="12" FontSize="15" HorizontalAlignment="Stretch"/>
+                    <Button Grid.Column="1" Classes="outline" Content="إلغاء" Click="Cancel_Click" Padding="22,12"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </StackPanel>
 </Window>

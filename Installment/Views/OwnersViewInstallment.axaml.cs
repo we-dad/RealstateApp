@@ -15,10 +15,16 @@ public partial class OwnersViewInstallment : UserControl
     private readonly OwnerInstallmentService _owners;
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
-    
-    public OwnersViewInstallment(SupabaseService supabaseService)
+    private readonly Action? _onOpenContracts;
+
+    // onOpenContracts: switches MainWindowInstallment to its Contracts tab (the
+    // per-row "العقود" shortcut button). Optional because this view has no
+    // access to the parent shell otherwise - null just hides/no-ops the button's
+    // effect instead of crashing if this view is ever hosted without a shell.
+    public OwnersViewInstallment(SupabaseService supabaseService, Action? onOpenContracts = null)
     {
         InitializeComponent();
+        _onOpenContracts = onOpenContracts;
         // Search box above the grid: shows the rows that contain every word typed.
         _gridSearch = new GridSearch<OwnerInstallment>(OwnersGrid, OwnersGridSearchBox);
         _supabaseService = supabaseService;
@@ -54,9 +60,6 @@ public partial class OwnersViewInstallment : UserControl
             OwnersGrid.ItemsSource = null;
             OwnersGrid.ItemsSource = data;
 
-            // Real count only - the reference design also shows total invested
-            // capital here, which we have no data for (no profit-share/capital
-            // fields on an owner), so that part is left out.
             OwnersCountText.Text = $"{data.Count} ملاك";
         }, () => _gridSearch?.AfterLoad());
     
@@ -149,6 +152,25 @@ public partial class OwnersViewInstallment : UserControl
     private void OwnersGrid_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         if (OwnersGrid.SelectedItem is OwnerInstallment owner)
-            new OwnersWindowViewInstallment(owner, _supabaseService).Show();
+            OpenOwnerWindow(owner);
+    }
+
+    // Per-row "تعديل" button - same edit window double-clicking the row already
+    // opens, just also reachable without a double-click now (matches the mockup).
+    private void EditOwner_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: OwnerInstallment owner })
+            OpenOwnerWindow(owner);
+    }
+
+    private void OpenOwnerWindow(OwnerInstallment owner) =>
+        new OwnersWindowViewInstallment(owner, _supabaseService).Show();
+
+    // Per-row "العقود" shortcut - just switches to the Contracts tab. Contracts
+    // has no per-owner filter yet, so this does not actually filter to this
+    // owner's contracts, only saves a click to get there.
+    private void OpenContracts_Click(object? sender, RoutedEventArgs e)
+    {
+        _onOpenContracts?.Invoke();
     }
 }

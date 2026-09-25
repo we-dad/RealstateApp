@@ -5,34 +5,41 @@
              x:DataType="models:OwnerInstallment"
              FlowDirection="RightToLeft">
 
-  <!-- Restyled on the new identity per the client's reference mockup (owners.html/
-       owner-new.html), keeping only what our actual data supports: the mockup's
-       owner is a full investor (profit share %, capital, IBAN, profit
-       distribution schedule...) - none of that exists in OwnerInstallment or the
-       database, and the developer was explicit: match the look, add no new
-       fields. So this stays the same 4 fields (Name/IdentityNumber/Phone/
-       Address) - only the visual language (cards, buttons, colors) changed.
-
-       Per the developer's explicit follow-up request, this is now a standalone
-       list page: no inline add-form (unlike every other XView in the app) -
-       "مالك جديد" opens a separate add window (OwnersAddWindowViewInstallment),
-       matching the mockup's own separate owners.html/owner-new.html pages. -->
+  <!-- Restyled to match the developer's own updated mockup (owners.html/
+       owner-new.html, v3) as closely as our real data allows:
+       - "العقود النشطة"/"رأس المال في العقود" per owner ARE included - they're
+         computed only (OwnerInstallmentService.GetAll(), same "active contract"
+         definition DashboardServiceInstallment already uses), nothing new is
+         stored.
+       - "الربح المحقق" column from the mockup is deliberately left out: there is
+         no profit calculation anywhere in this app to base it on, and the
+         developer confirmed to drop it rather than invent one.
+       - The mockup's own header search box is skipped: it would duplicate the
+         search box already above the table (OwnersGridSearchBox) with no real
+         benefit.
+       - "تعديل" is a per-row button now (like the mockup), in addition to the
+         existing double-click-row convention used everywhere else in the app -
+         kept both since double-click still works on every other list screen. -->
   <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="14" Background="{DynamicResource BrushBg}">
 
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*">
-      <TextBlock Grid.Column="3" Text="الملاك" FontSize="21" FontWeight="Bold"
-                 Foreground="{DynamicResource BrushInk}"/>
-      <TextBlock Grid.Column="2" x:Name="OwnersCountText" FontSize="13"
-                 Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Bottom" Margin="0,0,10,0"/>
-      <Button Grid.Column="1" Classes="outline" Content="تحديث" Click="Refresh_Click" Margin="0,0,8,0"/>
-      <Button Grid.Column="0" Classes="add" Content="مالك جديد" Click="AddOwner_Click"/>
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
+      <StackPanel Grid.Column="0" Spacing="2">
+        <TextBlock Text="الملاك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+        <TextBlock x:Name="OwnersCountText" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+      </StackPanel>
+      <Button Grid.Column="2" Classes="outline" Content="تحديث" Click="Refresh_Click" Margin="0,0,8,0"/>
+      <Button Grid.Column="3" Classes="add" Content="مالك جديد" Click="AddOwner_Click"/>
     </Grid>
 
-    <!-- List heading -->
-    <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-      <TextBlock Grid.Column="1" Text="قائمة الملاك" FontSize="14" FontWeight="SemiBold"
+    <!-- List heading + hint - same proven column order as ProductViewInstallment/
+         CustomerViewInstallment (title in the star column, hint in the Auto
+         column, no HorizontalAlignment on either): under root RTL, an
+         HorizontalAlignment on a spare-space element lands physically opposite
+         of what it says (docs/ui-lessons.md #1) - this shape avoids needing one. -->
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+      <TextBlock Grid.Column="0" Text="قائمة الملاك" FontSize="14" FontWeight="SemiBold"
                  Foreground="{DynamicResource BrushInk}" VerticalAlignment="Center"/>
-      <TextBlock Grid.Column="0" Text="انقر مرتين على المالك لفتح التفاصيل"
+      <TextBlock Grid.Column="1" Text="اضغط مرتين على الصف لتعديل بيانات المالك"
                  FontSize="12" Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Center"/>
     </Grid>
 
@@ -50,11 +57,25 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60"/>
-            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
-            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="180"/>
-            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="160"/>
+            <DataGridTextColumn Header="رقم المالك" Binding="{Binding Id, StringFormat='O-{0}'}" Width="90"/>
+            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="1.4*"/>
+            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="150"/>
+            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="160"/>
             <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+            <DataGridTextColumn Header="العقود النشطة" Binding="{Binding ActiveContractsCount}" Width="120"/>
+            <DataGridTextColumn Header="رأس المال في العقود" Binding="{Binding CapitalInContracts, StringFormat='{}{0:N2}'}" Width="170"/>
+            <DataGridTemplateColumn Header="" Width="180">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="models:OwnerInstallment">
+                  <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4">
+                    <Button Classes="outline" Content="العقود" Padding="10,4" FontSize="12"
+                            Click="OpenContracts_Click"/>
+                    <Button Classes="outline" Content="تعديل" Padding="10,4" FontSize="12"
+                            Click="EditOwner_Click"/>
+                  </StackPanel>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
           </DataGrid.Columns>
         </DataGrid>
       </DockPanel>

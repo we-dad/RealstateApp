@@ -60,7 +60,10 @@ public partial class MainWindowInstallment : UserControl
 
     private void Nav_Owners(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        ContentHost.Content = new OwnersViewInstallment(_supabaseService);
+        // The "العقود" shortcut per owner row just switches to the Contracts tab -
+        // Contracts has no per-owner filter yet, so this is a plain shortcut,
+        // not a filtered view.
+        ContentHost.Content = new OwnersViewInstallment(_supabaseService, ShowContracts);
         SetActiveTab(TabOwners);
     }
 
@@ -77,6 +80,11 @@ public partial class MainWindowInstallment : UserControl
     }
 
     private void Nav_Contracts(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        ShowContracts();
+    }
+
+    private void ShowContracts()
     {
         ContentHost.Content = new ContractViewInstallment(_supabaseService);
         SetActiveTab(TabContracts);

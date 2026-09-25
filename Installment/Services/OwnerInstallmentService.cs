@@ -22,11 +22,29 @@ public class OwnerInstallmentService
         con.Open();
 
         using var cmd = con.CreateCommand();
+        // ActiveContracts/CapitalDeployed: same "active contract" definition
+        // DashboardServiceInstallment.GetStats() already uses (ContractState =
+        // 'جاري', SUM of the linked product's price) - just scoped to this
+        // owner's own products via the existing Product.OwnerId link, instead
+        // of the whole business. Display-only, nothing is stored.
         cmd.CommandText = """
-            SELECT Id, CloudId, Name, IdentityNumber, Phone, Address
-            FROM OwnersInstallment
-            WHERE SyncAction <> 'delete'
-            ORDER BY Id DESC;
+            SELECT
+                o.Id, o.CloudId, o.Name, o.IdentityNumber, o.Phone, o.Address,
+                (SELECT COUNT(*)
+                 FROM ContractsInstallment c
+                 JOIN ProductsInstallment p ON p.Id = c.ProductId
+                 WHERE p.OwnerId = o.Id
+                   AND c.SyncAction <> 'delete'
+                   AND c.ContractState = 'جاري') AS ActiveContracts,
+                (SELECT COALESCE(SUM(p.ProductMainPrice), 0)
+                 FROM ContractsInstallment c
+                 JOIN ProductsInstallment p ON p.Id = c.ProductId
+                 WHERE p.OwnerId = o.Id
+                   AND c.SyncAction <> 'delete'
+                   AND c.ContractState = 'جاري') AS CapitalDeployed
+            FROM OwnersInstallment o
+            WHERE o.SyncAction <> 'delete'
+            ORDER BY o.Id DESC;
         """;
 
         using var reader = cmd.ExecuteReader();
@@ -40,6 +58,8 @@ public class OwnerInstallmentService
                 IdentityNumber = reader.GetString(3),
                 Phone = reader.GetString(4),
                 Address = reader.GetString(5),
+                ActiveContractsCount = reader.GetInt32(6),
+                CapitalInContracts = reader.GetDouble(7),
             });
         }
 
@@ -104,6 +124,10 @@ public class OwnerInstallmentService
         DataChangeNotifier.Notify();
     }
 
+    // Does NOT fill ActiveContractsCount/CapitalInContracts (unlike GetAll()) -
+    // deliberately: OwnersWindowViewInstallment (the only caller) never displays
+    // them, and this is called on every save in that window, so it skips the
+    // extra join. Leaving both at their default (0) here.
     public OwnerInstallment? GetById(long id)
     {
         using var con = new SqliteConnection(_db.ConnectionString);
