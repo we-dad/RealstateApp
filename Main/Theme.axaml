@@ -76,8 +76,15 @@
 
     <!-- ===================== Buttons ===================== -->
 
+    <!-- Main CTA (login, save...). In the client's updated reference mockups,
+         ".btn-gold" (the class used for these exact buttons: "دخول", "حفظ السند")
+         is overridden near the end of every page's stylesheet to use the navy
+         ink color instead of gold, with a separate new ".btn-add" class holding
+         the actual gold for "add a new record" actions specifically - confirmed
+         consistent across index.html/modules.html/receipt.html/contracts.html,
+         not a one-off. Gold is no longer the general primary-action color. -->
     <Style Selector="Button.primary">
-        <Setter Property="Background" Value="{DynamicResource BrushGold}"/>
+        <Setter Property="Background" Value="{DynamicResource BrushInk}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="7"/>
@@ -85,6 +92,21 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrushInkHover}"/>
+    </Style>
+
+    <!-- The actual gold action button now, matching the reference design's new
+         ".btn-add" - reserved for "add a new record" style actions. Not used by
+         any screen yet (nothing built so far has one), added now so it's ready. -->
+    <Style Selector="Button.add">
+        <Setter Property="Background" Value="{DynamicResource BrushGold}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="7"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.add:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource BrushGoldHover}"/>
     </Style>
 

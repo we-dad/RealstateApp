@@ -11,7 +11,7 @@
          found and fixed on the login screen. Column 0 = physical left (status/
          identity/logout), column 2 = physical right (brand), matching the
          reference design's top bar. -->
-    <Border Background="{DynamicResource BrushInk}" Height="58" Padding="22,0">
+    <Border Background="{DynamicResource BrushInk}" Height="64" Padding="22,0">
         <Grid ColumnDefinitions="Auto,*,Auto">
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">

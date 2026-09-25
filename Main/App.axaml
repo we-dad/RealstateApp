@@ -19,17 +19,21 @@
       <ResourceInclude Source="avares://RealEstateInstallmentsManager/Main/Icons.axaml"/>
      </ResourceDictionary.MergedDictionaries>
 
-    <!-- IBM Plex Sans Arabic - working.
-         The real bug (attempts 1-3 all hit it, with different symptoms): the .csproj
-         never had an AvaloniaResource entry for Assets/Fonts, so every avares:// URI
-         pointed at a folder Avalonia had never embedded. Fixed by adding
-         <AvaloniaResource Include="Assets\Fonts\**" /> to the .csproj. Confirmed
-         working with the single Regular file (developer tested, app opens fine).
-         Now pointing back at the full Assets/Fonts folder (all 4 weight files) -
-         this is the exact same folder+URI attempt 1 used, now that the files are
-         actually embedded, so it should give real Medium/SemiBold/Bold instead of
-         Avalonia's synthetic (faux) bold. Not yet tested at 4 weights. -->
-    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#IBM Plex Sans Arabic</FontFamily>
+    <!-- Cairo - replaces IBM Plex Sans Arabic per the client's rebranded identity
+         (AlOufi-Logo-Kit recommends Cairo). Same folder+embedding pattern already
+         proven to work for IBM Plex Sans Arabic (4 static weight files: Regular/
+         Medium/SemiBold/Bold, not the variable-font file - untested combination,
+         avoided on purpose), so the resource-embedding class of bug that took 5
+         attempts to find is already fixed at the project level
+         (AvaloniaResource Include="Assets\Fonts\**" already covers this folder).
+         The one residual, unconfirmed risk from that whole saga: attempt 1's
+         native crash (SIGABRT) was suspected - never fully confirmed - to be
+         about the 4 files' internal font-name-table entries not matching
+         cleanly when grouped as one family. Cairo is a much more actively
+         maintained, standard Google Font than that IBM Plex Sans Arabic
+         download was, so this is considered low-risk, but still genuinely
+         untested until the developer opens the app. -->
+    <FontFamily x:Key="ArabicFontFamily">avares://RealEstateInstallmentsManager/Assets/Fonts#Cairo</FontFamily>
     </ResourceDictionary>
    </Application.Resources>
 
@@ -41,11 +45,10 @@
     <!-- Visual identity: palette, chips, nav bar and card styles. -->
     <StyleInclude Source="avares://RealEstateInstallmentsManager/Main/Theme.axaml"/>
 
-    <!-- IBM Plex Sans Arabic (see the comment on ArabicFontFamily above). Now
-         trying the full 4-weight family - UNTESTED at this step. If it crashes
-         again, the safe fallback is to point ArabicFontFamily back at
-         Assets/Fonts/Regular alone (confirmed working), not all the way back
-         to "Arial". -->
+    <!-- Cairo (see the comment on ArabicFontFamily above). UNTESTED - if it
+         crashes, the safe fallback proven earlier this project is a single-
+         weight subfolder (e.g. Assets/Fonts/Regular containing only
+         Cairo-Regular.ttf) before falling all the way back to "Arial". -->
     <Style Selector=":is(TemplatedControl)">
         <Setter Property="FontFamily" Value="{StaticResource ArabicFontFamily}"/>
     </Style>
