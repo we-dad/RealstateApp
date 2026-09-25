@@ -53,6 +53,11 @@ public partial class OwnersViewInstallment : UserControl
 
             OwnersGrid.ItemsSource = null;
             OwnersGrid.ItemsSource = data;
+
+            // Real count only - the reference design also shows total invested
+            // capital here, which we have no data for (no profit-share/capital
+            // fields on an owner), so that part is left out.
+            OwnersCountText.Text = $"{data.Count} ملاك";
         }, () => _gridSearch?.AfterLoad());
     
     private void Add_Click(object? sender, RoutedEventArgs e)

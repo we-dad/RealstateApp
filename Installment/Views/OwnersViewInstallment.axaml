@@ -5,60 +5,76 @@
              x:DataType="models:OwnerInstallment"
              FlowDirection="RightToLeft">
 
-  <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="12">
+  <!-- Restyled on the new identity per the client's reference mockup (owners.html/
+       owner-new.html), but keeping only what our actual data supports: the
+       mockup's owner is a full investor (profit share %, capital, IBAN, profit
+       distribution schedule...) - none of that exists in OwnerInstallment or the
+       database, and the developer was explicit: match the look, add no new
+       fields. So this stays the same 4 fields (Name/IdentityNumber/Phone/
+       Address), same inline add-form + list layout, same logic - only the
+       visual language (cards, buttons, colors) changed. -->
+  <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="20" RowSpacing="14" Background="{DynamicResource BrushBg}">
 
-    <!-- Form -->
-    <Border Grid.Row="0" Padding="12" CornerRadius="12" BorderBrush="#DDD" BorderThickness="1">
-      <StackPanel Spacing="8">
-        <TextBlock Text="الملاك" FontSize="18"/>
-        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-              ColumnSpacing="10" RowSpacing="8">
-          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="0"/>
-          <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="0"/>
-          <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="1"/>
-          <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="1"/>
-          <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="0"/>
-          <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="0"/>
-          <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="1"/>
-          <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="1"/>
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+      <TextBlock Grid.Column="1" Text="الملاك" FontSize="21" FontWeight="Bold"
+                 Foreground="{DynamicResource BrushInk}"/>
+      <TextBlock Grid.Column="0" x:Name="OwnersCountText" FontSize="13"
+                 Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Bottom"/>
+    </Grid>
+
+    <!-- Add form -->
+    <Border Grid.Row="1" Classes="card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="إضافة مالك" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+              ColumnSpacing="12" RowSpacing="6">
+          <TextBlock Text="الاسم" Grid.Row="0" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+          <TextBox x:Name="NameBox" Grid.Row="1" Grid.Column="1"/>
+          <TextBlock Text="رقم الهوية" Grid.Row="0" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+          <TextBox x:Name="IdentityNumberBox" Grid.Row="1" Grid.Column="0"/>
+          <TextBlock Text="الجوال" Grid.Row="2" Grid.Column="1" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+          <TextBox x:Name="PhoneBox" Grid.Row="3" Grid.Column="1"/>
+          <TextBlock Text="العنوان" Grid.Row="2" Grid.Column="0" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+          <TextBox x:Name="AddressBox" Grid.Row="3" Grid.Column="0"/>
           <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal"
                       Spacing="8" HorizontalAlignment="Left">
-            <Button Content="إضافة" Click="Add_Click"/>
-            <Button Content="تحديث" Click="Refresh_Click"/>
+            <Button Classes="outline" Content="تحديث" Click="Refresh_Click"/>
+            <Button Classes="primary" Content="إضافة مالك" Click="Add_Click"/>
           </StackPanel>
         </Grid>
       </StackPanel>
     </Border>
 
-    <!-- List heading + hint -->
-    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-      <TextBlock Grid.Column="0" Text="قائمة الملاك" FontSize="14" VerticalAlignment="Center"/>
-      <TextBlock Grid.Column="1" Text="انقر مرتين على المالك لفتح التفاصيل"
-                 FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
+    <!-- List heading -->
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+      <TextBlock Grid.Column="1" Text="قائمة الملاك" FontSize="14" FontWeight="SemiBold"
+                 Foreground="{DynamicResource BrushInk}" VerticalAlignment="Center"/>
+      <TextBlock Grid.Column="0" Text="انقر مرتين على المالك لفتح التفاصيل"
+                 FontSize="12" Foreground="{DynamicResource BrushMuted}" VerticalAlignment="Center"/>
     </Grid>
 
     <!-- Table -->
-    <Border Grid.Row="2" CornerRadius="12" BorderBrush="#DDD" BorderThickness="1" Padding="4">
+    <Border Grid.Row="3" Classes="card" Padding="8">
       <DockPanel>
-<TextBox x:Name="OwnersGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
-         Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
-<DataGrid x:Name="OwnersGrid"
-                AutoGenerateColumns="False"
-                IsReadOnly="True"
-                x:DataType="models:OwnerInstallment"
-                GridLinesVisibility="Horizontal"
-                HeadersVisibility="Column"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60"/>
-          <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
-          <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="180"/>
-          <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="160"/>
-          <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
-        </DataGrid.Columns>
-      </DataGrid>
-</DockPanel>
+        <TextBox x:Name="OwnersGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
+                 Watermark="ابحث في الجدول: اسم، رقم، تاريخ، أي كلمة..."/>
+        <DataGrid x:Name="OwnersGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  x:DataType="models:OwnerInstallment"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60"/>
+            <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="*"/>
+            <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="180"/>
+            <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="160"/>
+            <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
     </Border>
 
   </Grid>

@@ -106,6 +106,19 @@
         <Setter Property="Padding" Value="16,10"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
+
+    <!-- Plain, text-only red action (e.g. "حذف") - matches the reference
+         design's ".btn-x" (no background/border, just red text). -->
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrushLate}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="14,9"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrushLateSoft}"/>
+    </Style>
     <Style Selector="Button.add:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource BrushGoldHover}"/>
     </Style>
