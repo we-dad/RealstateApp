@@ -35,9 +35,22 @@
     <Style Selector="DataGridCell">
       <Setter Property="Padding" Value="10,9"/>
       <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushInk}"/>
     </Style>
     <Style Selector="DataGridRow">
       <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <!-- Avalonia's default TextBox (height, padding, border) is noticeably
+         bigger/heavier than the mockup's slim inputs (height 42px, padding
+         9px 12px, border 1px line color, radius 7px). -->
+    <Style Selector="TextBox">
+      <Setter Property="Height" Value="42"/>
+      <Setter Property="Padding" Value="12,9"/>
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Background" Value="{DynamicResource BrushSurface}"/>
     </Style>
   </UserControl.Styles>
 
