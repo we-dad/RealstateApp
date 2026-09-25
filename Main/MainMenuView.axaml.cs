@@ -38,9 +38,8 @@ public partial class MainMenuView : UserControl
         // there's a separate adjacent control right next to it.
         var hasName = !string.IsNullOrWhiteSpace(AppSession.DisplayName);
         var greeting = ArabicDateService.Greeting(now);
-        GreetingPrefixText.Text = hasName ? $"{greeting}،" : greeting;
+        GreetingPrefixText.Text = hasName ? $"{greeting}" : greeting;
         GreetingNameText.Text = hasName ? AppSession.DisplayName : "";
-        GreetingSuffixText.Text = ". وش نفتح اليوم؟";
 
         LoadInstallmentStats();
     }

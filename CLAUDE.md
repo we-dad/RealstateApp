@@ -59,3 +59,4 @@ The .csproj is at the repo root and automatically includes every folder below it
 - `ROADMAP.md`: project plan, prioritized, with checkboxes for small tasks
 - `PROGRESS.md`: progress log
 - `docs/sync-analysis.md`: analysis of how sync works
+- `docs/ui-lessons.md`: recurring Avalonia/RTL/font pitfalls found while redesigning screens on the new identity (FlowDirection mirroring rules, TextBlock bidi quirks, font/resource embedding) - check before touching alignment, fonts, or embedded assets on a new screen
