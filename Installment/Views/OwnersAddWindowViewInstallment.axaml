@@ -15,10 +15,7 @@
          phone/identity row, then address) - still the same 4 fields, no new
          data (see OwnersViewInstallment.axaml's own comment). -->
     <StackPanel Margin="20" Spacing="14">
-        <StackPanel Spacing="2">
-            <TextBlock Text="إضافة مالك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
-            <TextBlock Text="رقم المالك يُعطى تلقائيًا عند الحفظ" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-        </StackPanel>
+        <TextBlock Text="إضافة مالك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
 
         <Border Classes="card">
             <StackPanel Spacing="18">

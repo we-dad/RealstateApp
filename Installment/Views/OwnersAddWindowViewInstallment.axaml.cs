@@ -31,9 +31,26 @@ public partial class OwnersAddWindowViewInstallment : Window
             var identityNumber = IdentityNumberBox.Text?.Trim() ?? "";
             var address = AddressBox.Text?.Trim() ?? "";
 
+            // Name/Phone/IdentityNumber are marked required (*) in the form -
+            // only Name was actually enforced here before, so a save could go
+            // through with the other two left empty despite the asterisk.
             if (string.IsNullOrWhiteSpace(name))
             {
                 ErrorText.Text = "الاسم مطلوب";
+                ErrorText.IsVisible = true;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                ErrorText.Text = "رقم الجوال مطلوب";
+                ErrorText.IsVisible = true;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(identityNumber))
+            {
+                ErrorText.Text = "رقم الهوية مطلوب";
                 ErrorText.IsVisible = true;
                 return;
             }
