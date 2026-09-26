@@ -32,7 +32,7 @@
     <Style Selector="TextBox">
       <Setter Property="Height" Value="42"/>
       <Setter Property="Padding" Value="12,9"/>
-      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="FontSize" Value="13"/>
       <Setter Property="CornerRadius" Value="7"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BrushLine}"/>
       <Setter Property="BorderThickness" Value="1"/>
@@ -81,13 +81,14 @@
                 GridLinesVisibility="Horizontal"
                 HorizontalGridLinesBrush="{DynamicResource BrushLine2}"
                 HeadersVisibility="Column"
+                ColumnHeaderHeight="42"
                 Background="{DynamicResource BrushSurface}"
                 RowBackground="Transparent"
                 BorderThickness="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
         <DataGrid.Columns>
-          <DataGridTextColumn Header="رقم المالك" Binding="{Binding Id, StringFormat='O-{0}'}" Width="90"/>
+          <DataGridTextColumn Header="رقم المالك" Binding="{Binding Id, StringFormat='O-{0}'}" Width="110"/>
           <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" Width="1.4*"/>
           <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="150"/>
           <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="160"/>
