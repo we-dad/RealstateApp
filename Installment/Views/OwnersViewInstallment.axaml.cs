@@ -15,16 +15,10 @@ public partial class OwnersViewInstallment : UserControl
     private readonly OwnerInstallmentService _owners;
     private readonly SupabaseService _supabaseService;
     private readonly InstallmentSyncService _sync;
-    private readonly Action? _onOpenContracts;
 
-    // onOpenContracts: switches MainWindowInstallment to its Contracts tab (the
-    // per-row "العقود" shortcut button). Optional because this view has no
-    // access to the parent shell otherwise - null just hides/no-ops the button's
-    // effect instead of crashing if this view is ever hosted without a shell.
-    public OwnersViewInstallment(SupabaseService supabaseService, Action? onOpenContracts = null)
+    public OwnersViewInstallment(SupabaseService supabaseService)
     {
         InitializeComponent();
-        _onOpenContracts = onOpenContracts;
         // Search box above the grid: shows the rows that contain every word typed.
         _gridSearch = new GridSearch<OwnerInstallment>(OwnersGrid, OwnersGridSearchBox);
         _supabaseService = supabaseService;
@@ -165,12 +159,4 @@ public partial class OwnersViewInstallment : UserControl
 
     private void OpenOwnerWindow(OwnerInstallment owner) =>
         new OwnersWindowViewInstallment(owner, _supabaseService).Show();
-
-    // Per-row "العقود" shortcut - just switches to the Contracts tab. Contracts
-    // has no per-owner filter yet, so this does not actually filter to this
-    // owner's contracts, only saves a click to get there.
-    private void OpenContracts_Click(object? sender, RoutedEventArgs e)
-    {
-        _onOpenContracts?.Invoke();
-    }
 }

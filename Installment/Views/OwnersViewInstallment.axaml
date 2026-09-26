@@ -43,10 +43,7 @@
   <Grid RowDefinitions="Auto,*,Auto" Margin="20" RowSpacing="10">
 
     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-      <StackPanel Grid.Column="0" Spacing="2">
-        <TextBlock Text="الملاك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
-        <TextBlock x:Name="OwnersCountText" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
-      </StackPanel>
+      <TextBlock Grid.Column="0" Text="الملاك" FontSize="21" FontWeight="Bold" Foreground="{DynamicResource BrushInk}"/>
       <TextBox Grid.Column="2" x:Name="OwnersGridSearchBox" Width="260" TextAlignment="Right"
                 Watermark="الاسم، الجوال، رقم الهوية">
         <TextBox.InnerLeftContent>
@@ -93,15 +90,20 @@
           <DataGridTextColumn Header="الجوال" Binding="{Binding Phone}" Width="150"/>
           <DataGridTextColumn Header="رقم الهوية" Binding="{Binding IdentityNumber}" Width="160"/>
           <DataGridTextColumn Header="العنوان" Binding="{Binding Address}" Width="*"/>
-          <DataGridTemplateColumn Header="" Width="180">
+          <DataGridTemplateColumn Header="" Width="100">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate x:DataType="models:OwnerInstallment">
-                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4">
-                  <Button Classes="outline" Content="العقود" Padding="10,4" FontSize="12"
-                          Click="OpenContracts_Click"/>
-                  <Button Classes="outline" Content="تعديل" Padding="10,4" FontSize="12"
-                          Click="EditOwner_Click"/>
-                </StackPanel>
+                <Button Classes="outline" Padding="10,4" FontSize="12" Margin="0,4" Click="EditOwner_Click">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Viewbox Width="13" Height="13" FlowDirection="LeftToRight">
+                      <Canvas Width="24" Height="24">
+                        <Path Data="{DynamicResource Icon.Edit}" Stroke="{DynamicResource BrushInk}"
+                              StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"/>
+                      </Canvas>
+                    </Viewbox>
+                    <TextBlock Text="تعديل"/>
+                  </StackPanel>
+                </Button>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
@@ -109,9 +111,14 @@
       </DataGrid>
     </Border>
 
-    <!-- Footer hint (the real count now lives in the header, next to "الملاك") -->
-    <TextBlock Grid.Row="2" Text="اضغط مرتين على الصف لتعديل بيانات المالك"
-               FontSize="12" Foreground="{DynamicResource BrushMuted}"/>
+    <!-- Footer: real owner count, physical right. An Auto column sized to just
+         the text itself (no HorizontalAlignment) - under root RTL flow,
+         HorizontalAlignment="Right" on a spare-space element lands physically
+         opposite of what it says (docs/ui-lessons.md #1); an Auto column with
+         nothing else in it avoids the trap entirely. -->
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+      <TextBlock Grid.Column="0" x:Name="OwnersCountText" FontSize="13" Foreground="{DynamicResource BrushMuted}"/>
+    </Grid>
 
   </Grid>
 </UserControl>
