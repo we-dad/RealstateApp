@@ -69,9 +69,16 @@
             <!-- Real horizontal lockup logo (name + mark in one file) - matches
                  the reference design's own <img> exactly (height 44, width auto
                  at the file's own 2964.47:556.80 aspect ratio -> ~234 wide). No
-                 separate text needed; the logo file already contains the name. -->
+                 separate text needed; the logo file already contains the name.
+                 The reference design's own .brand rule adds a vertical divider
+                 between the logo and the nav tabs (border-left:1px solid
+                 #1D3A66; padding-left:18px) - added here the same way, on the
+                 physical-left edge of this Button (the side facing the tabs,
+                 since this bar places physical sides directly, no RTL mirroring). -->
             <Button Grid.Column="2" Click="Brand_Click"
-                    Background="Transparent" BorderThickness="0" Padding="0"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource BrushLineOnDark}" BorderThickness="1,0,0,0"
+                    Padding="18,0,0,0"
                     ToolTip.Tip="الرئيسية">
                 <svg:Svg Width="234" Height="44" FlowDirection="LeftToRight"
                          Path="avares://RealEstateInstallmentsManager/Assets/Logo/lockup-horizontal-dark.svg"/>

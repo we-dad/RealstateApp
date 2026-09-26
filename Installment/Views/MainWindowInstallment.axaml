@@ -24,7 +24,7 @@
              this row collapses to nothing once its child is removed. -->
         <StackPanel x:Name="NavLinksPanel" Grid.Row="1" Orientation="Horizontal" Spacing="2"
                     FlowDirection="RightToLeft">
-            <Button Classes="navHome" Click="Nav_Home" ToolTip.Tip="صفحة البدء">🏠</Button>
+            <Button Classes="navBtn" Content="الرئيسية" Click="Nav_Home" ToolTip.Tip="صفحة البدء"/>
             <Button x:Name="TabDashboard" Classes="navBtn" Content="الإحصائيات" Click="Nav_Dashboard"/>
             <Button x:Name="TabOwners" Classes="navBtn" Content="الملاك" Click="Nav_Owners"/>
             <Button x:Name="TabCustomer" Classes="navBtn" Content="العملاء" Click="Nav_Customer"/>
