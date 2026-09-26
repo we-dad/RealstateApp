@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="إضافة مالك"
         Width="520"
-        Height="440"
+        Height="600"
         FlowDirection="RightToLeft"
         Background="{DynamicResource BrushBg}">
 
