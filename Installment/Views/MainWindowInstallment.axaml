@@ -43,10 +43,19 @@
                    FontSize="12"
                    FlowDirection="RightToLeft"/>
 
-        <!-- Content -->
-        <Border Grid.Row="3" Margin="20,10,20,20" Classes="card">
-            <ContentControl x:Name="ContentHost"/>
-        </Border>
+        <!-- Content - plain, no shared "card" background/border: the mockup
+             only wraps the parts of a screen that need a white panel (e.g. a
+             table) in that white box, while the rest sits directly on this
+             page's own gray background. A single card wrapping everything
+             here (header, table and footer alike) showed as a mismatched
+             white rectangle behind screens that don't want one everywhere
+             (OwnersViewInstallment - see its own file for the table's own
+             card). Screens not yet restyled on the new identity (Dashboard,
+             Customers, Products, Contracts, Expenses) lose the free white
+             backdrop this used to give their own bordered sections - each
+             should eventually get its own explicit card, like Receipts/Owners
+             already have, instead of leaning on this shared one. -->
+        <ContentControl Grid.Row="3" Margin="20,10,20,20" x:Name="ContentHost"/>
 
     </Grid>
 </UserControl>

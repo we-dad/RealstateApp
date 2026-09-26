@@ -7,6 +7,7 @@
     <Grid RowDefinitions="Auto,Auto,*" Margin="6" RowSpacing="10">
 
         <Border Grid.Row="0" Padding="12" CornerRadius="12"
+                Background="{DynamicResource BrushSurface}"
                 BorderBrush="#DDD" BorderThickness="1">
             <StackPanel Spacing="8">
                 <TextBlock Text="المصروفات" FontSize="18" TextAlignment="Right"/>
@@ -72,6 +73,7 @@
         <Border Grid.Row="2"
                 CornerRadius="12"
                 Padding="4"
+                Background="{DynamicResource BrushSurface}"
                 BorderBrush="#DDD" BorderThickness="1">
 
             <DockPanel>

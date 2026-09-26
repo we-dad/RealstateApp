@@ -9,6 +9,7 @@
 
     <!-- Form -->
     <Border Grid.Row="0" Padding="12" CornerRadius="12"
+            Background="{DynamicResource BrushSurface}"
             BorderBrush="#DDD" BorderThickness="1">
       <StackPanel Spacing="8">
         <TextBlock Text="العملاء" FontSize="18"/>
@@ -71,6 +72,7 @@
 
     <!-- Table -->
     <Border Grid.Row="2" CornerRadius="12" Padding="4"
+            Background="{DynamicResource BrushSurface}"
             BorderBrush="#DDD" BorderThickness="1">
       <DockPanel>
 <TextBox x:Name="CustomerGridSearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextAlignment="Right"
