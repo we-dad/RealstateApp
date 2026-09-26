@@ -30,7 +30,8 @@
                     <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal"
                                 Spacing="8" HorizontalAlignment="Left">
                         <Button Classes="danger" Content="حذف البيانات" Click="Delete_Click"
-                                Background="{DynamicResource BrushLate}" Foreground="White"/>
+                                Background="{DynamicResource BrushLate}" Foreground="White"
+                                CornerRadius="7" Padding="16,10"/>
                         <Button Classes="primary" Content="تحديث البيانات" Click="Update_Click"/>
                     </StackPanel>
                 </Grid>
